@@ -1,4 +1,4 @@
-package it.unipi.dsmt;
+package it.unipi.dsmt.FitConnect;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
