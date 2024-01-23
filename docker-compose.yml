@@ -10,7 +10,7 @@ services:
     tty: true
     volumes:
     - type: bind
-      source: ./FitConnect
+      source: ./fitconnect_webapp
       target: /home/FitConnect
     ports:
       - "127.0.0.1:8080:8080"

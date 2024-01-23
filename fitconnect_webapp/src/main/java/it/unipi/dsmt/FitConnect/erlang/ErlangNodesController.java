@@ -22,7 +22,7 @@ public class ErlangNodesController {
         cookie = "dsmt";
         erlangMessanger = "fitMessanger";
         erlangNotifier = "fitNotifier";
-        erlangServerMailBox = "server@a09ac34a7c62";
+        erlangServerMailBox = "server@6b6101f06fda";
         erlangNodes = new ErlangNode[10];
         erlangNodeCount = 0;
         pingErlangServer();
