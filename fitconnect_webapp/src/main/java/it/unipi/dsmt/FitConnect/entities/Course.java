@@ -6,6 +6,7 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ToString
@@ -21,11 +22,18 @@ public class Course {
     private List<Schedule> schedules;
     private List<GeneralUser> enrolled;
 
+    public Course(String courseName, String trainer) {
+        this.courseName = courseName;
+        this.trainer = trainer;
+        this.schedules = new ArrayList<>();
+        this.enrolled = new ArrayList<>();
+    }
     public Course(String courseName, String trainer, List<Schedule> schedules, List<GeneralUser> enrolled) {
         this.courseName = courseName;
         this.trainer = trainer;
         this.schedules = schedules;
         this.enrolled = enrolled;
     }
+
 }
 

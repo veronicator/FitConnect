@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CourseRepository extends MongoRepository<Course, String> {
 
@@ -15,13 +16,17 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     List<Course> findByTrainer(String trainer);
     @Query("{'schedules.dayOfTheWeek': ?0}")
     List<Course> findByDay(String day);
-
+    @Query("{'courseName': ?0, 'trainer': ?1 }")
+    Optional<Course> findByCourseNameAndTrainer(String course, String trainer);
     @Query("{'id': ?0, 'enrolled.email': ?1 }")
     List<Course> findByIdAndEmail(String id, String email);
+    @Query("{'enrolled.username': ?0}")
+    List<Course> findByUser(String username);
 
     /** existsBy methods */
     boolean existsByCourseName(String courseName);
     boolean existsByTrainer(String trainer);
+    boolean existsByCourseNameAndTrainer(String courseName, String trainer);
 
     /** deleteBy methods */
     void deleteByTrainer(String trainer);
@@ -29,6 +34,7 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     @Query("{'id': ?0, 'enrolled.email': ?1 }")
     @Update("{ $pull: { 'enrolled': { 'email': ?1 }}}")
     void removeSubscription(String courseId, String userEmail);
+        // todo: sostituire con username
 
     /** update methods */
     @Query("{'_id': ?0 }")

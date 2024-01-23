@@ -14,8 +14,8 @@ public class UserService {
     private UserRepository userRepository;
 
     public User createNewUser(String name, String lastName, String email, String pwd, String role) {
-        if (existsByEmail(email)) {
-            System.out.println("email already used for another account");
+        if (existsByEmail(email)) { // todo: || existsByUsername(username) aggiungere username
+            System.out.println("email/username already used for another account");
             return null;
         }
         return userRepository.insert(new User(name, lastName, email, pwd, role));

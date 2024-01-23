@@ -12,19 +12,18 @@ public class User extends GeneralUser {
 
     @Id
     private String id;
-    private String username;    // todo: modificare login form per far inserire anche l'username
+//    private String username;    // todo: modificare login form per far inserire anche l'username
     private String password;
     private String role;    // client | PT | admin
 
     public User(String firstName, String lastName, String email, String password, String role) {
-        super(firstName, lastName, email);
+        super(firstName, lastName, email, firstName);   // todo: togliere costruttore
         this.password = password;
         this.role = role;
     }
 
     public User(String firstName, String lastName, String username, String email, String password, String role) {
-        super(firstName, lastName, email);
-        this.username = username;
+        super(firstName, lastName, email, username);
         this.password = password;
         this.role = role;
     }
