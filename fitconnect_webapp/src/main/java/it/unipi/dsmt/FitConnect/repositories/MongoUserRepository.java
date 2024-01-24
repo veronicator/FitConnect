@@ -4,16 +4,17 @@ import it.unipi.dsmt.FitConnect.entities.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
-public interface UserRepository extends MongoRepository<User, String> {
+@Repository
+public interface MongoUserRepository extends MongoRepository<User, String> {
 
     /** find methods */
     List<User> findByFirstName(String firstName);
     List<User> findByLastName(String lastName);
-    Optional<User> findByUsername(String username);
+    User findByUsername(String username);
     Optional<User> findByEmail(String email);
     List<User> findByRole(String role);
 
