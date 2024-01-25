@@ -7,6 +7,7 @@ public class ErlangNodeListener extends Thread{
     private final ErlangNode clientNode;
     private boolean running = false;
 
+    // The Listener that receives the messages and notifications of the erlang server
     public ErlangNodeListener(ErlangNode clientNode) {
         this.clientNode = clientNode;
         this.running = true;

@@ -3,6 +3,7 @@ package it.unipi.dsmt.FitConnect.erlang;
 public class ErlangNodeSender extends Thread{
     //private final ErlangNode clientNode;
 
+    // TODO: IMPLEMENT IT
     public ErlangNodeSender(ErlangNode clientNode) {
         //this.clientNode = clientNode;
     }

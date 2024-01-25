@@ -1,1 +1,1 @@
--record(notifications, {course, trainer, delay, requestTime}). %Unique field is Course
+-record(notifications, {course, trainer, delay, requestTime}). % Unique field is Course
