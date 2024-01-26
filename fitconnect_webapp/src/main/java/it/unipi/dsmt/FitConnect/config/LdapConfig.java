@@ -1,5 +1,6 @@
 package it.unipi.dsmt.FitConnect.config;
 
+import it.unipi.dsmt.FitConnect.services.AuthService;
 import it.unipi.dsmt.FitConnect.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
@@ -12,19 +13,16 @@ import org.springframework.ldap.core.support.LdapContextSource;
 @PropertySource("classpath:application.properties")
 @ComponentScan(basePackages = {"it.unipi.dsmt.FitConnect.*"})
 @Profile("default")
-@EnableLdapRepositories(basePackages = "it.unipi.dsmt.FitConnect.repositories.*")
-public class AppConfig {
-
-    @Autowired
-    private Environment env;
+@EnableLdapRepositories(basePackages = "it.unipi.dsmt.FitConnect.repositories.ldap.*")
+public class LdapConfig {
 
     @Bean
     public LdapContextSource contextSource() {
 
         LdapContextSource contextSource = new LdapContextSource();
         contextSource.setUrl("ldap://localhost:389"); // Adjust the URL based on your LDAP server configuration
-        contextSource.setUserDn("cn=admin,dc=baeldung,dc=com"); // Adjust the DN based on your LDAP server configuration
-        contextSource.setPassword("secret"); // Adjust the password based on your LDAP server configuration
+        contextSource.setUserDn("cn=admin,dc=fitconnect,dc=com"); // Adjust the DN based on your LDAP server configuration
+        contextSource.setPassword("password"); // Adjust the password based on your LDAP server configuration
         return contextSource;
     }
 
@@ -34,8 +32,8 @@ public class AppConfig {
     }
 
     @Bean
-    public UserService ldapClient() {
-        return new UserService();
+    public AuthService ldapClient() {
+        return new AuthService();
     }
 
 }
