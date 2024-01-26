@@ -19,9 +19,9 @@ public class Course {
     private String courseName;
     private String trainer;
     private List<Schedule> schedules;
-    private List<GeneralUser> enrolled;
+    private List<MongoUser> enrolled;
 
-    public Course(String courseName, String trainer, List<Schedule> schedules, List<GeneralUser> enrolled) {
+    public Course(String courseName, String trainer, List<Schedule> schedules, List<MongoUser> enrolled) {
         this.courseName = courseName;
         this.trainer = trainer;
         this.schedules = schedules;
