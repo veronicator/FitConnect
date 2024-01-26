@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Home</title>
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"
+          href="../../css/bootstrap.min.css" />
 </head>
 <body>
-    <h2>Benvenuto!</h2>
+<div class="container">
 
-    <p th:text="'Ciao ' + ${user.name} + ' ' + ${user.surname}"></p>
+    <h4 th:text="'Ciao ' + ${username}"></h4>
 
-
-
+</div>
 </body>
 </html>

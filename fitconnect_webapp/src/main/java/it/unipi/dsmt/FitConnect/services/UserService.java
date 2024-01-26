@@ -1,7 +1,8 @@
 package it.unipi.dsmt.FitConnect.services;
 
-import it.unipi.dsmt.FitConnect.entities.User;
-import it.unipi.dsmt.FitConnect.repositories.UserRepository;
+
+import it.unipi.dsmt.FitConnect.entities.MongoUser;
+import it.unipi.dsmt.FitConnect.repositories.mongo.MongoUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,69 +11,62 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
     @Autowired
-    private UserRepository userRepository;
+    private MongoUserRepository mongoUserRepository;
 
-    public User createNewUser(String name, String lastName, String email, String pwd, String role) {
-        if (existsByEmail(email)) {
-            System.out.println("email already used for another account");
-            return null;
-        }
-        return userRepository.insert(new User(name, lastName, email, pwd, role));
+    public Optional<MongoUser> findById(String id) {
+        return mongoUserRepository.findById(id);
     }
 
-    public Optional<User> findById(String id) {
-        return userRepository.findById(id);
+    public Optional<MongoUser> findByEmail(String email){
+        return mongoUserRepository.findByEmail(email);
     }
 
-    public Optional<User> findByEmail(String email){
-        return userRepository.findByEmail(email);
+    public Optional<MongoUser> findByUsername(String username) {
+        return mongoUserRepository.findByUsername(username);
+    }
+    public List<MongoUser> findAllUsers() {
+        return mongoUserRepository.findAll();
     }
 
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-    public List<User> findAllUsers() {
-        return userRepository.findAll();
+    public List<MongoUser> findAllByFirstName(String firstname) {
+        return mongoUserRepository.findByFirstName(firstname);
     }
 
-    public List<User> findAllByFirstName(String firstname) {
-        return userRepository.findByFirstName(firstname);
+    public List<MongoUser> findAllByLastName(String lastname) {
+        return mongoUserRepository.findByLastName(lastname);
     }
 
-    public List<User> findAllByLastName(String lastname) {
-        return userRepository.findByLastName(lastname);
-    }
-
-    public List<User> findByRole(String role) {
-        return userRepository.findByRole(role);
+    public List<MongoUser> findByRole(String role) {
+        return mongoUserRepository.findByRole(role);
     }
 
     public boolean existsByFirstName(String firstname) {
-        return userRepository.existsByFirstName(firstname);
+        return mongoUserRepository.existsByFirstName(firstname);
     }
 
     public boolean existsByLastName(String lastname) {
-        return userRepository.existsByLastName(lastname);
+        return mongoUserRepository.existsByLastName(lastname);
     }
 
     public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
+        return mongoUserRepository.existsByEmail(email);
     }
 
     public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
+        return mongoUserRepository.existsByUsername(username);
     }
 
     public void deleteById(String id) {
-        userRepository.deleteById(id);
+        mongoUserRepository.deleteById(id);
     }
     public void deleteByEmail(String email) {
-        userRepository.deleteByEmail(email);
+        mongoUserRepository.deleteByEmail(email);
     }
 
-    public void deleteUser(User user) {
-        userRepository.delete(user);
+    public void deleteUser(MongoUser user) {
+        mongoUserRepository.delete(user);
     }
 
     public boolean updateEmail(String oldEmail, String newEmail) {
@@ -80,7 +74,23 @@ public class UserService {
             System.out.println("Email address already used by another account");
             return false;
         }
-        userRepository.updateEmail(oldEmail, newEmail);
+        mongoUserRepository.updateEmail(oldEmail, newEmail);
         return true;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

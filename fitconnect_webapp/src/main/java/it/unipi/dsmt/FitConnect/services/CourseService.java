@@ -1,7 +1,7 @@
 package it.unipi.dsmt.FitConnect.services;
 
 import it.unipi.dsmt.FitConnect.entities.Course;
-import it.unipi.dsmt.FitConnect.repositories.CourseRepository;
+import it.unipi.dsmt.FitConnect.repositories.mongo.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
