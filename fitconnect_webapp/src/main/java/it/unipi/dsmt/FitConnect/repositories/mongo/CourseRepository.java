@@ -1,7 +1,6 @@
 package it.unipi.dsmt.FitConnect.repositories.mongo;
 
 import it.unipi.dsmt.FitConnect.entities.Course;
-import it.unipi.dsmt.FitConnect.entities.User;
 import it.unipi.dsmt.FitConnect.entities.MongoUser;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.*;
@@ -43,8 +42,6 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     /** update methods */
     @Query("{'_id': ?0 }")
     @Update("{ $push: { 'enrolled': ?1 }}")
-    void updateEnrolledList(String courseId, User user);
-
     void updateEnrolledList(String courseId, MongoUser user);
 
     @Query("{'id': ?0 }")

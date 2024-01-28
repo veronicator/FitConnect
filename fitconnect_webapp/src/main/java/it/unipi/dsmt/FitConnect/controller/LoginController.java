@@ -3,6 +3,7 @@ package it.unipi.dsmt.FitConnect.controller;
 
 import it.unipi.dsmt.FitConnect.entities.LdapUser;
 import it.unipi.dsmt.FitConnect.entities.MongoUser;
+import it.unipi.dsmt.FitConnect.enums.UserRole;
 import it.unipi.dsmt.FitConnect.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -59,7 +60,7 @@ public class LoginController {
             LdapUser ldapUser = new LdapUser(username, commonName, lastName, password);
             MongoUser mongoUser = new MongoUser(username, firstName, lastName, email);
             //todo: gestire ruolo
-            mongoUser.setRole("client");
+            mongoUser.setRole(UserRole.client);
             authService.signup(ldapUser, mongoUser);
 
             return "login";

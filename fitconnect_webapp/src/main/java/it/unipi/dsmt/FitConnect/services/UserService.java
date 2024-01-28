@@ -1,8 +1,6 @@
 package it.unipi.dsmt.FitConnect.services;
 
-import it.unipi.dsmt.FitConnect.entities.User;
 import it.unipi.dsmt.FitConnect.enums.UserRole;
-import it.unipi.dsmt.FitConnect.repositories.UserRepository;
 import it.unipi.dsmt.FitConnect.entities.MongoUser;
 import it.unipi.dsmt.FitConnect.repositories.mongo.MongoUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,26 +14,6 @@ public class UserService {
 
     @Autowired
     private MongoUserRepository mongoUserRepository;
-    @Autowired UserRepository userRepository;
-
-    public User createNewUser(String firstname, String lastname, String username,
-                              String email, String pwd, UserRole role) {
-        if (existsByEmail(email)) { // todo: || existsByUsername(username) aggiungere username
-            System.out.println("email/username already used for another account");
-            return null;
-        }
-        return userRepository.insert(new User(firstname, lastname, username, email, pwd, role));
-    }
-
-    // temporanea -> da eliminare
-    public User createNewUser(String firstname, String lastname,
-                              String email, String pwd, String role) {
-        if (existsByEmail(email)) { // todo: || existsByUsername(username) aggiungere username
-            System.out.println("email/username already used for another account");
-            return null;
-        }
-        return userRepository.insert(new User(firstname, lastname, "username", email, pwd, UserRole.client));
-    }
 
     public Optional<MongoUser> findById(String id) {
         return mongoUserRepository.findById(id);
@@ -53,23 +31,23 @@ public class UserService {
     }
 
     public List<MongoUser> findAllByFirstName(String firstname) {
-        return mongoUserRepository.findByFirstName(firstname);
+        return mongoUserRepository.findByFirstname(firstname);
     }
 
     public List<MongoUser> findAllByLastName(String lastname) {
-        return mongoUserRepository.findByLastName(lastname);
+        return mongoUserRepository.findByLastname(lastname);
     }
 
-    public List<MongoUser> findByRole(String role) {
-        return mongoUserRepository.findByRole(role);
+    public List<MongoUser> findByRole(UserRole role) {
+        return mongoUserRepository.findByRole(role.toString());
     }
 
     public boolean existsByFirstName(String firstname) {
-        return mongoUserRepository.existsByFirstName(firstname);
+        return mongoUserRepository.existsByFirstname(firstname);
     }
 
     public boolean existsByLastName(String lastname) {
-        return mongoUserRepository.existsByLastName(lastname);
+        return mongoUserRepository.existsByLastname(lastname);
     }
 
     public boolean existsByEmail(String email) {

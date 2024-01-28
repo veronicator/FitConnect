@@ -1,4 +1,4 @@
-package it.unipi.dsmt.FitConnect.repositories;
+package it.unipi.dsmt.FitConnect.repositories.mongo;
 
 import it.unipi.dsmt.FitConnect.entities.Schedule;
 import org.springframework.data.mongodb.repository.MongoRepository;

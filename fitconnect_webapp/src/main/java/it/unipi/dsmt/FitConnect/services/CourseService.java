@@ -1,7 +1,7 @@
 package it.unipi.dsmt.FitConnect.services;
 
 import it.unipi.dsmt.FitConnect.entities.Course;
-import it.unipi.dsmt.FitConnect.entities.User;
+import it.unipi.dsmt.FitConnect.entities.MongoUser;
 import it.unipi.dsmt.FitConnect.repositories.mongo.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +42,7 @@ public class CourseService {
         return courseRepository.findByUser(username);
     }
 
-    public void subscribe(String course, User user) {
+    public void subscribe(String course, MongoUser user) {
         courseRepository.updateEnrolledList(course, user);
     }
 

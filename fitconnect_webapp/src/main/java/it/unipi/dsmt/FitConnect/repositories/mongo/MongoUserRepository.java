@@ -11,20 +11,21 @@ import java.util.Optional;
 public interface MongoUserRepository extends MongoRepository<MongoUser, String> {
 
     /** find methods */
-    List<MongoUser> findByFirstName(String firstName);
-    List<MongoUser> findByLastName(String lastName);
+    List<MongoUser> findByFirstname(String firstName);
+    List<MongoUser> findByLastname(String lastName);
     Optional<MongoUser> findByUsername(String username);
     Optional<MongoUser> findByEmail(String email);
     List<MongoUser> findByRole(String role);
 
     /** exists methods */
-    boolean existsByFirstName(String firstName);
-    boolean existsByLastName(String lastName);
+    boolean existsByFirstname(String firstName);
+    boolean existsByLastname(String lastName);
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
 
     /** delete methods */
     void deleteByEmail(String email);
+    void deleteByUsername(String username);
 
     /** update methods */
     @Query("{'email': ?0 }")

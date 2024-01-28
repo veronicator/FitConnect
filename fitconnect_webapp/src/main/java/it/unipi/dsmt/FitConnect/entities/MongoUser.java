@@ -1,5 +1,6 @@
 package it.unipi.dsmt.FitConnect.entities;
 
+import it.unipi.dsmt.FitConnect.enums.UserRole;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -20,17 +21,17 @@ public class MongoUser {
     private String firstname;
     private String lastname;
     private String email;
-    private String role;    // client | PT | admin
+    private UserRole role;    // client | PT | admin
 
     //    @ReadOnlyProperty   // persistente o non persistente?
     @DocumentReference(collection = "courses", lazy = true)
     List<Course> courses;   // id corsi a cui è iscritto l'utente, se "client", o corsi insegnati se "trainer"
-    // null se "admin"
+                            // null se "admin"
     @ReadOnlyProperty
     @DocumentReference(collection = "schedules", lazy = true)
     List<Schedule> reservations;    // id schedule classi prenotate, solo se "client", otherwise null
 
-    public MongoUser(String username, String firstName, String lastName, String email, String role) {
+    public MongoUser(String username, String firstName, String lastName, String email, UserRole role) {
         this.username = username;
         this.firstname = firstName;
         this.lastname = lastName;

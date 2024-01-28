@@ -12,11 +12,11 @@ import java.time.Instant;
 @AllArgsConstructor
 public class Message {
     @DocumentReference(collection = "users")
-    private User sender;
+    private MongoUser sender;
     private Instant sendTime;
     private String text;
 
-    public Message (User sender, String text) {
+    public Message (MongoUser sender, String text) {
         this(sender, Instant.now(), text);
     }
 
