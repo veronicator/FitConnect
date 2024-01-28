@@ -23,6 +23,7 @@ public class Course {
     private String id;
     private String courseName;
     private String trainer;
+
     // todo: pensarci
 //    private Integer fitConnecters;   // numero di client iscritti fino ad ora
 
@@ -32,7 +33,7 @@ public class Course {
 
     @ReadOnlyProperty
     @DocumentReference(collection = "users", lookup = "{'course':?#{#self._id} }")
-    private List<User> enrolledUsers; // id utenti iscritti al corso (generico, non alla classe specifica)
+    private List<MongoUser> enrolledUsers; // id utenti iscritti al corso (generico, non alla classe specifica)
 //    private List<Message> chatMessages;
 
     public Course(String courseName, String trainer) {

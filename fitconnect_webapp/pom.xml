@@ -48,7 +48,6 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -58,30 +57,28 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.ericsson.otp.erlang</groupId>-->
-        <!--            <artifactId>otperlang</artifactId>-->
-        <!--&lt;!&ndash;            <version>1.5.3</version>&ndash;&gt;-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>org.erlang.otp</groupId>-->
-        <!--            <artifactId>jinterface</artifactId>-->
-        <!--&lt;!&ndash;            <version>1.6</version>&ndash;&gt;-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.ericsson.otp</groupId>-->
-        <!--            <artifactId>erlang</artifactId>-->
-        <!--&lt;!&ndash;            <version>26</version>&ndash;&gt;-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.ericsson</groupId>-->
-        <!--            <artifactId>erlang-jinterface</artifactId>-->
-        <!--&lt;!&ndash;            <version>1.14</version>&ndash;&gt;-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-ldap</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ldap</groupId>
+            <artifactId>spring-ldap-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-ldap</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-mongodb</artifactId>
+            <version>4.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>6.2.1</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,40 +1,201 @@
 package it.unipi.dsmt.FitConnect.services;
 
+import it.unipi.dsmt.FitConnect.entities.LdapUser;
+import it.unipi.dsmt.FitConnect.entities.MongoUser;
+import it.unipi.dsmt.FitConnect.repositories.ldap.LdapUserRepository;
+import it.unipi.dsmt.FitConnect.repositories.mongo.MongoUserRepository;
 import it.unipi.dsmt.FitConnect.util.SecurityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.ldap.core.DirContextAdapter;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.security.NoSuchAlgorithmException;
+import javax.naming.Name;
+import java.util.Optional;
 
 @Service
 public class AuthService {
 
     @Autowired
-    private UserService userService;
-    private SecurityManager securityManager = new SecurityManager();
+    private LdapTemplate ldapTemplate;
 
-    public boolean checkSignup(String email, String password){
-        boolean result = true;
+    @Autowired
+    @Qualifier("ldapUserRepository")
+    private LdapUserRepository ldapUserRepository;
 
-        //check email
-        if (userService.existsByEmail(email)) {
-            System.out.println("Email already in use");
-            result = false;
+    @Autowired
+    @Qualifier("mongoUserRepository")
+    private MongoUserRepository mongoUserRepository;
+
+    @Autowired
+    private SecurityManager securityManager;
+
+    /**
+     * Function for the login phase. User get authentication in ldap database. Then it returns user data from mongodb
+     * @param username: username entered in login form from the user
+     * @param password: password entered in login form from the user
+     * @return MongoUser: user data stored in mongodb
+     */
+    public MongoUser authenticate(final String username, final String password) {
+        try {
+            // Check if credentials are valid
+            if (!isValidCredentials(username, password)) {
+//                logger.info("Invalid credentials");
+                System.out.println("Invalid credentials");
+                return null;
+            }
+
+            // Retrieve user from LDAP repository
+            // findByUsernameAndPassword checks also the password
+            LdapUser ldapUser = ldapUserRepository.findByUsernameAndPassword(username, securityManager.hashPassword(password));
+
+            // Check if user exists
+            if (ldapUser == null) {
+//                logger.info("User not found");
+                System.out.println("Authentication failed");
+                return null;
+            }
+
+            // Retrieve user from MongoDB repository
+            Optional<MongoUser> loggedUser = mongoUserRepository.findByUsername(username);
+
+            // Return authenticated user
+            if (loggedUser.isPresent()) {
+//                logger.info("Authentication succeeded!");
+//                logger.info("User logged: " + loggedUser.get());
+                System.out.println("Authentication succeeded!");
+                System.out.println("User logged: " + loggedUser.get());
+                return loggedUser.get();
+            } else {
+                System.out.println("User not found in mongodb");
+                return null;
+            }
+        } catch (Exception e) {
+//            logger.error("Error in authentication phase: " + e.getMessage());
+            System.out.println("Error in authentication phase: " + e.getMessage());
+            return null;
         }
-
-        //TODO Check role (how to signup trainers)
-        String role = "user";
-
-        return result;
     }
 
-    //TODO fare hash password
-    public String hashPassword(String password) throws NoSuchAlgorithmException {
+    /**
+     * Check if login input fields are valid
+     * @param username: username entered in login form from the user
+     * @param password: password entered in login form from the user
+     * @return
+     */
+    private boolean isValidCredentials(String username, String password) {
+        return StringUtils.hasText(username) && StringUtils.hasText(password);
+    }
 
-        String salt = securityManager.getStaticSalt();
-        String hashed = securityManager.get_SHA_256_SecurePassword(password, salt);
+    /**
+     * This function try to modify password of the user if he is into ldap database
+     * @param username: user that want to change password
+     * @param password: new password
+     */
+    public void modifyPassword(final String username, final String password) {
+        try{
+            LdapUser user = ldapUserRepository.findByUsername(username);
+            user.setPassword(securityManager.hashPassword(password));
+            ldapUserRepository.save(user);
+            System.out.println("Password modified");
+        } catch (Exception e) {
+            System.err.println("Error modifying user: " + e.getMessage());
+        }
+    }
 
-        return hashed;
+    /**
+     * Function for retrieve a user in ldap database.
+     * Used for check if username is already used in signup phase
+     * @param username: username to find
+     * @return LdapUser | null
+     */
+    public LdapUser search(final String username) {
+
+        try {
+            LdapUser user = ldapUserRepository.findByUsername(username);
+            // Logging: Utilizzare il framework di logging appropriato
+            System.out.println("Found user: " + user);
+            return user;
+        } catch (Exception e) {
+            // Logging e gestione delle eccezioni
+            System.err.println("Error searching user: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Function for signup phase. Try to insert user data in ldap and mongo databases
+     * @param ldapNewUser: user data to insert in ldap
+     * @param mongoNewUser: user data to insert in mongodb
+     * @throws Exception
+     */
+    public void signup(final LdapUser ldapNewUser, final MongoUser mongoNewUser) throws Exception {
+
+        // check if username is already used
+        if(search(ldapNewUser.getUsername()) != null){
+            throw new Exception("Username already used. Retry");
+        }
+
+        boolean ldapSuccess = createLdapUser(ldapNewUser);
+        boolean mongoSuccess = createMongoUser(mongoNewUser);
+
+        if (!ldapSuccess || !mongoSuccess) {
+            throw new Exception("Error in registration phase");
+        }
+
+    }
+
+    /**
+     * Function for creating user object to store into ldap database
+     * @param user: user data
+     * @return true|false
+     */
+    public boolean createLdapUser(final LdapUser user) {
+        System.out.println("create...");
+
+        Name dn = LdapNameBuilder
+                .newInstance()
+                .add("dc", "com").add("dc", "fitconnect").add("ou", "fit").add("uid", user.getUsername())
+                .build();
+
+        DirContextAdapter context = new DirContextAdapter(dn);
+        context.setAttributeValues("objectclass", new String[]{"top", "organizationalPerson", "inetOrgPerson"});
+        context.setAttributeValue("cn", user.getCommonName());
+        context.setAttributeValue("sn", user.getLastName());
+        String hashedPassword = securityManager.hashPassword(user.getPassword());
+        context.setAttributeValue("userPassword", hashedPassword);
+
+        try{
+            // insert user into ldap db
+            ldapTemplate.bind(context);
+            System.out.println("User: " + user.getUsername() + " registered in ldap");
+            return true;
+        }catch(Exception e){
+            System.out.println("error in ldap registration: " + e.getMessage());
+            return false;
+        }
+
+    }
+
+    /**
+     * Function for creating user object to store into mongo database
+     * @param user: user data
+     * @return true|false
+     */
+    public boolean createMongoUser(final MongoUser user){
+        // insert user into mongo db
+        try{
+            mongoUserRepository.save(user);
+            System.out.println("User: " + user.getUsername() + " registered in mongodb");
+            return true;
+        }catch (Exception e){
+            System.out.println("error in mongodb registration: " + e.getMessage());
+            return false;
+        }
+
     }
 
 
