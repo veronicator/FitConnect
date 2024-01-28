@@ -23,6 +23,8 @@ public class Course {
     private String id;
     private String courseName;
     private String trainer;
+    // todo: pensarci
+//    private Integer fitConnecters;   // numero di client iscritti fino ad ora
 
     @ReadOnlyProperty   // mantenere riferimento persistento o no?
     @DocumentReference(collection = "schedules", lookup = "{'course':?#{#self._id} }")

@@ -37,11 +37,6 @@ public class LoginController {
          return "debug";
      }
 
-    @GetMapping("/home")
-    public String login() {
-        return "home";
-    }
-
     //@GetMapping({"/", "/login"})
     @GetMapping("/login")
     public String index(){
@@ -119,5 +114,11 @@ public class LoginController {
             return "signup";
 //        }
 
+    }
+
+    @GetMapping("/login-error")
+    public String loginError(Model model) {
+        model.addAttribute("loginError", "Login Error");
+        return "login";
     }
 }

@@ -25,6 +25,7 @@ public class User {
     private String email;
     private String password;
     private UserRole role;    // client | trainer | admin
+
     //    @ReadOnlyProperty   // persistente o non persistente?
     @DocumentReference(collection = "courses", lazy = true)
     List<Course> courses;   // id corsi a cui è iscritto l'utente, se "client", o corsi insegnati se "trainer"
@@ -32,7 +33,6 @@ public class User {
     @ReadOnlyProperty
     @DocumentReference(collection = "schedules", lazy = true)
     List<Schedule> reservations;    // id schedule classi prenotate, solo se "client", otherwise null
-        // lasciare o togliere?
 
     public User(String firstname, String lastname, String username, String email, String password, UserRole role) {
         this.firstname = firstname;

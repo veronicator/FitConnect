@@ -32,7 +32,7 @@ public class Schedule {
 
     @DocumentReference(collection = "users", lookup = "{ 'username': ?#{#target} }")
     private List<User> bookedUsers;    // todo: testare
-//    private List<GeneralUser> enrolled;
+
     // inserire timestamp con data esatta del corso
 //    private Date date = new Date("2024-02-02 17:00");   // todo capire come gestire gli orari dei corsi
 //    private Instant timeInstant;  // timestamp di inizio corso
