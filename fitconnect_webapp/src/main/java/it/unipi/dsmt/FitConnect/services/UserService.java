@@ -1,6 +1,8 @@
 package it.unipi.dsmt.FitConnect.services;
 
-
+import it.unipi.dsmt.FitConnect.entities.User;
+import it.unipi.dsmt.FitConnect.enums.UserRole;
+import it.unipi.dsmt.FitConnect.repositories.UserRepository;
 import it.unipi.dsmt.FitConnect.entities.MongoUser;
 import it.unipi.dsmt.FitConnect.repositories.mongo.MongoUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,26 @@ public class UserService {
 
     @Autowired
     private MongoUserRepository mongoUserRepository;
+    @Autowired UserRepository userRepository;
+
+    public User createNewUser(String firstname, String lastname, String username,
+                              String email, String pwd, UserRole role) {
+        if (existsByEmail(email)) { // todo: || existsByUsername(username) aggiungere username
+            System.out.println("email/username already used for another account");
+            return null;
+        }
+        return userRepository.insert(new User(firstname, lastname, username, email, pwd, role));
+    }
+
+    // temporanea -> da eliminare
+    public User createNewUser(String firstname, String lastname,
+                              String email, String pwd, String role) {
+        if (existsByEmail(email)) { // todo: || existsByUsername(username) aggiungere username
+            System.out.println("email/username already used for another account");
+            return null;
+        }
+        return userRepository.insert(new User(firstname, lastname, "username", email, pwd, UserRole.client));
+    }
 
     public Optional<MongoUser> findById(String id) {
         return mongoUserRepository.findById(id);
