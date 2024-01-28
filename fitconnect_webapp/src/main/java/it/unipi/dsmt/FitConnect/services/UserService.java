@@ -1,6 +1,7 @@
 package it.unipi.dsmt.FitConnect.services;
 
 import it.unipi.dsmt.FitConnect.entities.User;
+import it.unipi.dsmt.FitConnect.enums.UserRole;
 import it.unipi.dsmt.FitConnect.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,12 +14,23 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User createNewUser(String name, String lastName, String email, String pwd, String role) {
+    public User createNewUser(String firstname, String lastname, String username,
+                              String email, String pwd, UserRole role) {
         if (existsByEmail(email)) { // todo: || existsByUsername(username) aggiungere username
             System.out.println("email/username already used for another account");
             return null;
         }
-        return userRepository.insert(new User(name, lastName, email, pwd, role));
+        return userRepository.insert(new User(firstname, lastname, username, email, pwd, role));
+    }
+
+    // temporanea -> da eliminare
+    public User createNewUser(String firstname, String lastname,
+                              String email, String pwd, String role) {
+        if (existsByEmail(email)) { // todo: || existsByUsername(username) aggiungere username
+            System.out.println("email/username already used for another account");
+            return null;
+        }
+        return userRepository.insert(new User(firstname, lastname, "username", email, pwd, UserRole.client));
     }
 
     public Optional<User> findById(String id) {
@@ -37,23 +49,23 @@ public class UserService {
     }
 
     public List<User> findAllByFirstName(String firstname) {
-        return userRepository.findByFirstName(firstname);
+        return userRepository.findByFirstname(firstname);
     }
 
     public List<User> findAllByLastName(String lastname) {
-        return userRepository.findByLastName(lastname);
+        return userRepository.findByLastname(lastname);
     }
 
-    public List<User> findByRole(String role) {
+    public List<User> findByRole(UserRole role) {
         return userRepository.findByRole(role);
     }
 
     public boolean existsByFirstName(String firstname) {
-        return userRepository.existsByFirstName(firstname);
+        return userRepository.existsByFirstname(firstname);
     }
 
     public boolean existsByLastName(String lastname) {
-        return userRepository.existsByLastName(lastname);
+        return userRepository.existsByLastname(lastname);
     }
 
     public boolean existsByEmail(String email) {

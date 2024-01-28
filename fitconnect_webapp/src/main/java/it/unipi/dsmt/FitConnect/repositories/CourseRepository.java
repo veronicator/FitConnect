@@ -1,7 +1,7 @@
 package it.unipi.dsmt.FitConnect.repositories;
 
 import it.unipi.dsmt.FitConnect.entities.Course;
-import it.unipi.dsmt.FitConnect.entities.GeneralUser;
+import it.unipi.dsmt.FitConnect.entities.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
@@ -18,8 +18,8 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     List<Course> findByDay(String day);
     @Query("{'courseName': ?0, 'trainer': ?1 }")
     Optional<Course> findByCourseNameAndTrainer(String course, String trainer);
-    @Query("{'id': ?0, 'enrolled.email': ?1 }")
-    List<Course> findByIdAndEmail(String id, String email);
+    @Query("{'id': ?0, 'enrolled.username': ?1 }")
+    List<Course> findByIdAndUser(String id, String username);
     @Query("{'enrolled.username': ?0}")
     List<Course> findByUser(String username);
 
@@ -31,15 +31,17 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     /** deleteBy methods */
     void deleteByTrainer(String trainer);
 
-    @Query("{'id': ?0, 'enrolled.email': ?1 }")
-    @Update("{ $pull: { 'enrolled': { 'email': ?1 }}}")
-    void removeSubscription(String courseId, String userEmail);
-        // todo: sostituire con username
+    @Query("{'id': ?0, 'enrolled.username': ?1 }")
+    @Update("{ $pull: { 'enrolled': { 'username': ?1 }}}")
+    void removeSubscription(String courseId, String username);
+
+//    @Query
+//    void removeSchelude(String courseId, Schedule schedule);
 
     /** update methods */
     @Query("{'_id': ?0 }")
     @Update("{ $push: { 'enrolled': ?1 }}")
-    void updateEnrolledList(String courseId, GeneralUser user);
+    void updateEnrolledList(String courseId, User user);
 
     @Query("{'id': ?0 }")
     @Update("{ $set: {'courseName': ?1 }}")
