@@ -10,7 +10,7 @@ import javax.naming.Name;
 @Getter
 @Setter
 @Entry(base = "ou=fit,dc=fitconnect,dc=com", objectClasses = {"top", "organizationalPerson", "inetOrgPerson"})
-public class LdapUser {
+public final class LdapUser {
 
     @Id
     //@Attribute(name = "dn")
@@ -31,7 +31,7 @@ public class LdapUser {
     public LdapUser(){}
 
     public LdapUser(String username, String commonName, String lastName, String password) {
-        this.username = username;
+        this.username = username.toLowerCase();
         this.commonName = commonName;
         this.lastName = lastName;
         this.password = password;

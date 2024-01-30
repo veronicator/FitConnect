@@ -32,18 +32,18 @@ public class MongoUser {
     List<Schedule> reservations;    // id schedule classi prenotate, solo se "client", otherwise null
 
     public MongoUser(String username, String firstName, String lastName, String email, UserRole role) {
-        this.username = username;
+        this.username = username.toLowerCase();
         this.firstname = firstName;
         this.lastname = lastName;
-        this.email = email;
+        this.email = email.toLowerCase();
         this.role = role;
     }
 
     public MongoUser(String username, String firstName, String lastName, String email) {
-        this.username = username;
+        this.username = username.toLowerCase();
         this.firstname = firstName;
         this.lastname = lastName;
-        this.email = email;
+        this.email = email.toLowerCase();
     }
 
     @Override

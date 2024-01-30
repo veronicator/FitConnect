@@ -21,7 +21,6 @@ public class LoginController {
         return "home";
     }
 
-    //@GetMapping({"/", "/login"})
     @GetMapping(value = {"/","/login"})
     public String index(){
         return "login";
@@ -55,17 +54,17 @@ public class LoginController {
             return "signup";
         }
 
-        try{
+        try {
             String commonName = String.join(" ", firstName, lastName);
             LdapUser ldapUser = new LdapUser(username, commonName, lastName, password);
             MongoUser mongoUser = new MongoUser(username, firstName, lastName, email);
-            //todo: gestire ruolo
+            //todo: gestire ruolo -> tramite signup è sempre client, se invece utenti creati dall'admin => trainer
             mongoUser.setRole(UserRole.client);
             authService.signup(ldapUser, mongoUser);
 
             return "login";
 
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Error in signup: " + e.getMessage());
             return "signup";
         }
