@@ -63,6 +63,14 @@ public class PagesController {
         return "home";
     }
 
+    @GetMapping("/courses/{courseName}")
+    public String browseCourses(Model model, @PathVariable String courseName) {
+        /* -> to show all courses of the same type (e.g. all yoga courses, having different trainers)
+        * findAllCoursesByName(courseName)
+        * -> show the list */
+        return "home";
+    }
+
     @GetMapping("/courses/{courseId}")
     public String viewCourse(Model model,
                              @PathVariable String courseId) {
@@ -88,7 +96,7 @@ public class PagesController {
                             @ModelAttribute(value = "course") Course course) {
         /* check that the logged user is a trainer (or even the admin ?)
         * -> retrieve the user logged through the authentication context
-        * if a course with the same trainer and same name already exists
+        * if a course with the same trainer and same name already exists (check in the db service)
         *   => error (an error message to show in the UI ?)
         * else
         *   => dbService.addCourse (use try-catch in the db method)
@@ -100,6 +108,14 @@ public class PagesController {
     }
 
     // todo: metodo per aggiungere/modificare gli orari delle lezioni
+    @PostMapping("/course/schedule")
+    public String addSchedule(Model model, @ModelAttribute(value="schedule") Schedule schedule) {
+        /* inserire parametri di funzione corretti
+        * controllare che non ci sia sovrapposizione di orari (riferito solo ad uno stesso corso)
+        * schedule.save
+        * gestire eventuali errori*/
+        return "home";
+    }
 
     @GetMapping("/profile/{username}")
     public String viewUserProfile(Model model,

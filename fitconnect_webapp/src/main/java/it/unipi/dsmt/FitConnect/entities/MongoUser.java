@@ -28,7 +28,7 @@ public class MongoUser {
     List<Course> courses;   // id corsi a cui è iscritto l'utente, se "client", o corsi insegnati se "trainer"
                             // null se "admin"
     @ReadOnlyProperty
-    @DocumentReference(collection = "schedules", lazy = true)
+    @DocumentReference(collection = "schedules", lookup = "{ 'bookedUsers': ?#{#self.username} }", lazy = true)
     List<Schedule> reservations;    // id schedule classi prenotate, solo se "client", otherwise null
 
     public MongoUser(String username, String firstName, String lastName, String email, UserRole role) {

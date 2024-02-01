@@ -7,9 +7,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.Instant;
-import java.util.Date;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -24,30 +28,73 @@ public class Schedule {
     private Long version;   // for concurrency with OptimisticLocking
     @DocumentReference(collection = "courses", lazy = true)     // lazy: to delay the retrieval of the course until first access of the property
     private Course course;      // courseId
+    private boolean periodicClass;  // if not periodic (a special class) the updateSchedule will delete the schedule at all
+        // otherwise, the classTime will update with an offset of 7 days
 
-    private String dayOfTheWeek;    // es. monday
-    private String start_time;      // es. 17:00
-    private String end_time;        // es. 18:30
-    private Integer availablePlaces;    // max places or to update at every reservation/deletion ?
+    private LocalDateTime actualClassTime;  // actual timestamp of starting time (to update every week)
+    private DayOfWeek dayOfTheWeek;    // es. MONDAY (DayOfWeek.MONDAY)
+    private String startTime;      // es. 17:00
+    private String endTime;        // es. 18:30
+    private Integer maxPlaces;    // max places or to update at every reservation/deletion ?
 
+//    @Field("users")
     @DocumentReference(collection = "users", lookup = "{ 'username': ?#{#target} }")
     private List<MongoUser> bookedUsers;    // todo: testare
 
-    // inserire timestamp con data esatta del corso
-//    private Date date = new Date("2024-02-02 17:00");   // todo capire come gestire gli orari dei corsi
-//    private Instant timeInstant;  // timestamp di inizio corso
+    public Schedule(Course course, DayOfWeek dayOfTheWeek, String startTime, String endTime, Integer places) {
+        this(course, dayOfTheWeek, startTime, endTime, places, true);
+    }
 
-
-    public Schedule(String dayOfTheWeek, String start_time, String end_time, Integer places) {
+    public Schedule(Course course, DayOfWeek dayOfTheWeek, String startTime, String endTime, Integer places, boolean periodic) {
+        this.course = course;
         this.dayOfTheWeek = dayOfTheWeek;
-        this.start_time = start_time;
-        this.end_time = end_time;
-        this.availablePlaces = places;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.maxPlaces = places;
+        this.periodicClass = periodic;
+        setActualClassTime();
+    }
+
+    private void setActualClassTime() {
+        LocalDate nextWeekSchedule = LocalDate.now().with(TemporalAdjusters.next(dayOfTheWeek));
+        int[] hh_mm = Arrays.stream(startTime.split("[:.]")).mapToInt(Integer::parseInt).toArray();
+        actualClassTime = nextWeekSchedule.atTime(hh_mm[0], hh_mm[1]);
+    }
+
+    public String getActualClassDate() {
+        return LocalDate.from(actualClassTime).toString();
+    }
+
+    public Integer getAvailablePlaces() {
+        return (maxPlaces - bookedUsers.size());
+    }
+
+    public boolean addBooking(MongoUser user) {
+        if (bookedUsers == null)
+            bookedUsers = new ArrayList<>();
+        return bookedUsers.add(user);
+    }
+
+    public boolean isBooked(MongoUser user) {
+        return bookedUsers.contains(user);
+    }
+
+    public void clearBookingList() {
+        bookedUsers.clear();
+    }
+
+    // todo: forse modificare valore di ritorno e gestire la periodicità nel db service
+    public boolean updateScheduleClass() {
+        if (!periodicClass)
+            return false;
+        bookedUsers.clear();
+        actualClassTime = actualClassTime.plus(7, ChronoUnit.DAYS);
+        return true;
     }
 
     @Override
     public String toString() {
         return String.format("{%s: classTimes %s -> '%s', places: %d}",
-                dayOfTheWeek, start_time, end_time, availablePlaces);
+                dayOfTheWeek, startTime, endTime, maxPlaces);
     }
 }
