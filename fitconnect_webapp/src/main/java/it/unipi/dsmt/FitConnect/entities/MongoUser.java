@@ -23,13 +23,13 @@ public class MongoUser {
     private String email;
     private UserRole role;    // client | PT | admin
 
-    //    @ReadOnlyProperty   // persistente o non persistente?
+    //    @ReadOnlyProperty
     @DocumentReference(collection = "courses", lazy = true)
     List<Course> courses;   // id corsi a cui è iscritto l'utente, se "client", o corsi insegnati se "trainer"
-                            // null se "admin"
+
     @ReadOnlyProperty
-    @DocumentReference(collection = "schedules", lookup = "{ 'bookedUsers': ?#{#self.username} }", lazy = true)
-    List<Schedule> reservations;    // id schedule classi prenotate, solo se "client", otherwise null
+    @DocumentReference(collection = "reservations", lookup = "{ 'bookedUsers': ?#{#self.username} }", lazy = true)
+    List<Reservations> reservations;    // id reservationsDoc classi prenotate, solo se "client", otherwise null
 
     public MongoUser(String username, String firstName, String lastName, String email, UserRole role) {
         this.username = username.toLowerCase();
@@ -39,11 +39,8 @@ public class MongoUser {
         this.role = role;
     }
 
-    public MongoUser(String username, String firstName, String lastName, String email) {
-        this.username = username.toLowerCase();
-        this.firstname = firstName;
-        this.lastname = lastName;
-        this.email = email.toLowerCase();
+    public MongoUser(String username, String firstname, String lastname, String email) {
+        this(username, firstname, lastname, email, UserRole.client);
     }
 
     @Override

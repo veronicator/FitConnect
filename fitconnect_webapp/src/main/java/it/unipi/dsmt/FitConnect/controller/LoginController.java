@@ -57,9 +57,7 @@ public class LoginController {
         try {
             String commonName = String.join(" ", firstname, lastname);
             LdapUser ldapUser = new LdapUser(username, commonName, lastname, password);
-            MongoUser mongoUser = new MongoUser(username, firstname, lastname, email);
-            //todo: gestire ruolo -> tramite signup è sempre client, se invece utenti creati dall'admin => trainer
-            mongoUser.setRole(UserRole.client);
+            MongoUser mongoUser = new MongoUser(username, firstname, lastname, email, UserRole.client);
             authService.signup(ldapUser, mongoUser);
 
             return "login";

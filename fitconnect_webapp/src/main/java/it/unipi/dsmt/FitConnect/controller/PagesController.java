@@ -16,8 +16,6 @@ public class PagesController {
     private DBService dbService;
     @Autowired
     private ActiveCourses courses;  // all gym courses in the db or only those of a user?
-    @Autowired
-    private ClassSchedules classes;  // for a single course or booked by a client or taught by a trainer
 
     // gestire il contesto per l'autenticazione, in modo da sapere sempre qual è l'utente connesso
     private void browseCourses() {
@@ -109,7 +107,7 @@ public class PagesController {
 
     // todo: metodo per aggiungere/modificare gli orari delle lezioni
     @PostMapping("/course/schedule")
-    public String addSchedule(Model model, @ModelAttribute(value="schedule") Schedule schedule) {
+    public String addSchedule(Model model, @ModelAttribute(value="schedule") Reservations reservations) {
         /* inserire parametri di funzione corretti
         * controllare che non ci sia sovrapposizione di orari (riferito solo ad uno stesso corso)
         * schedule.save
@@ -126,10 +124,6 @@ public class PagesController {
         if (optUser.isPresent()) {
             MongoUser user = optUser.get();
             switch (user.getRole()) {
-                case admin -> {
-                    // todo: load admin page
-                    System.out.println("admin");
-                }
                 case trainer -> {
                     // todo: load trainer page, showing taught courses
                     System.out.println("trainer");
