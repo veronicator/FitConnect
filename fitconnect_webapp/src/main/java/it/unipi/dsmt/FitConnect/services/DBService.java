@@ -5,6 +5,7 @@ import it.unipi.dsmt.FitConnect.repositories.mongo.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -23,9 +24,25 @@ public class DBService {
     @Autowired
     private ReservationsRepository reservationsRepository;
 
+//    @Scheduled(cron = "@midnight")
+    @Scheduled(cron = "0 */1 * * * *")  // for testing: scheduled every minute
+    public void createNewReservationsDoc() {
+
+        try {
+            for (Reservations r: reservationsRepository.findPastReservations(LocalDateTime.now())){
+                reservationsRepository.save(
+                        new Reservations(r.getCourse(), r.getDayOfWeek(),
+                                r.getStartTime(), r.getEndTime(), r.getMaxPlaces()));
+            }
+            reservationsRepository.findPastReservations(LocalDateTime.now());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public boolean addCourse(String courseName, String trainer) {
         try {
-            if (courseRepository.existsByCourseNameAndTrainer(courseName, trainer)) {
+            if (courseRepository.existsByCourseNameAndTrainer(courseName.toUpperCase(), trainer)) {
                 System.out.println("course with this trainer already exists");
                 return false;
             }
@@ -48,9 +65,16 @@ public class DBService {
                 return false;
             }
             Course course = optCourse.get();
-            // todo: check class time
-            if (course.addNewClass(new ClassTime(dayOfWeek, startTime, endTime))) {
+            ClassTime newClassTime = new ClassTime(dayOfWeek, startTime, endTime);
+            if (course.classAlreadyScheduled(newClassTime)) {
+                System.out.println("class already scheduled at the requested time");
+                return false;
+            }
+            if (course.addNewClass(newClassTime)) {
                 courseRepository.save(course);
+                reservationsRepository.save(
+                        new Reservations(
+                                course, dayOfWeek, startTime, endTime, course.getMaxReservablePlaces()));
             }
         } catch (OptimisticLockingFailureException e) {
             return false;
@@ -72,6 +96,7 @@ public class DBService {
                 System.out.println("Booking failed: no available courses found");
                 return false;
             }
+
             Reservations reservations = availableClass.getFirst();
             if (reservations.getActualClassTime().isBefore(LocalDateTime.now())) {
                 System.out.println("Booking not possible: class already held this week");

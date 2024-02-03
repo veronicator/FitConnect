@@ -57,6 +57,10 @@ public class Course {
         return weekSchedule.add(newClass);
     }
 
+    public boolean classAlreadyScheduled(ClassTime classTime) {
+        return weekSchedule.contains(classTime);
+    }
+
     public Integer getNumberOfEnrolledUsers() {
         return enrolledUsers.size();
     }

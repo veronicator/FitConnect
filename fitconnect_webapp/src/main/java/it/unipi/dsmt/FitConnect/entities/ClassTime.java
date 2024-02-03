@@ -17,4 +17,14 @@ public class ClassTime {
     protected LocalTime startTime;      // es. 17:00
     protected LocalTime endTime;        // es. 18:30
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        if (!(obj instanceof ClassTime))
+            return false;
+        ClassTime ct = (ClassTime) obj;
+        return ct.dayOfWeek.equals(this.dayOfWeek)
+                && ct.startTime.equals(this.startTime);
+    }
 }

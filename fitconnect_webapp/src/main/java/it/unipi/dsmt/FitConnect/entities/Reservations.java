@@ -58,6 +58,11 @@ public class Reservations extends ClassTime {
         return LocalDate.from(actualClassTime);
     }
 
+    public Integer getMaxPlaces() {
+//        return (bookedUsers.size() + reservablePlaces);
+        return course.getMaxReservablePlaces();
+    }
+
     public boolean isBooked(MongoUser user) {
         return bookedUsers.contains(user);
     }
