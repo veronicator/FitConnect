@@ -45,7 +45,7 @@ public class LoginController {
     }
 
     @PostMapping("/signup")
-    public String doSignup(@RequestParam String firstName, @RequestParam String lastName,
+    public String doSignup(@RequestParam String firstname, @RequestParam String lastname,
                            @RequestParam String email, @RequestParam String username,
                            @RequestParam String password, @RequestParam String repeat_password)
     {
@@ -55,11 +55,9 @@ public class LoginController {
         }
 
         try {
-            String commonName = String.join(" ", firstName, lastName);
-            LdapUser ldapUser = new LdapUser(username, commonName, lastName, password);
-            MongoUser mongoUser = new MongoUser(username, firstName, lastName, email);
-            //todo: gestire ruolo -> tramite signup è sempre client, se invece utenti creati dall'admin => trainer
-            mongoUser.setRole(UserRole.client);
+            String commonName = String.join(" ", firstname, lastname);
+            LdapUser ldapUser = new LdapUser(username, commonName, lastname, password);
+            MongoUser mongoUser = new MongoUser(username, firstname, lastname, email, UserRole.client);
             authService.signup(ldapUser, mongoUser);
 
             return "login";

@@ -1,7 +1,6 @@
 package it.unipi.dsmt.FitConnect.config;
 
 import it.unipi.dsmt.FitConnect.services.AuthService;
-import it.unipi.dsmt.FitConnect.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
