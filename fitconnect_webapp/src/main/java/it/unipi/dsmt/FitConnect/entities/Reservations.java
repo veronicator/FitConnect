@@ -54,6 +54,10 @@ public class Reservations extends ClassTime {
         return bookedUsers.add(user);
     }
 
+    public LocalDate getClassDate() {
+        return LocalDate.from(actualClassTime);
+    }
+
     public boolean isBooked(MongoUser user) {
         return bookedUsers.contains(user);
     }

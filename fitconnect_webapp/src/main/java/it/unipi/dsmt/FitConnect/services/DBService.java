@@ -8,6 +8,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +48,7 @@ public class DBService {
                 return false;
             }
             Course course = optCourse.get();
+            // todo: check class time
             if (course.addNewClass(new ClassTime(dayOfWeek, startTime, endTime))) {
                 courseRepository.save(course);
             }
@@ -71,10 +73,17 @@ public class DBService {
                 return false;
             }
             Reservations reservations = availableClass.getFirst();
-            if (reservations.addBooking(user.get()))
-                reservationsRepository.save(reservations);
+            if (reservations.getActualClassTime().isBefore(LocalDateTime.now())) {
+                System.out.println("Booking not possible: class already held this week");
+                return false;
+            }
+            if (reservations.addBooking(user.get())) {
+                reservations = reservationsRepository.save(reservations);
+                System.out.println("class booking made for the day " + reservations.getClassDate());
+            }
 
         } catch (OptimisticLockingFailureException e) {
+            System.out.println("Booking failed");
             return false;
         }
         return true;
