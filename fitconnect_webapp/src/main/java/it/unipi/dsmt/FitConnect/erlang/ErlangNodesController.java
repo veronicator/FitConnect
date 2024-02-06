@@ -69,6 +69,8 @@ public class ErlangNodesController {
             courseNames = Arrays.asList("2", "3", "5");
         } else if (username.equals("pa")){
             courseNames = Arrays.asList("1", "2", "4");
+        } else {
+            courseNames = Arrays.asList("1", "2", "3");
         }
         try {
             if (!nodeExists(username)){
@@ -105,7 +107,7 @@ public class ErlangNodesController {
                 //System.out.println("ERLANG CONTROLLER -> Sending command to: " + nodeName);
                 erlangNodes[i].processCommand(nodeCommand);
             } else {
-                System.out.println("ERLANG CONTROLLER -> Node not found: " + nodeName);
+                //System.out.println("ERLANG CONTROLLER -> Node not found: " + nodeName);
             }
         }
     }

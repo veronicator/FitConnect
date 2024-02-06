@@ -1,1 +1,2 @@
 -record(notifications, {course, trainer, delay, requestTime}). % Unique field is Course
+-record(schedules, {key = {username, scheduleId}, timestamp}).

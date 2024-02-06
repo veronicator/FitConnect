@@ -10,106 +10,80 @@
 start_link() ->
     gen_server:start_link({local, fitMessanger}, ?MODULE, [], []).
 
-% Does nothing because it satrts empty
+% Does nothing because it starts empty
 init([]) ->
     {ok, []}.
 
 % Connects the user to all his/her courses
-handle_call({From, connectToAllCourses, Courses, Username}, _From, Clients) ->
-    NewClients = lists:foldl(
-        fun(Course, Acc) ->
-            users,
-            getUsers(filterByCourse(Acc, Course)),
-            % Adds to "Clients" -> {Course, Username, From}
-            [{Course, Username, From} | Acc]
-        end,
-        Clients,
-        Courses
-    ),
-    {reply, {connection, ok}, NewClients};
+% [{["2","3","5"],"username",#Pid<Ref>}]
+handle_call({From, connect, Courses, Username}, _From, Clients) ->
+    {reply, {connection, ok}, [{Courses, Username, From} | Clients]};
 
-% Generates if not present the course and then connects the user
-handle_call({From, connectToCourse, Course, Username}, _From, Clients) ->
-    users,
-    getUsers(filterByCourse(Clients, Course)),
-    broadcast(join, filterByCourse(Clients, Course), {Username}),
-    % Adds to "Clients" -> {Course, Username, From}
-    {reply, {connection, ok}, [{Course, Username, From} | Clients]};
-
-% Displays all users connected to the platform (DEBUG)
-handle_call({users}, _From, Clients) ->
-    Reply = {users, getUsers(Clients)},
-    {reply, Reply, Clients};
-
-% Displays all opened courses (DEBUG)
-handle_call({courses}, _From, Clients) ->
-    Reply = {courses, getCourses(Clients)},
-    {reply, Reply, Clients};
-
-% Displays all Clients structures (DEBUG)
+% Displays all Clients structures in the state od the server (DEBUG)
 handle_call({clients}, _From, Clients) ->
     Reply = {clients, Clients},
     {reply, Reply, Clients};
 
+% Generates if not present the course and then connects the user
+handle_call({joinCourse, Course, Username}, _From, Clients) ->
+    NewClients = iterate_over_connected_clients(joinCourse, {Course, Username}, Clients),
+    %io:format("Result: ~p~n", [NewClients]), % DEBUG
+    {reply, {connection, ok}, [NewClients]};
+
 % Receives a message and broadcasts it to all users of the same course
-handle_call({send, Msg, User, course, Course}, _From, Clients) ->
-    broadcast(new_msg, remove(User, filterByCourse(Clients, Course)), {User, Msg}),
+handle_call({sendToCourse, Course, Username, Msg}, _From, Clients) ->
+    iterate_over_connected_clients(sendToCourse, {Course, Username, Msg}, Clients),
     {reply, {send, ok}, Clients};
 
-% TODO: ???????
-%sending the msg to direct -> FIX SENDS N TIMES DEPENDING ON NUMBER OF GROUPS FORSE
-%handle_call({send, Msg, Sender, user, User}, _From, Clients) ->
-    %Users = filterByUser(Clients, User),
-    %broadcast(new_msg, Users, {Sender, Msg}),
-    %{reply, {send, ok}, Clients};
-
-% Removes the state of the user+course, so the user won't receive messages from the course
-handle_call({exit, Course, User}, _From, Clients) ->
-    NewClients = remove(User, Course, Clients),
-    broadcast(disconnect, filterByCourse(NewClients, Course), {User}),
+% Removes from client's structure the course that he/she is exiting
+handle_call({exitCourse, Course, Username}, _From, Clients) ->
+    NewClients = iterate_over_connected_clients(exitCourse, {Course, Username}, Clients),
+    %io:format("Result: ~p~n", [NewClients]), % DEBUG
     {reply, {exit, ok}, NewClients};
 
-% Disconnect the user from the Server. removing all his states from the general state
-handle_call({disconnect, User}, _From, Clients) ->
-    Courses = getCourses(User),
-    NewClients = lists:foldl(
-        fun(Course, Acc) ->
-            % Removes from "Clients" -> {Course, Username, From}
-            remove(User, Course, Acc)
-        end,
-        Clients,
-        Courses
-    ),
-    {reply, {disconnection, performed}, NewClients};
-
 % Forwards a notification to a chat group as a reminder
-handle_call({notification, Course, Trainer}, _From, Clients) ->
-    io:format("Notification for course: ~p with trainer: ~p~n", [Course, Trainer]),
-    AllUsers = filterByCourse(Clients, Course),
-    %io:format("Clients found: ~p, we need to remove the one with the trainer~n", [AllUsers]),
-    Users = removeTrainer(Trainer, AllUsers),
-    io:format("Final Clients: ~p~n", [Users]),
-    broadcast({notification, {course, Course}}, Users),
-  {reply, {ok}, Clients};
+handle_call({schedule, Mode, Username, ScheduleId, Timestamp}, _From, Clients) ->
+    Msg = {Mode, ScheduleId, Timestamp}, % Mode is atomic, so can be used as identifier
+    Result = find_client(Clients, Username), % We need to handle if client is not present
+    if
+        Result == false ->
+            io:format("Client not available~n");
+        true ->
+            {_Courses, _User, Pid} = Result,
+            Pid ! Msg % Send message to Pid
+    end,
+    {reply, {ok}, Clients};
 
-% Forwards a notification to a chat group to notify that the time of the course changed
-handle_call({notification, Course, Trainer, NewTime}, _From, Clients) ->
-    io:format("Trainer ~p updated the time to: ~p for the course: ~p~n", [Trainer, NewTime, Course]),
-    AllUsers = filterByCourse(Clients, Course),
-    %io:format("Clients found: ~p, we need to remove the one with the trainer~n", [AllUsers]),
-    Users = removeTrainer(Trainer, AllUsers),
-    io:format("Final Clients: ~p~n", [Users]),
-    broadcast({notification, {course, Course, NewTime}}, Users),
-  {reply, {ok}, Clients};
-  
-handle_call(Request, _From, State) ->
-    {ok, {error, "Unhandled Request", Request}, State}.
+% Disconnect the user from the Server. removing all his states from the general state
+handle_call({disconnect, Username}, _From, Clients) ->
+    User = find_client(Clients, Username),
+    %io:format("User: ~p~n", [User]), % DEBUG
+    NewClients =
+        if 
+            User == false ->
+                Clients;
+            true ->
+                lists:delete(User, Clients)
+        end,
+    Msg =
+        if 
+            User == false ->
+                {disconnection, error};
+            true ->
+                {disconnection, performed}
+        end,
+    {reply, Msg, NewClients};
+
+
+handle_call(Request, _From, Clients) ->
+    io:format("Received unhandled request: ~p;~n", [Request]),
+    {reply, {unhandled_request, Request}, Clients}.
 
 handle_cast(_Request, State) ->
     {noreply, State}.
 
 handle_info(_Info, State) ->
-    io:format("Received message: ~p~n", [_Info]),
+    io:format("Received message: ~p;~n", [_Info]),
     {noreply, State}.
 
 terminate(_Reason, _State) ->
@@ -120,96 +94,69 @@ code_change(_OldVsn, State, _Extra) ->
 
 % Useful functions
 
-remove(User, Course, [H | T]) ->
-    {Coursename, Username, _} = H,
+% Possible inputs:
+% joinCourse, {Course, Username}, Clients -> NewClients
+% sendToCourse, {Course, Username, Msg}, Clients
+% exitCourse, {Course, Username}, Clients -> newClients
+iterate_over_connected_clients(Mode, Data, Clients) ->
+    case Mode of
+        joinCourse ->
+            {Course, Username} = Data,
+            Msg = {userJoined, Course, Username};
+        sendToCourse ->
+            {Course, Username, Text} = Data,
+            Msg = {message, Course, Username, Text};
+        exitCourse ->
+            {Course, Username} = Data,
+            Msg = {userExited, Course, Username}
+    end,
+    {Receivers, OldUser, NewUser} = lists:foldl(fun(Client, {Acc, OldUser, NewUser}) ->
+            {Courses, User, Pid} = Client,
+            %io:format("Client: ~p~n", [Client]), %DEBUG
+            if
+                % Update user's structure in the state of the server
+                User == Username ->
+                    case Mode of
+                        joinCourse ->
+                            NUser = {[Course | Courses], User, Pid}, % New user with added course
+                            {Acc, Client, NUser}; % Old user is the client, New user has the updated courses
+                        sendToCourse ->
+                            {Acc, OldUser, NewUser}; % Do nothing, just returns list 
+                        exitCourse ->
+                            NCourses = lists:delete(Course, Courses),
+                            NUser = {NCourses, User, Pid}, % New user without the course selected
+                            {Acc, Client, NUser} % Old user is the client, New user has the updated courses
+                    end;
+                % Check if is in the course 
+                true -> 
+                    Found = element_is_present(Courses, Course),
+                    if
+                        Found == true ->
+                            {[Pid | Acc], OldUser, NewUser}; % append users that need to receive the messages
+                    true ->
+                        {Acc, OldUser, NewUser} % Does nothing, just returns list
+                    end
+            end
+        end, {[], [], []}, Clients),
+    % NEED TO HANDLE sendToCourse & exitCourse, because they need to be updated differently !!
+    %io:format("Receivers: ~p;~nNew: ~p;~nOld: ~p;~n", [Receivers, NewUser, OldUser]), % DEBUG 
+    broadcast(Msg, Receivers),
     if
-        (Username == User) and (Coursename == Course) ->
-            T;
+        Mode == sendToCourse ->
+            ok; % We don't need to update the state of the server
         true ->
-            [H | remove(User, Course, T)]
+            ProvClients = lists:delete(OldUser, Clients),
+            [NewUser | ProvClients] % We update the state of the server removing the old structure and adding a new one
+        end.
+
+element_is_present(List, Element) ->
+    lists:any(fun(X) -> X == Element end, List).
+
+find_client(Clients, Username) ->
+    case lists:filtermap(fun({_Courses, User, _Pid}) -> User == Username end, Clients) of
+        [] -> false;
+        [FoundClient] -> FoundClient
     end.
-
-remove(User, [H | T]) ->
-    {_, Username, _} = H,
-    if
-        Username == User ->
-            T;
-        true ->
-            remove(User, T ++ [H])
-    end.
-
-%filterByUser(Clients, User) ->
-    %filterByUser(Clients, User, []).
-
-%filterByUser([], _, Result) ->
-    %Result;
-%filterByUser([H | T], User, Result) ->
-    %{_, U, _} = H,
-    %if
-        %U == User ->
-            %filterByUser(T, User, [H | Result]);
-        %true ->
-            %filterByUser(T, User, Result)
-    %end.
-
-getCourses(Clients) ->
-    getCourses(Clients, []).
-
-getCourses([], Result) ->
-    Result;
-getCourses([H | T], Result) ->
-    {Course, _, _} = H,
-    Found = find(Result, Course),
-    if
-        Found == true ->
-            getCourses(T, Result);
-        true ->
-            getCourses(T, [Course | Result])
-    end.
-
-getUsers(Clients) ->
-    getUsers(Clients, []).
-
-getUsers([], Result) ->
-    Result;
-getUsers([H | T], Result) ->
-    {_, User, _} = H,
-    getUsers(T, [User | Result]).
-
-find([], _) ->
-    false;
-find([H | T], Identifier) ->
-    Existing = H,
-    if
-        Identifier == Existing ->
-            true;
-        true ->
-            find(T, Identifier)
-    end.
-
-filterByCourse(L, Course) ->
-    filterByCourse(L, Course, []).
-
-filterByCourse([], _, Result) ->
-    Result;
-filterByCourse([H | T], Course, Result) ->
-    {R, _, _} = H,
-    if
-        R == Course ->
-            filterByCourse(T, Course, [H | Result]);
-        true ->
-            filterByCourse(T, Course, Result)
-    end.
-
-removeTrainer(Trainer, Clients) ->
-    lists:filter(fun({_, TrainerVal, _}) -> TrainerVal /= Trainer end, Clients).
-
-broadcast(join, Clients, {User}) ->
-    broadcast({info, {user_joined, User}}, Clients);
-broadcast(new_msg, Clients, {User, Msg}) ->
-    broadcast({new_msg, {msg_received, User, Msg}}, Clients);
-broadcast(disconnect, Clients, {User}) ->
-    broadcast({info, {user_left, User}}, Clients).
-
-broadcast(Msg, Clients) ->
-    lists:foreach(fun({_, _, Pid}) -> Pid ! Msg end, Clients).
+    
+broadcast(Msg, Pids) ->
+    lists:foreach(fun(Pid) -> Pid ! Msg end, Pids).

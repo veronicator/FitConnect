@@ -19,13 +19,13 @@ public class ErlangNodeListener extends Thread{
             //System.out.println("Thread Listener started");
             while(running){
                 String[] response = this.clientNode.receive();
-                if(response != null){
+                /*if(response != null){
                     if (response.length == 2){
                         System.out.println("Node: " + clientNode.getNodeName() + " ->{ Action: " + response[0] + "; Result: " + response[1] + " }");
                     } else if (response.length == 3){
                         System.out.println("Node: " + clientNode.getNodeName() + " ->{ Action: " + response[0] + "; Sender: " + response[1] + "; Message: " + response[1] +" }");
                     }
-                }
+                }*/
             }
         } catch (OtpErlangExit | OtpErlangDecodeException otpErlangExit) {
             otpErlangExit.printStackTrace();

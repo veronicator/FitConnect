@@ -49,12 +49,12 @@ public class ErlangNode {
      * @param personalTrainer username of the personalTrainer, this whould be filled by the caller
      * @param time subtraction between the current time and when the notification must appear (Int)
      */
-    private void sendRequestToNotifier(String mode, String courseName, String personalTrainer, int time){
+    private void sendRequestToNotifier(String mode, String username, String courseName, int time){
         OtpErlangAtom msgType = new OtpErlangAtom(mode);
+        OtpErlangString user = new OtpErlangString(username);
         OtpErlangString course = new OtpErlangString(courseName);
-        OtpErlangString trainer = new OtpErlangString(personalTrainer);
         OtpErlangInt delay = new OtpErlangInt(time);
-        OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, course, trainer, delay});
+        OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, user, course, delay});
         OtpErlangObject msg_gen = new OtpErlangTuple(new OtpErlangObject[] {
             new OtpErlangAtom("$gen_call"), this.from, outMsg });
         this.userMail.send(this.erlangNotifier, this.erlangServerMailbox, msg_gen);
@@ -83,25 +83,26 @@ public class ErlangNode {
         }
 
         OtpErlangTuple t = (OtpErlangTuple) reply;
-        //System.out.println(this.username + "-> Full reply: " + t.toString());
-        OtpErlangTuple msg = (OtpErlangTuple) t.elementAt(1);
-        System.out.println(this.username + "-> Message: " + msg.toString());
-        System.out.println(this.username + "-> Number of elements in message: " + msg.arity());
+        System.out.println(this.username + "-> Full reply: " + t.toString());
+        //OtpErlangTuple msg = (OtpErlangTuple) t.elementAt(1);
+        //System.out.println(this.username + "-> Message: " + msg.toString());
+        //System.out.println(this.username + "-> Number of elements in message: " + msg.arity());
 
-        OtpErlangAtom msgType = (OtpErlangAtom) msg.elementAt(0);
+        //OtpErlangAtom msgType = (OtpErlangAtom) msg.elementAt(0);
         //FIX DEPENDING ON LENGTH
-        OtpErlangObject content = msg.elementAt(1);
-
-        return new String[] { msgType.toString(), content.toString()};
+        //OtpErlangObject content = msg.elementAt(1);
+        
+        //return new String[] { msgType.toString(), content.toString()};
+        return new String[] { "xd", "xd"};
     }
 
     /**
      * Called after collecting all the courses from MongoDb to send to the fitMessanger the clients for the current user
      */
-    public void connectToAllCourses() throws OtpErlangExit, OtpErlangDecodeException {
-        OtpErlangString username = new OtpErlangString(this.username);
-        OtpErlangAtom msgType = new OtpErlangAtom("connectToAllCourses");
+    public void connect() throws OtpErlangExit, OtpErlangDecodeException {
+        OtpErlangAtom msgType = new OtpErlangAtom("connect");
         OtpErlangObject[] coursesArray = this.courseNames.stream().map(OtpErlangString::new).toArray(OtpErlangObject[]::new);
+        OtpErlangString username = new OtpErlangString(this.username);
         OtpErlangList courses = new OtpErlangList(coursesArray);
         OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{this.userMail.self(), msgType, courses, username});
         sendRequest(outMsg);
@@ -122,10 +123,10 @@ public class ErlangNode {
      * @param courseName name of the course that wants to be joined
      */
     public void joinCourse(String courseName) throws OtpErlangExit, OtpErlangDecodeException {
-        OtpErlangAtom msgType = new OtpErlangAtom("connectToCourse");
+        OtpErlangAtom msgType = new OtpErlangAtom("joinCourse");
         OtpErlangString course = new OtpErlangString(courseName);
         OtpErlangString username = new OtpErlangString(this.username);
-        OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{this.userMail.self(), msgType, course, username});
+        OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, course, username});
         sendRequest(outMsg);
     }
 
@@ -134,7 +135,7 @@ public class ErlangNode {
      * @param courseName name of the course that wants to be left
      */
     public void leaveCourse(String courseName) throws OtpErlangExit, OtpErlangDecodeException {
-        OtpErlangAtom msgType = new OtpErlangAtom("exit");
+        OtpErlangAtom msgType = new OtpErlangAtom("exitCourse");
         OtpErlangString course = new OtpErlangString(courseName);
         OtpErlangString username = new OtpErlangString(this.username);
         OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, course, username});
@@ -147,12 +148,11 @@ public class ErlangNode {
      * @param courseName name of the course that is going to receive the message
      */
     public void sendMessage(String message, String courseName) throws OtpErlangExit, OtpErlangDecodeException {
-        OtpErlangAtom destType = new OtpErlangAtom("course");
+        OtpErlangAtom msgType = new OtpErlangAtom("sendToCourse");
+        OtpErlangString course = new OtpErlangString(courseName);
         OtpErlangString username = new OtpErlangString(this.username);
-        OtpErlangString destination = new OtpErlangString(courseName);
-        OtpErlangAtom msgType = new OtpErlangAtom("send");
         OtpErlangString msg = new OtpErlangString(message);
-        OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, msg, username, destType, destination});
+        OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, course, username, msg});
         sendRequest(outMsg);
     }
 
@@ -175,7 +175,7 @@ public class ErlangNode {
         try {
             myListener.start();
             mySender.start();
-            connectToAllCourses();
+            connect();
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Something failed.");
@@ -204,13 +204,13 @@ public class ErlangNode {
                 sendMessage(parts[1].trim(), parts[2].trim());
                 break;
             case "i": // 2 args: String mode, String courseName, Int time
-                sendRequestToNotifier("insert", parts[1].trim(), this.username, Integer.parseInt(parts[2].trim()));
+                sendRequestToNotifier("insert", this.username, parts[1].trim(),Integer.parseInt(parts[2].trim()));
                 break;
             case "e": // 2 args: String mode, String courseName, Int time
-                sendRequestToNotifier("edit", parts[1].trim(), this.username, Integer.parseInt(parts[2].trim()));
+                sendRequestToNotifier("edit", this.username, parts[1].trim(),Integer.parseInt(parts[2].trim()));
                 break;
             case "d": // 2 args: String mode, String courseName, Int time
-                sendRequestToNotifier("delete", parts[1].trim(), this.username, 0);
+                sendRequestToNotifier("delete", this.username, parts[1].trim(), 0);
                 break;
             default:
                 break;
