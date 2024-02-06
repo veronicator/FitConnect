@@ -28,7 +28,7 @@ handle_call({clients}, _From, Clients) ->
 handle_call({joinCourse, Course, Username}, _From, Clients) ->
     NewClients = iterate_over_connected_clients(joinCourse, {Course, Username}, Clients),
     %io:format("Result: ~p~n", [NewClients]), % DEBUG
-    {reply, {connection, ok}, [NewClients]};
+    {reply, {connection, ok}, NewClients};
 
 % Receives a message and broadcasts it to all users of the same course
 handle_call({sendToCourse, Course, Username, Msg}, _From, Clients) ->
@@ -47,12 +47,14 @@ handle_call({schedule, Mode, Username, ScheduleId, Timestamp}, _From, Clients) -
     Result = find_client(Clients, Username), % We need to handle if client is not present
     if
         Result == false ->
-            io:format("Client not available~n");
+            io:format("Client not available~n"),
+            Response = notok;
         true ->
             {_Courses, _User, Pid} = Result,
-            Pid ! Msg % Send message to Pid
+            Pid ! Msg, % Send message to Pid
+            Response = ok
     end,
-    {reply, {ok}, Clients};
+    {reply, {Response}, Clients};
 
 % Disconnect the user from the Server. removing all his states from the general state
 handle_call({disconnect, Username}, _From, Clients) ->
@@ -125,6 +127,7 @@ iterate_over_connected_clients(Mode, Data, Clients) ->
                         exitCourse ->
                             NCourses = lists:delete(Course, Courses),
                             NUser = {NCourses, User, Pid}, % New user without the course selected
+                            io:format("NUser: ~p~n", [NUser]), %DEBUG
                             {Acc, Client, NUser} % Old user is the client, New user has the updated courses
                     end;
                 % Check if is in the course 
@@ -146,17 +149,26 @@ iterate_over_connected_clients(Mode, Data, Clients) ->
             ok; % We don't need to update the state of the server
         true ->
             ProvClients = lists:delete(OldUser, Clients),
-            [NewUser | ProvClients] % We update the state of the server removing the old structure and adding a new one
+            io:format("Client: ~p;~n", [ProvClients]),
+            AddedUser = [NewUser | ProvClients],
+            io:format("Client: ~p;~n", [AddedUser]),
+            AddedUser % We update the state of the server removing the old structure and adding a new one
         end.
 
 element_is_present(List, Element) ->
     lists:any(fun(X) -> X == Element end, List).
 
 find_client(Clients, Username) ->
-    case lists:filtermap(fun({_Courses, User, _Pid}) -> User == Username end, Clients) of
+    case lists:filtermap(
+                fun(Client) ->
+                    io:format("Client: ~p;~n", [Client]),
+                    {_Courses, User, _Pid} = Client,
+                    User == Username
+                end, Clients) of
         [] -> false;
         [FoundClient] -> FoundClient
     end.
+    
     
 broadcast(Msg, Pids) ->
     lists:foreach(fun(Pid) -> Pid ! Msg end, Pids).

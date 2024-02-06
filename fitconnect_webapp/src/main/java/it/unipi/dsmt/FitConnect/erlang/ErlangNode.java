@@ -82,18 +82,33 @@ public class ErlangNode {
             //return new String[] {"Error", "Server is down"};
         }
 
-        OtpErlangTuple t = (OtpErlangTuple) reply;
-        System.out.println(this.username + "-> Full reply: " + t.toString());
-        //OtpErlangTuple msg = (OtpErlangTuple) t.elementAt(1);
-        //System.out.println(this.username + "-> Message: " + msg.toString());
-        //System.out.println(this.username + "-> Number of elements in message: " + msg.arity());
-
-        //OtpErlangAtom msgType = (OtpErlangAtom) msg.elementAt(0);
-        //FIX DEPENDING ON LENGTH
-        //OtpErlangObject content = msg.elementAt(1);
+        OtpErlangObject replyObj = reply; // Assign your reply here
         
-        //return new String[] { msgType.toString(), content.toString()};
-        return new String[] { "xd", "xd"};
+        if (replyObj instanceof OtpErlangTuple) {
+            OtpErlangTuple t = (OtpErlangTuple) replyObj;
+            
+            // Pattern match to distinguish between the two cases
+            if (t.elementAt(0) instanceof OtpErlangRef && t.elementAt(1) instanceof OtpErlangTuple) {
+                // Example -> {#Ref<p@42de442284e2.1.0.0>,{connection,ok}}
+                OtpErlangTuple innerTuple = (OtpErlangTuple) t.elementAt(1);
+                String operation = innerTuple.elementAt(0).toString();
+                String result = innerTuple.elementAt(1).toString();
+                return new String[] {operation, result};
+            } else if (t.elementAt(0) instanceof OtpErlangAtom) {
+                // Example -> {userExited,"1","p"}
+                String[] values = new String[t.arity()]; // Create an array to hold the string values
+                OtpErlangAtom atom = (OtpErlangAtom) t.elementAt(0);
+                values[0] = atom.toString();
+                for (int i = 1; i < t.arity(); i++) {
+                    values[i - 1] = t.elementAt(i).toString();
+                }
+                return values;
+            }
+        } else {
+            System.out.println("Error instantiating the tuple");
+            return new String[] { "Error while communicating with server"};
+        }
+        return new String[] { "Generic Java error"};
     }
 
     /**
@@ -214,7 +229,7 @@ public class ErlangNode {
                 break;
             default:
                 break;
-        }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Something failed.");

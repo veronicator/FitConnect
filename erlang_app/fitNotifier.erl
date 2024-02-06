@@ -28,7 +28,7 @@ init([]) ->
     io:format("Rest: ~p, Seconds: ~p~n", [Rest, Seconds]),
     %RemainingMilliseconds = ((Rest * 60) + (60 - Seconds)) * 1000,
     %io:format("Milli remaining: ~p~n", [RemainingMilliseconds]),
-    RemainingMilliseconds = 5000, % DEBUG
+    RemainingMilliseconds = 10000, % DEBUG
     timer:apply_after(RemainingMilliseconds, ?MODULE, notify, []),
     {ok, []}.
 
@@ -66,8 +66,8 @@ handle_call(Request, _From, Timers) ->
 % Used to notify the users that the course is going to start sending a message to the fitMessanger
 notify() ->
     io:format("Checking for schedules~n").%,
-    % control_schedules(expired, erlang:time(millisecond)),
-    %timer:apply_after(300000, ?MODULE, notify, []). % every 5 minutes a control is perdormed
+    %control_schedules(expired, erlang:system_time(millisecond)),
+    %timer:apply_after(30000, ?MODULE, notify, []). % every 5 minutes a control is performed
 
 handle_cast(_Request, Timers) ->
     {noreply, Timers}.
@@ -107,8 +107,9 @@ process_expired_schedule(Mode, {schedules, {Username, ScheduleId}, Timestamp}) -
     Message = {schedule, Mode, Username, ScheduleId, Timestamp},
     io:format("Message to send: ~p~n", [Message]),
     Result = broadcast(Message),
+    io:format("Result: ~p~n", [Result]),
     if
-        Result == ok ->
+        Result == {ok} ->
             delete_schedule({Username, ScheduleId});
         true ->
             %io:format("Error sending notification~n"),
@@ -117,15 +118,9 @@ process_expired_schedule(Mode, {schedules, {Username, ScheduleId}, Timestamp}) -
 
 process_edited_schedule(Mode, NewTimestamp, {schedules, {Username, ScheduleId}, _Timestamp}) ->
     Message = {schedule, Mode, Username, ScheduleId, NewTimestamp},
+    edit_schedule({Username, ScheduleId}, NewTimestamp),
     io:format("Message to send: ~p~n", [Message]),
-    Result = broadcast(Message),
-    if
-        Result == ok ->
-            edit_schedule({Username, ScheduleId}, NewTimestamp);
-        true ->
-            %io:format("Error sending notification~n"),
-            ok % Do nothing
-    end.
+    broadcast(Message).
 
 broadcast(Msg) -> 
     case whereis(fitMessanger) of
