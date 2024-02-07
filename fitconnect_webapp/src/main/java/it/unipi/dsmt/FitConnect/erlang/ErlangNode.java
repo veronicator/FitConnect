@@ -46,12 +46,11 @@ public class ErlangNode {
      * Sends a message to the fitNotifier to set a new timer
      * @param mode it is either "insert", "edit" or "delete"
      * @param courseName course Id
-     * @param personalTrainer username of the personalTrainer, this whould be filled by the caller
-     * @param time subtraction between the current time and when the notification must appear (Int)
+     * @param time when the course will be held
      */
-    private void sendRequestToNotifier(String mode, String username, String courseName, int time){
+    private void sendRequestToNotifier(String mode, String courseName, int time){
         OtpErlangAtom msgType = new OtpErlangAtom(mode);
-        OtpErlangString user = new OtpErlangString(username);
+        OtpErlangString user = new OtpErlangString(this.username);
         OtpErlangString course = new OtpErlangString(courseName);
         OtpErlangInt delay = new OtpErlangInt(time);
         OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, user, course, delay});
@@ -79,7 +78,6 @@ public class ErlangNode {
 
         if (reply == null){
             return null;
-            //return new String[] {"Error", "Server is down"};
         }
 
         OtpErlangObject replyObj = reply; // Assign your reply here
@@ -106,9 +104,9 @@ public class ErlangNode {
             }
         } else {
             System.out.println("Error instantiating the tuple");
-            return new String[] { "Error while communicating with server"};
+            return new String[] {"Error while communicating with server"};
         }
-        return new String[] { "Generic Java error"};
+        return new String[] {"Generic Java error"};
     }
 
     /**
@@ -172,7 +170,7 @@ public class ErlangNode {
     }
 
     /**
-     * Disconnects the user from the fitMessanger removing all the states of that user
+     * Disconnects the user from the fitMessanger removing the structure of that user
      */
     public void disconnect() throws OtpErlangExit, OtpErlangDecodeException {
         OtpErlangAtom msgType = new OtpErlangAtom("disconnect");
@@ -219,13 +217,13 @@ public class ErlangNode {
                 sendMessage(parts[1].trim(), parts[2].trim());
                 break;
             case "i": // 2 args: String mode, String courseName, Int time
-                sendRequestToNotifier("insert", this.username, parts[1].trim(),Integer.parseInt(parts[2].trim()));
+                sendRequestToNotifier("insert", parts[1].trim(),Integer.parseInt(parts[2].trim()));
                 break;
             case "e": // 2 args: String mode, String courseName, Int time
-                sendRequestToNotifier("edit", this.username, parts[1].trim(),Integer.parseInt(parts[2].trim()));
+                sendRequestToNotifier("edit", parts[1].trim(),Integer.parseInt(parts[2].trim()));
                 break;
             case "d": // 2 args: String mode, String courseName, Int time
-                sendRequestToNotifier("delete", this.username, parts[1].trim(), 0);
+                sendRequestToNotifier("delete", parts[1].trim(), 0);
                 break;
             default:
                 break;
