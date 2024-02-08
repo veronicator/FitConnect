@@ -39,7 +39,7 @@ public class UserService {
     }
 
     public List<MongoUser> findByRole(UserRole role) {
-        return mongoUserRepository.findByRole(role.toString());
+        return mongoUserRepository.findByRole(role);
     }
 
     public boolean existsByFirstName(String firstname) {

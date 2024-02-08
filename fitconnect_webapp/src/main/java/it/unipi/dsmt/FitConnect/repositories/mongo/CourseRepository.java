@@ -13,11 +13,13 @@ import java.util.Optional;
 public interface CourseRepository extends MongoRepository<Course, String> {
 
     /** findBy methods */
+    //DEFAULT (case-insensitive) {"firstname" : { $regex: firstname, $options: 'i'}}
+    @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
     List<Course> findByCourseName(String courseName);
     List<Course> findByTrainer(String trainer);
     @Query("{'schedules.dayOfTheWeek': ?0}")
     List<Course> findByDay(String day);
-    @Query("{'courseName': ?0, 'trainer': ?1 }")
+    @Query("{'courseName': { $regex: ?0, $options: 'i'}, 'trainer': ?1 }")
     Optional<Course> findByCourseNameAndTrainer(String course, String trainer);
     @Query("{'id': ?0, 'enrolled.username': ?1 }")
     List<Course> findByIdAndUser(String id, String username);

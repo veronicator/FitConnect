@@ -8,7 +8,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -26,11 +25,23 @@ public class Message {
     private LocalDateTime sendTime;
     private String text;
 
+    public Message (Course course, MongoUser sender, LocalDateTime sendTime, String text) {
+        this.course = course;
+        this.sender = sender;
+        this.sendTime = sendTime;
+        this.text = text;
+    }
+
     public Message (MongoUser sender, LocalDateTime sendTime, String text) {
         this.sender = sender;
         this.sendTime = sendTime;
         this.text = text;
     }
+
+    public Message (Course course, MongoUser sender, String text) {
+        this(course, sender, LocalDateTime.now(), text);
+    }
+
     public Message (MongoUser sender, String text) {
         this(sender, LocalDateTime.now(), text);
     }

@@ -1,8 +1,9 @@
 package it.unipi.dsmt.FitConnect.enums;
 
 public enum CourseType {
-    Yoga,
     Swim,
+    Yoga,
+    Pilates,
     Crossfit,
     FunctionalTraining,
     Calisthenics,
