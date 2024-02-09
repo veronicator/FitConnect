@@ -21,10 +21,9 @@ public class ClassTime {
     public boolean equals(Object obj) {
         if (obj == this)
             return true;
-        if (!(obj instanceof ClassTime))
+        if (!(obj instanceof ClassTime ct))
             return false;
-        ClassTime ct = (ClassTime) obj;
         return ct.dayOfWeek.equals(this.dayOfWeek)
-                && ct.startTime.equals(this.startTime);
+                && ct.startTime.toString().equals(this.startTime.toString());
     }
 }

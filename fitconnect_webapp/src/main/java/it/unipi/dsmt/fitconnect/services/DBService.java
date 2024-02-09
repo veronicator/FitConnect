@@ -1,6 +1,7 @@
 package it.unipi.dsmt.fitconnect.services;
 
 import it.unipi.dsmt.fitconnect.entities.*;
+import it.unipi.dsmt.fitconnect.enums.UserRole;
 import it.unipi.dsmt.fitconnect.repositories.mongo.*;
 import lombok.Getter;
 import org.bson.types.ObjectId;
@@ -29,33 +30,44 @@ public class DBService {
 
 //    @Scheduled(cron = "@midnight")
     @Scheduled(cron = "0 */1 * * * *")  // for testing: scheduled every minute
-    public void createNewReservationsDoc() {
+    public void updateReservationsCollection() {
 
         try {
             for (Reservations r: reservationsRepository.findPastReservations(LocalDateTime.now())){
-                reservationsRepository.save(
-                        new Reservations(r.getCourse(), r.getActualClassTime().plusDays(7),
+                reservationsRepository.insert(
+                        new Reservations(r.getCourse(), r.getActualClassTime().plusDays(14),
                                 r.getDayOfWeek(), r.getStartTime(), r.getEndTime(), r.getMaxPlaces()));
             }
-            reservationsRepository.findPastReservations(LocalDateTime.now());
+            reservationsRepository.deletePastReservations(LocalDateTime.now());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public LocalDateTime getDateTimeFromDayAndTime(DayOfWeek dayOfWeek, LocalTime atTime) {
+    public LocalDateTime getDatetimeFromDayAndTime(DayOfWeek dayOfWeek, LocalTime atTime) {
         LocalDate nextWeekClass = LocalDate.now().with(TemporalAdjusters.next(dayOfWeek));
         return nextWeekClass.atTime(atTime);
     }
 
-    public boolean addCourse(String courseName, String trainer, Integer maxReservablePlaces) {
+    public boolean addCourse(String courseName, String trainerUsername, Integer maxReservablePlaces) {
         try {
-            if (courseRepository.existsByCourseNameAndTrainer(courseName, trainer)) {
-                System.out.println("course with this trainer already exists");
+            Optional<MongoUser> optUser = userRepository.findByUsername(trainerUsername);
+            if (optUser.isEmpty()) {
+                System.out.println("addCourse failed");
+                return false;
+            }
+            MongoUser user = optUser.get();
+            // controllo da spostare nel PageController?
+            if ((user.getRole().compareTo(UserRole.trainer) != 0)) {
+                System.out.println("addCourse failed: logged user does not have permissions");
+                return false;
+            }
+            if (courseRepository.existsByCourseNameAndTrainer(courseName, trainerUsername)) {
+                System.out.println("same course with same trainer already exists");
                 return false;
             }
 
-            Course newCourse = new Course(courseName, trainer, maxReservablePlaces);
+            Course newCourse = new Course(courseName, user.getCompleteName(), user.getUsername(), maxReservablePlaces);
             newCourse = courseRepository.insert(newCourse);
             System.out.println("added new " + newCourse);
         } catch (Exception e) {
@@ -72,6 +84,7 @@ public class DBService {
      * the following Monday are added
      * In this way, class reservations are allowed for the next 2 weeks */
     public boolean addClassTime(String courseId, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
+        // check if the logged user is the trainer of the referred course -> nel Controller?
         try {
             Optional<Course> optCourse = courseRepository.findById(courseId);
             if (optCourse.isEmpty()) {
@@ -85,14 +98,16 @@ public class DBService {
                 return false;
             }
             if (course.addNewClass(newClassTime)) {
-                LocalDateTime actualTime = getDateTimeFromDayAndTime(dayOfWeek, startTime);
+                LocalDateTime actualTime = getDatetimeFromDayAndTime(dayOfWeek, startTime);
                 courseRepository.save(course);
+                // next week reservations document
                 reservationsRepository.insert(
                         new Reservations(
                                 course, actualTime, dayOfWeek, startTime, endTime,
                                 course.getMaxReservablePlaces()
                         )
                 );
+                // next 2 week reservations document
                 reservationsRepository.insert(
                         new Reservations(
                                 course, actualTime.plusDays(7), dayOfWeek, startTime, endTime,
@@ -101,6 +116,7 @@ public class DBService {
                 );
             }
         } catch (OptimisticLockingFailureException e) {
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -113,9 +129,10 @@ public class DBService {
                 System.out.println("Booking failed: user not found.");
                 return false;
             }
+            MongoUser user = optUser.get();
 
             List<Reservations> availableClasses = reservationsRepository.findByCourseDayTime(
-                    new ObjectId(courseId), dayOfWeek, startTime);
+                    new ObjectId(courseId), dayOfWeek, startTime.toString());
             if (availableClasses.isEmpty()) {
                 System.out.println("Booking failed: no available courses for the day-time selected found");
                 return false;
@@ -131,7 +148,7 @@ public class DBService {
                 return false;
                 }
             }
-            MongoUser user = optUser.get();
+
             if (reservations.addBooking(user)) {
                 reservations = reservationsRepository.save(reservations);
 //                user.addReservation(reservations);

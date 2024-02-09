@@ -11,21 +11,26 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @Document(collection = "reservations")
-public class Reservations extends ClassTime {
+public class Reservations {
 
     @Id
     private String id;
     @Version
     private Long version;   // for concurrency with OptimisticLocking
+
     @DocumentReference(collection = "courses", lazy = true)     // lazy: to delay the retrieval of the course until first access of the property
     private Course course;      // stored only the courseId
 
+    private DayOfWeek dayOfWeek;    // es. MONDAY (DayOfWeek.MONDAY)
+    private String startTime;      // es. 17:00
+    private String endTime;      // es. 18:00
     private LocalDateTime actualClassTime;  // actual timestamp of starting time
     private Integer reservablePlaces;  // max places or to update at every reservation/deletion ?
 
@@ -33,7 +38,18 @@ public class Reservations extends ClassTime {
     private List<MongoUser> bookedUsers;
 
     public Reservations(Course course, DayOfWeek weekDay, LocalTime startTime, LocalTime endTime, Integer places) {
-        super(weekDay, startTime, endTime);
+        this.dayOfWeek = weekDay;
+        this.startTime = startTime.toString();
+        this.endTime = endTime.toString();
+        this.course = course;
+        this.reservablePlaces = places;
+        this.bookedUsers = new ArrayList<>();
+        setActualClassTime();
+    }
+    public Reservations(Course course, DayOfWeek weekDay, String startTime, String endTime, Integer places) {
+        this.dayOfWeek = weekDay;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.course = course;
         this.reservablePlaces = places;
         this.bookedUsers = new ArrayList<>();
@@ -42,7 +58,19 @@ public class Reservations extends ClassTime {
 
     public Reservations(Course course, LocalDateTime actualClassTime,
                         DayOfWeek weekDay, LocalTime startTime, LocalTime endTime, Integer places) {
-        super(weekDay, startTime, endTime);
+        this.dayOfWeek = weekDay;
+        this.startTime = startTime.toString();
+        this.endTime = endTime.toString();
+        this.course = course;
+        this.reservablePlaces = places;
+        this.actualClassTime = actualClassTime;
+    }
+
+    public Reservations(Course course, LocalDateTime actualClassTime,
+                        DayOfWeek weekDay, String startTime, String endTime, Integer places) {
+        this.dayOfWeek = weekDay;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.course = course;
         this.reservablePlaces = places;
         this.actualClassTime = actualClassTime;
@@ -50,7 +78,9 @@ public class Reservations extends ClassTime {
 
     private void setActualClassTime() {
         LocalDate nextWeekClass = LocalDate.now().with(TemporalAdjusters.next(dayOfWeek));
-        actualClassTime = nextWeekClass.atTime(startTime);
+//        actualClassTime = nextWeekClass.atTime(startTime);
+        int[] split = Arrays.stream(startTime.split("[:.]")).mapToInt(Integer::parseInt).toArray();
+        actualClassTime = nextWeekClass.atTime(split[0], split[1]);
     }
 
     public boolean addBooking(MongoUser user) {
@@ -72,6 +102,8 @@ public class Reservations extends ClassTime {
     }
 
     public boolean isBooked(MongoUser user) {
+        if (bookedUsers == null)
+            return false;
         return bookedUsers.contains(user);
     }
 
@@ -87,7 +119,7 @@ public class Reservations extends ClassTime {
 
     @Override
     public String toString() {
-        return String.format("{%s: classTimes %s -> '%s', places: %d}",
+        return String.format("{%s: classTimes %s -> %s, places: %d}",
                 actualClassTime.getDayOfWeek(), startTime, endTime, reservablePlaces);
     }
 }

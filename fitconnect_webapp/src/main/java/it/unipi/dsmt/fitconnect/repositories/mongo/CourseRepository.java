@@ -2,6 +2,8 @@ package it.unipi.dsmt.fitconnect.repositories.mongo;
 
 import it.unipi.dsmt.fitconnect.entities.Course;
 import it.unipi.dsmt.fitconnect.entities.MongoUser;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.*;
 import org.springframework.stereotype.Repository;
@@ -14,13 +16,14 @@ public interface CourseRepository extends MongoRepository<Course, String> {
 
     /** findBy methods */
     //DEFAULT (case-insensitive) {"firstname" : { $regex: firstname, $options: 'i'}}
+    Page<Course> findAll(Pageable pageable);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
     List<Course> findByCourseName(String courseName);
     List<Course> findByTrainer(String trainer);
     @Query("{'schedules.dayOfTheWeek': ?0}")
     List<Course> findByDay(String day);
-    @Query("{'courseName': { $regex: ?0, $options: 'i'}, 'trainer': ?1 }")
-    Optional<Course> findByCourseNameAndTrainer(String course, String trainer);
+    @Query("{'courseName': { $regex: ?0, $options: 'i'}, 'trainerUsername': { $regex: ?1, $options: 'i'} }")
+    Optional<Course> findByCourseNameAndTrainer(String course, String trainerUsername);
     @Query("{'id': ?0, 'enrolled.username': ?1 }")
     List<Course> findByIdAndUser(String id, String username);
     @Query("{'enrolled.username': ?0}")
@@ -29,7 +32,8 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     /** existsBy methods */
     boolean existsByCourseName(String courseName);
     boolean existsByTrainer(String trainer);
-    boolean existsByCourseNameAndTrainer(String courseName, String trainer);
+    @Query(value = "{'courseName': { $regex: ?0, $options: 'i'}, 'trainerUsername': { $regex: ?1, $options: 'i'} }", exists = true)
+    boolean existsByCourseNameAndTrainer(String courseName, String trainerUsername);
 
     /** deleteBy methods */
     void deleteByTrainer(String trainer);

@@ -4,6 +4,7 @@ import it.unipi.dsmt.fitconnect.enums.UserRole;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class MongoUser {
 
     @Id
     private String id;
+    @Indexed(unique = true)
     private String username;    //unique for the user
     private String firstname;
     private String lastname;
@@ -40,6 +42,10 @@ public class MongoUser {
 
     public MongoUser(String username, String firstname, String lastname, String email) {
         this(username, firstname, lastname, email, UserRole.client);
+    }
+
+    public String getCompleteName() {
+        return String.format("%s %s", firstname, lastname);
     }
 
     public boolean addReservation(Reservations r) {

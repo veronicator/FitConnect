@@ -25,10 +25,12 @@ public class Course {
     private ObjectId id;
     @Version
     private Long version;
+
     private String courseName;
     private String trainer; // firstname+lastname
     private String trainerUsername; // or id ?
     private Integer maxReservablePlaces;
+
     private List<ClassTime> weekSchedule;
 
     @ReadOnlyProperty
@@ -42,8 +44,11 @@ public class Course {
         this.weekSchedule = weekSchedule;
     }
 
-    public Course (String courseName, String trainer, Integer maxReservablePlaces) {
-        this(courseName, trainer, maxReservablePlaces, new ArrayList<>());
+    public Course (String courseName, String trainer, String trainerUsername, Integer maxReservablePlaces) {
+        this.courseName = courseName;
+        this.trainer = trainer;
+        this.trainerUsername = trainerUsername;
+        this.maxReservablePlaces = maxReservablePlaces;
     }
 
     public Course(String courseName, String trainer) {
@@ -57,6 +62,8 @@ public class Course {
     }
 
     public boolean classAlreadyScheduled(ClassTime classTime) {
+        if (weekSchedule == null)
+            return false;
         return weekSchedule.contains(classTime);
     }
 
