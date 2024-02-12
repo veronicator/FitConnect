@@ -90,6 +90,10 @@ public class DBService {
      * In this way, class reservations are allowed for the next 2 weeks */
     public boolean addClassTime(String courseId, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
         try {
+            if (startTime.isAfter(endTime)) {
+                System.out.println("Error: startTime can not be after endTime");
+                return false;
+            }
             Optional<Course> optCourse = courseRepository.findById(courseId);
             if (optCourse.isEmpty()) {
                 System.out.println("addClassTime failed: course not found");
