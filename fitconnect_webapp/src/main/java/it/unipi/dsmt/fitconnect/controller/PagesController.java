@@ -27,12 +27,12 @@ public class PagesController {
         courses.clear();
         // todo: da modificare in base alla nuova struttura del document
         // va cambiata con userRepository.findCourses() -> va dichiarato il metodo corretto
-        courses.addAll(dbService.getCourseRepository().findByUser(username));
+//        courses.addAll(dbService.getCourseRepository().findByUser(username));
     }
 
     private void loadTrainerCourses(String trainer) {
         courses.clear();
-        courses.addAll(dbService.getCourseRepository().findByTrainer(trainer));
+        courses.addAll(dbService.browseUserCourses(trainer));
     }
     /* todo: aggiungere i vari metodi */
 

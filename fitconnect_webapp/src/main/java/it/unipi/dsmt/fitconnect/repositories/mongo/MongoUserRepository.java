@@ -47,6 +47,7 @@ public interface MongoUserRepository extends MongoRepository<MongoUser, String> 
     @Query("{ 'courses': ?0 }")
     @Update("{ $pull: { 'courses': ?0 } }")
     void removeCourse(ObjectId course);
+
     @Query("{'email': { $regex: ?0, $options: 'i'} }")
     @Update("{ $set: {'email': ?1 } }")
     void updateEmail(String oldEmail, String newEmail);

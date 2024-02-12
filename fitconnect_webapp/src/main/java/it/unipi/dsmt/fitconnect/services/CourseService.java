@@ -6,6 +6,7 @@ import it.unipi.dsmt.fitconnect.repositories.mongo.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.util.List;
 
 @Service
@@ -31,22 +32,12 @@ public class CourseService {
     }
 
     public List<Course> findCourseByTrainer(String trainer) {
-        return courseRepository.findByTrainer(trainer);
+        return courseRepository.findByTrainerUsername(trainer);
     }
 
-    public List<Course> findCoursesByDay(String weekday) {
+    public List<Course> findCoursesByDay(DayOfWeek weekday) {
         return courseRepository.findByDay(weekday);
     }
 
-    public List<Course> findUserCourses(String username) {
-        return courseRepository.findByUser(username);
-    }
 
-    public void subscribe(String course, MongoUser user) {
-        courseRepository.updateEnrolledList(course, user);
-    }
-
-    public void removeSubscription(String course, String email) {   // todo: sostituire con username
-        courseRepository.removeSubscription(course, email);
-    }
 }

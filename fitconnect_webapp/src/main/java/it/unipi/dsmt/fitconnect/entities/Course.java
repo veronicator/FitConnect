@@ -28,14 +28,14 @@ public class Course {
 
     private String courseName;
     private String trainer; // firstname+lastname
-    private String trainerUsername; // or id ?
+    private String trainerUsername; // it's unique, so it can be used as an identifier
     private Integer maxReservablePlaces;
 
     private List<ClassTime> weekSchedule;
 
     @ReadOnlyProperty
     @DocumentReference(collection = "users", lookup = "{ 'courses': ?#{#self._id} }")
-    private List<MongoUser> enrolledClients; // id utenti iscritti al corso (generico, non alla classe specifica)
+    private List<MongoUser> enrolledClients; // id clients enrolled at this course (it will also contain the trainerId)
 
     public Course (String courseName, String trainer, Integer maxReservablePlaces, List<ClassTime> weekSchedule) {
         this.courseName = courseName;
@@ -68,7 +68,22 @@ public class Course {
     }
 
     public Integer getNumberOfEnrolledUsers() {
-        return enrolledClients.size();
+        if (enrolledClients == null)
+            return 0;
+        if (enrolledClients.size() > 0) {
+            // also the trainer is considered during the lookup
+            return enrolledClients.size() - 1;
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        if (!(obj instanceof Course c))
+            return false;
+        return c.id.equals(this.id);
     }
 
     @Override

@@ -12,7 +12,6 @@ import java.util.List;
 
 @Repository
 public interface ReservationsRepository extends MongoRepository<Reservations, String> {
-    // todo: aggiungere metodi necessari
 
     List<Reservations> findByCourse(ObjectId courseId);
 

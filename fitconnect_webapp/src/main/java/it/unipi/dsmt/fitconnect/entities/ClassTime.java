@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class ClassTime {
     protected DayOfWeek dayOfWeek;    // es. MONDAY (DayOfWeek.MONDAY)
-    protected LocalTime startTime;      // es. 17:00
+    protected LocalTime startTime;      // es. 17:00 (on Mongo it's saved as a complete DateTime
     protected LocalTime endTime;        // es. 18:30
 
     @Override

@@ -2,11 +2,13 @@ package it.unipi.dsmt.fitconnect.entities;
 
 import it.unipi.dsmt.fitconnect.enums.UserRole;
 import lombok.*;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,7 +19,7 @@ import java.util.List;
 public class MongoUser {
 
     @Id
-    private String id;
+    private ObjectId id;
     @Indexed(unique = true)
     private String username;    //unique for the user
     private String firstname;
@@ -26,7 +28,7 @@ public class MongoUser {
     private UserRole role;    // client | trainer | invalid
 
     @DocumentReference(collection = "courses", lazy = true)
-    List<Course> courses;   // id corsi a cui è iscritto l'utente, se "client", o corsi insegnati se "trainer"
+    List<Course> courses;   // id corsi a cui è iscritto l'utente "client", o corsi insegnati se "trainer"
 
     @ReadOnlyProperty
     @DocumentReference(collection = "reservations", lookup = "{ 'bookedUsers': ?#{#self.username} }", lazy = true)
@@ -48,8 +50,27 @@ public class MongoUser {
         return String.format("%s %s", firstname, lastname);
     }
 
-    public boolean addReservation(Reservations r) {
-        return this.reservations.add(r);
+    public boolean addCourse(Course c) {
+        if (courses == null)
+            courses = new ArrayList<>();
+        if (courses.contains(c))
+            return false;
+        return courses.add(c);
+    }
+
+    public boolean removeCourse(Course c) {
+        if (courses == null)
+            return false;
+        return courses.remove(c);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        if (!(obj instanceof MongoUser user))
+            return false;
+        return user.username.equals(this.username);
     }
 
     @Override

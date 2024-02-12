@@ -3,6 +3,7 @@ package it.unipi.dsmt.fitconnect.entities;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -21,7 +22,7 @@ import java.util.List;
 public class Reservations {
 
     @Id
-    private String id;
+    private ObjectId id;
     @Version
     private Long version;   // for concurrency with OptimisticLocking
 
@@ -37,15 +38,6 @@ public class Reservations {
     @DocumentReference(collection = "users", lookup = "{ 'username': ?#{#target} }")
     private List<MongoUser> bookedUsers;
 
-    public Reservations(Course course, DayOfWeek weekDay, LocalTime startTime, LocalTime endTime, Integer places) {
-        this.dayOfWeek = weekDay;
-        this.startTime = startTime.toString();
-        this.endTime = endTime.toString();
-        this.course = course;
-        this.reservablePlaces = places;
-        this.bookedUsers = new ArrayList<>();
-        setActualClassTime();
-    }
     public Reservations(Course course, DayOfWeek weekDay, String startTime, String endTime, Integer places) {
         this.dayOfWeek = weekDay;
         this.startTime = startTime;
@@ -57,16 +49,6 @@ public class Reservations {
     }
 
     public Reservations(Course course, LocalDateTime actualClassTime,
-                        DayOfWeek weekDay, LocalTime startTime, LocalTime endTime, Integer places) {
-        this.dayOfWeek = weekDay;
-        this.startTime = startTime.toString();
-        this.endTime = endTime.toString();
-        this.course = course;
-        this.reservablePlaces = places;
-        this.actualClassTime = actualClassTime;
-    }
-
-    public Reservations(Course course, LocalDateTime actualClassTime,
                         DayOfWeek weekDay, String startTime, String endTime, Integer places) {
         this.dayOfWeek = weekDay;
         this.startTime = startTime;
@@ -74,6 +56,16 @@ public class Reservations {
         this.course = course;
         this.reservablePlaces = places;
         this.actualClassTime = actualClassTime;
+    }
+
+    public Reservations(Course course, LocalDateTime actualClassTime,
+                        DayOfWeek weekDay, LocalTime startTime, LocalTime endTime, Integer places) {
+        this(course, actualClassTime, weekDay, startTime.toString(), endTime.toString(), places);
+    }
+
+    public Reservations(Course course, DayOfWeek weekDay, LocalTime startTime, LocalTime endTime, Integer places) {
+        this(course, weekDay, startTime.toString(), endTime.toString(), places);
+
     }
 
     private void setActualClassTime() {
@@ -88,8 +80,20 @@ public class Reservations {
             bookedUsers = new ArrayList<>();
         if (reservablePlaces <= 0)
             return false;
+        if (isBooked(user))
+            return false;
         reservablePlaces--;
         return bookedUsers.add(user);
+    }
+
+    public boolean removeBooking(MongoUser user) {
+        if (bookedUsers == null)
+            return false;
+        if (bookedUsers.remove(user)) {
+            reservablePlaces--;
+            return true;
+        }
+        return false;
     }
 
     public LocalDate getClassDate() {
@@ -111,9 +115,8 @@ public class Reservations {
     public boolean equals(Object obj) {
         if (obj == this)
             return true;
-        if (!(obj instanceof Reservations))
+        if (!(obj instanceof Reservations r))
             return false;
-        Reservations r = (Reservations) obj;
         return r.id.equals(this.id);
     }
 

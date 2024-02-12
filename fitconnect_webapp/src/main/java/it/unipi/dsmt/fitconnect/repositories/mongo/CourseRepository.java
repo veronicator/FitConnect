@@ -2,64 +2,63 @@ package it.unipi.dsmt.fitconnect.repositories.mongo;
 
 import it.unipi.dsmt.fitconnect.entities.Course;
 import it.unipi.dsmt.fitconnect.entities.MongoUser;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface CourseRepository extends MongoRepository<Course, String> {
 
-    /** findBy methods */
+    /** find methods */
     //DEFAULT (case-insensitive) {"firstname" : { $regex: firstname, $options: 'i'}}
     Page<Course> findAll(Pageable pageable);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
     List<Course> findByCourseName(String courseName);
-    List<Course> findByTrainer(String trainer);
-    @Query("{'schedules.dayOfTheWeek': ?0}")
-    List<Course> findByDay(String day);
+    @Query("{'trainerUsername': { $regex: ?0, $options: 'i'}}")
+    List<Course> findByTrainerUsername(String trainer);
+    @Query("{'weekSchedule.dayOfWeek': ?0}")
+    List<Course> findByDay(DayOfWeek dayOfWeek);
+    @Query("{'courseName': { $regex: ?0, $options: 'i'}, 'trainer': { $regex: ?1, $options: 'i'} }")
+    Optional<Course> findByCourseNameAndTrainer(String course, String trainer);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}, 'trainerUsername': { $regex: ?1, $options: 'i'} }")
-    Optional<Course> findByCourseNameAndTrainer(String course, String trainerUsername);
-    @Query("{'id': ?0, 'enrolled.username': ?1 }")
-    List<Course> findByIdAndUser(String id, String username);
-    @Query("{'enrolled.username': ?0}")
-    List<Course> findByUser(String username);
+    Optional<Course> findByCourseNameAndTrainerUsername(String course, String trainerUsername);
+
 
     /** existsBy methods */
+
+    @Query(value = "{'courseName': { $regex: ?0, $options: 'i'}}", exists = true)
     boolean existsByCourseName(String courseName);
-    boolean existsByTrainer(String trainer);
+    @Query(value = "{'trainer': { $regex: ?0, $options: 'i'}}", exists = true)
+    boolean existsByTrainer(String trainerCompleteName);
+    @Query(value = "{'trainerUsername': { $regex: ?0, $options: 'i'}}", exists = true)
+    boolean existsByTrainerUsername(String trainerUsername);
     @Query(value = "{'courseName': { $regex: ?0, $options: 'i'}, 'trainerUsername': { $regex: ?1, $options: 'i'} }", exists = true)
     boolean existsByCourseNameAndTrainer(String courseName, String trainerUsername);
 
     /** deleteBy methods */
-    void deleteByTrainer(String trainer);
 
-    @Query("{'id': ?0, 'enrolled.username': ?1 }")
-    @Update("{ $pull: { 'enrolled': { 'username': ?1 }}}")
-    void removeSubscription(String courseId, String username);
-
-//    @Query
-//    void removeSchelude(String courseId, Schedule schedule);
+    @Query(value = "{'trainerUsername': { $regex: ?0, $options: 'i'}}", delete = true)
+    void deleteByTrainer(String trainerUsername);
 
     /** update methods */
-    @Query("{'_id': ?0 }")
-    @Update("{ $push: { 'enrolled': ?1 }}")
-    void updateEnrolledList(String courseId, MongoUser user);
 
     @Query("{'id': ?0 }")
     @Update("{ $set: {'courseName': ?1 }}")
-    void updateCourseName(String courseId, String newName);
+    void updateCourseName(ObjectId courseId, String newName);
 
-    @Query("{'courseName': ?0 }")
+    @Query("{'courseName': { $regex: ?0, $options: 'i'} }")
     @Update("{ $set: {'courseName': ?1 }}")
     void updateMultiCourseName(String oldName, String newName);
 
-    @Query("{'trainer': ?0 }")
-    @Update("{ $set: {'trainer': ?1 }}")
-    void updateTrainer(String oldTrainer, String newTrainer);
+    @Query("{'trainerUsername': { $regex: ?0, $options: 'i'} }")
+    @Update("{ $set: {'trainerUsername': ?1, 'trainer': ?2 } }")
+    void updateTrainer(String oldTrainerUsername, String newTrainerUsername, String newTrainerCompleteName);
 
 }
