@@ -1,6 +1,8 @@
 package it.unipi.dsmt.FitConnect.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Document(collection = "courses")
 public class Course {
 
@@ -37,7 +41,7 @@ public class Course {
 //    private List<Message> chatMessages;
 
     public Course (String courseName, String trainer, Integer maxReservablePlaces, List<ClassTime> weekSchedule) {
-        this.courseName = courseName.toUpperCase();
+        this.courseName = courseName;
         this.trainer = trainer;
         this.maxReservablePlaces = maxReservablePlaces;
         this.weekSchedule = weekSchedule;
@@ -61,9 +65,18 @@ public class Course {
         return enrolledUsers.size();
     }
 
+//    @Override
+//    public String toString() {
+//        return String.format("course: %s class, trainer: %s", courseName, trainer);
+//    }
+
+
     @Override
     public String toString() {
-        return String.format("course: %s class, trainer: %s", courseName, trainer);
+        return "Course{" +
+                "courseName='" + courseName + '\'' +
+                ", trainer='" + trainer + '\'' +
+                '}';
     }
 }
 
