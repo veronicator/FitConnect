@@ -58,35 +58,35 @@ public class DBService {
         return true;
     }
 
-    public boolean bookClass(String username, String course, DayOfWeek dayOfWeek, LocalTime startTime) {
-        try {
-            Optional<MongoUser> user = userRepository.findByUsername(username);
-            if (user.isEmpty()) {
-                System.out.println("Booking failed: user not found.");
-                return false;
-            }
-
-            List<Reservations> availableClass = reservationsRepository.findByCourseDayTime(
-                    course, dayOfWeek, startTime);
-            if (availableClass.isEmpty()) {
-                System.out.println("Booking failed: no available courses found");
-                return false;
-            }
-            Reservations reservations = availableClass.getFirst();
-            if (reservations.getActualClassTime().isBefore(LocalDateTime.now())) {
-                System.out.println("Booking not possible: class already held this week");
-                return false;
-            }
-            if (reservations.addBooking(user.get())) {
-                reservations = reservationsRepository.save(reservations);
-                System.out.println("class booking made for the day " + reservations.getClassDate());
-            }
-
-        } catch (OptimisticLockingFailureException e) {
-            System.out.println("Booking failed");
-            return false;
-        }
-        return true;
-    }
+//    public boolean bookClass(String username, String course, DayOfWeek dayOfWeek, LocalTime startTime) {
+//        try {
+//            Optional<MongoUser> user = userRepository.findByUsername(username);
+//            if (user.isEmpty()) {
+//                System.out.println("Booking failed: user not found.");
+//                return false;
+//            }
+//
+//            List<Reservations> availableClass = reservationsRepository.findByCourseDayTime(
+//                    course, dayOfWeek, startTime);
+//            if (availableClass.isEmpty()) {
+//                System.out.println("Booking failed: no available courses found");
+//                return false;
+//            }
+//            Reservations reservations = availableClass.getFirst();
+//            if (reservations.getActualClassTime().isBefore(LocalDateTime.now())) {
+//                System.out.println("Booking not possible: class already held this week");
+//                return false;
+//            }
+//            if (reservations.addBooking(user.get())) {
+//                reservations = reservationsRepository.save(reservations);
+//                System.out.println("class booking made for the day " + reservations.getClassDate());
+//            }
+//
+//        } catch (OptimisticLockingFailureException e) {
+//            System.out.println("Booking failed");
+//            return false;
+//        }
+//        return true;
+//    }
 
 }

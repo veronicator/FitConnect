@@ -33,6 +33,8 @@ public class AuthService {
     @Autowired
     private SecurityManager securityManager;
 
+    public AuthService(){}
+
     /**
      * Function for the login phase. User get authentication in ldap database. Then it returns user data from mongodb
      * @param username: username entered in login form from the user
@@ -68,6 +70,7 @@ public class AuthService {
 //                logger.info("User logged: " + loggedUser.get());
                 System.out.println("Authentication succeeded!");
                 System.out.println("User logged: " + loggedUser.get());
+
                 return loggedUser.get();
             } else {
                 System.out.println("User not found in mongodb");
