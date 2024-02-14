@@ -1,6 +1,7 @@
 package it.unipi.dsmt.fitconnect.services;
 
 import it.unipi.dsmt.fitconnect.entities.*;
+import it.unipi.dsmt.fitconnect.enums.CourseType;
 import it.unipi.dsmt.fitconnect.enums.UserRole;
 import it.unipi.dsmt.fitconnect.repositories.mongo.*;
 import lombok.Getter;
@@ -32,6 +33,8 @@ public class DBService {
     private CourseRepository courseRepository;
     @Autowired
     private ReservationsRepository reservationsRepository;
+    @Autowired
+    private MessageRepositories messageRepositories;
 
 //    @Scheduled(cron = "@midnight")
     @Scheduled(cron = "0 */1 * * * *")  // for testing: scheduled every minute
@@ -54,7 +57,7 @@ public class DBService {
     }
 
     /* usare l'username o l'id del trainer? */
-    public boolean addNewCourse(String courseName, String trainerUsername, Integer maxReservablePlaces) {
+    public boolean addNewCourse(CourseType courseName, String trainerUsername, Integer maxReservablePlaces) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername(trainerUsername);
             if (optUser.isEmpty()) {

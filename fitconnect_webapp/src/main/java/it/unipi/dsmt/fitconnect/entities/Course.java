@@ -1,5 +1,6 @@
 package it.unipi.dsmt.fitconnect.entities;
 
+import it.unipi.dsmt.fitconnect.enums.CourseType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,7 @@ public class Course {
     @Version
     private Long version;
 
-    private String courseName;
+    private CourseType courseName;
     private String trainer; // firstname lastname
     private String trainerUsername; // it's unique, so it can be used as an identifier
     private Integer maxReservablePlaces;
@@ -37,22 +38,11 @@ public class Course {
     @DocumentReference(collection = "users", lookup = "{ 'courses': ?#{#self._id} }")
     private List<MongoUser> enrolledClients; // id clients enrolled at this course (it will also contain the trainerId)
 
-    public Course (String courseName, String trainer, Integer maxReservablePlaces, List<ClassTime> weekSchedule) {
+    public Course (CourseType courseName, String trainerCompleteName, String trainerUsername, Integer maxReservablePlaces) {
         this.courseName = courseName;
-        this.trainer = trainer;
-        this.maxReservablePlaces = maxReservablePlaces;
-        this.weekSchedule = weekSchedule;
-    }
-
-    public Course (String courseName, String trainer, String trainerUsername, Integer maxReservablePlaces) {
-        this.courseName = courseName;
-        this.trainer = trainer;
+        this.trainer = trainerCompleteName;
         this.trainerUsername = trainerUsername;
         this.maxReservablePlaces = maxReservablePlaces;
-    }
-
-    public Course(String courseName, String trainer) {
-        this(courseName, trainer, 15, new ArrayList<>());
     }
 
     public boolean addNewClass(ClassTime newClass) {

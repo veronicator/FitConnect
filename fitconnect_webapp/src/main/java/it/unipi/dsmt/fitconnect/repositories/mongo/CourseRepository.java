@@ -2,6 +2,7 @@ package it.unipi.dsmt.fitconnect.repositories.mongo;
 
 import it.unipi.dsmt.fitconnect.entities.Course;
 import it.unipi.dsmt.fitconnect.entities.MongoUser;
+import it.unipi.dsmt.fitconnect.enums.CourseType;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,29 +21,29 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     //DEFAULT (case-insensitive) {"firstname" : { $regex: firstname, $options: 'i'}}
     Page<Course> findAll(Pageable pageable);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
-    Page<Course> findByCourseName(String courseName, Pageable pageable);
+    Page<Course> findByCourseName(CourseType courseName, Pageable pageable);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
-    List<Course> findByCourseName(String courseName);
+    List<Course> findByCourseName(CourseType courseName);
     @Query("{'trainerUsername': { $regex: ?0, $options: 'i'}}")
     List<Course> findByTrainerUsername(String trainer);
     @Query("{'weekSchedule.dayOfWeek': ?0}")
     List<Course> findByDay(DayOfWeek dayOfWeek);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}, 'trainer': { $regex: ?1, $options: 'i'} }")
-    Optional<Course> findByCourseNameAndTrainer(String course, String trainer);
+    Optional<Course> findByCourseNameAndTrainer(CourseType course, String trainer);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}, 'trainerUsername': { $regex: ?1, $options: 'i'} }")
-    Optional<Course> findByCourseNameAndTrainerUsername(String course, String trainerUsername);
+    Optional<Course> findByCourseNameAndTrainerUsername(CourseType course, String trainerUsername);
 
 
     /** existsBy methods */
 
     @Query(value = "{'courseName': { $regex: ?0, $options: 'i'}}", exists = true)
-    boolean existsByCourseName(String courseName);
+    boolean existsByCourseName(CourseType courseName);
     @Query(value = "{'trainer': { $regex: ?0, $options: 'i'}}", exists = true)
     boolean existsByTrainer(String trainerCompleteName);
     @Query(value = "{'trainerUsername': { $regex: ?0, $options: 'i'}}", exists = true)
     boolean existsByTrainerUsername(String trainerUsername);
     @Query(value = "{'courseName': { $regex: ?0, $options: 'i'}, 'trainerUsername': { $regex: ?1, $options: 'i'} }", exists = true)
-    boolean existsByCourseNameAndTrainer(String courseName, String trainerUsername);
+    boolean existsByCourseNameAndTrainer(CourseType courseName, String trainerUsername);
 
     /** deleteBy methods */
 
@@ -53,11 +54,11 @@ public interface CourseRepository extends MongoRepository<Course, String> {
 
     @Query("{'id': ?0 }")
     @Update("{ $set: {'courseName': ?1 }}")
-    void updateCourseName(ObjectId courseId, String newName);
+    void updateCourseName(ObjectId courseId, CourseType newName);
 
     @Query("{'courseName': { $regex: ?0, $options: 'i'} }")
     @Update("{ $set: {'courseName': ?1 }}")
-    void updateMultiCourseName(String oldName, String newName);
+    void updateMultiCourseName(CourseType oldName, CourseType newName);
 
     @Query("{'trainerUsername': { $regex: ?0, $options: 'i'} }")
     @Update("{ $set: {'trainerUsername': ?1, 'trainer': ?2 } }")
