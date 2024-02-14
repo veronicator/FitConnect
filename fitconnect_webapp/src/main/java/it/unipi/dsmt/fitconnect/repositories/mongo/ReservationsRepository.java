@@ -33,4 +33,7 @@ public interface ReservationsRepository extends MongoRepository<Reservations, St
 
     void deleteByCourse(ObjectId course);
 
+    @Query(value = "{ 'course': ?0, 'dayOfWeek': ?1, 'startTime': ?2 }", sort = "{'actualClassTime': 1}", delete = true)
+    void deleteByCourseDayTime(ObjectId course, DayOfWeek day, String startTime);
+
 }

@@ -20,7 +20,7 @@ public class Message {
     private String id;
     @DocumentReference(collection = "courses")
     private Course course;
-    @DocumentReference(collection = "users")
+    @DocumentReference(collection = "users", lookup = "{ 'username': ?#{#target} }")
     private MongoUser sender;
     private LocalDateTime sendTime;
     private String text;

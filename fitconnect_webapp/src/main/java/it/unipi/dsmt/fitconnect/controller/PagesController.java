@@ -17,6 +17,8 @@ public class PagesController {
     @Autowired
     private ActiveCourses courses;  // all gym courses in the db or only those of a user?
 
+//    private ErlangNodeController;
+
     // gestire il contesto per l'autenticazione, in modo da sapere sempre qual è l'utente connesso
     private void browseCourses() {
         courses.clear();
@@ -48,6 +50,10 @@ public class PagesController {
         *       => decrement availablePlaces field
         *       => add the reservation to the user object
         *       => save the Schedule doc on the db
+        * [join, coursename]
+        * [deleteC
+        * String command = "join-Yoga"
+        * erlangNodeController.sendCommandToNode(username, command)
         * } catch(ObjectOptimisticLockingFailureException e) {
         *   return false
         * }
@@ -89,7 +95,7 @@ public class PagesController {
     }
 
     /** raggiungibile solo da un trainer per aggiungere un nuovo corso*/
-    @PostMapping("/courses/create")
+    @PostMapping("/courses/corsoId")
     public String addCourse(Model model,
                             @ModelAttribute(value = "course") Course course) {
         /* check that the logged user is a trainer (or even the admin ?)
@@ -106,12 +112,15 @@ public class PagesController {
     }
 
     // todo: metodo per aggiungere/modificare gli orari delle lezioni
-    @PostMapping("/course/schedule")
+    @PostMapping("/course/iscriviti")
     public String addSchedule(Model model, @ModelAttribute(value="schedule") Reservations reservations) {
         /* inserire parametri di funzione corretti
         * controllare che non ci sia sovrapposizione di orari (riferito solo ad uno stesso corso)
         * schedule.save
-        * gestire eventuali errori*/
+        * gestire eventuali errori
+        * if(subscribeCourse) {
+        *   erlangController(username, join)
+        * }*/
         return "home";
     }
 

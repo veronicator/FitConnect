@@ -20,6 +20,8 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     //DEFAULT (case-insensitive) {"firstname" : { $regex: firstname, $options: 'i'}}
     Page<Course> findAll(Pageable pageable);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
+    Page<Course> findByCourseName(String courseName, Pageable pageable);
+    @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
     List<Course> findByCourseName(String courseName);
     @Query("{'trainerUsername': { $regex: ?0, $options: 'i'}}")
     List<Course> findByTrainerUsername(String trainer);

@@ -27,7 +27,7 @@ public class Course {
     private Long version;
 
     private String courseName;
-    private String trainer; // firstname+lastname
+    private String trainer; // firstname lastname
     private String trainerUsername; // it's unique, so it can be used as an identifier
     private Integer maxReservablePlaces;
 
@@ -61,7 +61,13 @@ public class Course {
         return weekSchedule.add(newClass);
     }
 
-    public boolean classAlreadyScheduled(ClassTime classTime) {
+    public boolean removeClass(ClassTime classToRemove) {
+        if (weekSchedule == null)
+            return false;
+        return weekSchedule.remove(classToRemove);
+    }
+
+    public boolean classScheduled(ClassTime classTime) {
         if (weekSchedule == null)
             return false;
         return weekSchedule.contains(classTime);

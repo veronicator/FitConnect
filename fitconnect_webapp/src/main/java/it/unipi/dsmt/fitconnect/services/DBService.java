@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,7 +102,7 @@ public class DBService {
             }
             Course course = optCourse.get();
             ClassTime newClassTime = new ClassTime(dayOfWeek, startTime, endTime);
-            if (course.classAlreadyScheduled(newClassTime)) {
+            if (course.classScheduled(newClassTime)) {
                 System.out.println("class already scheduled at the requested time");
                 return false;
             }
@@ -130,33 +131,33 @@ public class DBService {
         return true;
     }
 
-    public boolean subscribeCourse(String courseId, String username) {
+    public boolean joinCourse(String courseId, String username) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername(username);
             if (optUser.isEmpty()) {
-                System.out.println("subscription failed: user not found");
+                System.out.println("joinCourse failed: user not found");
                 return false;
             }
             MongoUser client = optUser.get();
             if ((client.getRole().compareTo(UserRole.client) != 0)) {
-                System.out.println("subscription failed: logged user it's not a client");
+                System.out.println("joinCourse failed: logged user it's not a client");
                 return false;
             }
 
             Optional<Course> optCourse = courseRepository.findById(courseId);
             if (optCourse.isEmpty()) {
-                System.out.println("subscription failed: course not found");
+                System.out.println("joinCourse failed: course not found");
                 return false;
             }
             Course course = optCourse.get();
             if (client.addCourse(course)) {
                 userRepository.save(client);
-                System.out.println("Subscription succeeded for the course: " + course.getCourseName() +
+                System.out.println("JoinCourse succeeded for the course: " + course.getCourseName() +
                         " taught by: " + course.getTrainer());
                 return true;
             }
         } catch (Exception e) {
-            System.out.println("addCourse failed");
+            System.out.println("joinCourse failed");
             e.printStackTrace();
             return false;
         }
@@ -297,7 +298,7 @@ public class DBService {
         return false;
     }
 
-    public boolean deleteCourseSubscription(String courseId, String username) {
+    public boolean leaveCourse(String courseId, String username) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername(username);
             if (optUser.isEmpty()) {
@@ -328,7 +329,7 @@ public class DBService {
             e.printStackTrace();
             return false;
         }
-        System.out.println("deleteCourseSubscription failed");
+        System.out.println("leaveCourse failed");
         return false;
     }
 
@@ -352,6 +353,108 @@ public class DBService {
         } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {
             e.printStackTrace();
             System.err.println("Course deletion failed");
+            return false;
+        }
+        return true;
+    }
+
+    public boolean removeClassTime(String courseId, DayOfWeek dayOfWeek, LocalTime startTime) {
+        try {
+            if (dayOfWeek.equals(LocalDate.now().getDayOfWeek()) &&
+                    (startTime.isAfter(LocalTime.now()) &&
+                            startTime.isBefore(LocalTime.now().plusMinutes(30)))) {
+                System.out.println("Error: too late to remove this class, try later");
+                return false;
+            }
+
+            Optional<Course> optCourse = courseRepository.findById(courseId);
+            if (optCourse.isEmpty()) {
+                System.out.println("Error: course not found");
+                return false;
+            }
+            Course course = optCourse.get();
+            ClassTime classToRemove = new ClassTime(dayOfWeek, startTime);
+            if (course.removeClass(classToRemove)) {
+                System.out.println("classTime removed successfully");
+                courseRepository.save((course));
+                List<Reservations> reservations = reservationsRepository.findByCourseDayTime(
+                        new ObjectId(courseId), dayOfWeek, startTime.toString());
+                reservationsRepository.deleteByCourseDayTime(course.getId(), dayOfWeek, startTime.toString());
+            }
+        } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {
+            e.printStackTrace();
+            System.err.println("Course deletion failed");
+            return false;
+        }
+        return true;
+    }
+
+    /** a classTime modification is possible only if the class (old or new) does not start for an hour from now
+     * */
+    public boolean editCourseClassTime(String courseId, DayOfWeek oldDay, LocalTime oldStartTime,
+                                       DayOfWeek newDay, LocalTime newStartTime, LocalTime newEndTime) {
+
+        try {
+            // todo: check if the logged user is the trainer of this course
+
+            if (oldDay.equals(LocalDate.now().getDayOfWeek()) &&
+                    ((oldStartTime.isAfter(LocalTime.now()) &&
+                            oldStartTime.isBefore(LocalTime.now().plusHours(1))) ||
+                        newStartTime.isBefore(LocalTime.now().plusHours(1)))) {
+                System.out.println("Error: too late to modify this class, try later for the next week schedule");
+                return false;
+            }
+
+            Optional<Course> optCourse = courseRepository.findById(courseId);
+            if (optCourse.isEmpty()) {
+                System.out.println("Error: course not found");
+                return false;
+            }
+            Course course = optCourse.get();
+
+            ClassTime oldClass = new ClassTime(oldDay, oldStartTime);
+            if (!course.removeClass(oldClass)) {
+                System.out.println("class to modify does not exists");
+                return false;
+            }
+            // old classTime removed from list
+
+            ClassTime newClass = new ClassTime(newDay, newStartTime, newEndTime);
+            if (course.classScheduled(newClass)) {
+                System.out.println("classTime modification not possible: class already scheduled at the new requested time");
+                return false;
+            }
+            // class removed -> add the new one
+            if (!course.addNewClass(newClass)) {
+                System.err.println("Error: classTime modification failed");
+                return false;
+            }
+            // new classTime added
+            // get all related reservations to modify the scheduled class time
+            List<Reservations> reservations = reservationsRepository.findByCourseDayTime(
+                    course.getId(), oldDay, oldStartTime.toString());
+
+            LocalDateTime newActualTime = getDatetimeFromDayAndTime(newDay, newStartTime);
+            List<MongoUser> bookedUsers = new ArrayList<>();
+            for (Reservations r: reservations) {
+                r.setDayOfWeek(newDay);
+                r.setStartTime(newStartTime.toString());
+                r.setEndTime(newEndTime.toString());
+                r.setActualClassTime(newActualTime);
+                bookedUsers.addAll(r.getBookedUsers());
+                reservationsRepository.save(r);
+            }
+            course = courseRepository.save(course);
+
+            for (MongoUser u: bookedUsers) {
+                /* todo: chiamare la rispettiva funzione java-erlang per le notifiche di modifica orario ai nodi
+                * -> ErlangNode/ErlangController
+                *
+                * */
+            }
+        } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {
+            e.printStackTrace();
+            System.err.println("editClassTime failed");
             return false;
         }
         return true;

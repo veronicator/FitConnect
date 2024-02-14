@@ -78,9 +78,7 @@ public class Reservations {
     public boolean addBooking(MongoUser user) {
         if (bookedUsers == null)
             bookedUsers = new ArrayList<>();
-        if (reservablePlaces <= 0)
-            return false;
-        if (isBooked(user))
+        if (reservablePlaces <= 0 || isBooked(user))
             return false;
         reservablePlaces--;
         return bookedUsers.add(user);
