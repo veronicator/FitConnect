@@ -1,6 +1,6 @@
-package it.unipi.dsmt.FitConnect.repositories.ldap;
+package it.unipi.dsmt.fitconnect.repositories.ldap;
 
-import it.unipi.dsmt.FitConnect.entities.LdapUser;
+import it.unipi.dsmt.fitconnect.entities.LdapUser;
 import org.springframework.data.ldap.repository.LdapRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,6 +10,8 @@ public interface LdapUserRepository extends LdapRepository<LdapUser> {
     LdapUser findByUsername(String username);
 
     LdapUser findByUsernameAndPassword(String username, String password);
+
+    boolean existsByUsername(String username);
 
     List<LdapUser> findByUsernameLikeIgnoreCase(String username);
 

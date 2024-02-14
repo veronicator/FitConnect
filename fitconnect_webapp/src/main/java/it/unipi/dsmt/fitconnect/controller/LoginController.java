@@ -1,10 +1,10 @@
-package it.unipi.dsmt.FitConnect.controller;
+package it.unipi.dsmt.fitconnect.controller;
 
 
-import it.unipi.dsmt.FitConnect.entities.LdapUser;
-import it.unipi.dsmt.FitConnect.entities.MongoUser;
-import it.unipi.dsmt.FitConnect.enums.UserRole;
-import it.unipi.dsmt.FitConnect.services.AuthService;
+import it.unipi.dsmt.fitconnect.entities.LdapUser;
+import it.unipi.dsmt.fitconnect.entities.MongoUser;
+import it.unipi.dsmt.fitconnect.enums.UserRole;
+import it.unipi.dsmt.fitconnect.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,7 +21,6 @@ public class LoginController {
         return "home";
     }
 
-    //@GetMapping({"/", "/login"})
     @GetMapping(value = {"/","/login"})
     public String index(){
         return "login";
@@ -46,7 +45,7 @@ public class LoginController {
     }
 
     @PostMapping("/signup")
-    public String doSignup(@RequestParam String firstName, @RequestParam String lastName,
+    public String doSignup(@RequestParam String firstname, @RequestParam String lastname,
                            @RequestParam String email, @RequestParam String username,
                            @RequestParam String password, @RequestParam String repeat_password)
     {
@@ -55,17 +54,15 @@ public class LoginController {
             return "signup";
         }
 
-        try{
-            String commonName = String.join(" ", firstName, lastName);
-            LdapUser ldapUser = new LdapUser(username, commonName, lastName, password);
-            MongoUser mongoUser = new MongoUser(username, firstName, lastName, email);
-            //todo: gestire ruolo
-            mongoUser.setRole(UserRole.client);
+        try {
+            String commonName = String.join(" ", firstname, lastname);
+            LdapUser ldapUser = new LdapUser(username, commonName, lastname, password);
+            MongoUser mongoUser = new MongoUser(username, firstname, lastname, email, UserRole.client);
             authService.signup(ldapUser, mongoUser);
 
             return "login";
 
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Error in signup: " + e.getMessage());
             return "signup";
         }

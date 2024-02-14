@@ -1,10 +1,10 @@
-package it.unipi.dsmt.FitConnect.services;
+package it.unipi.dsmt.fitconnect.services;
 
-import it.unipi.dsmt.FitConnect.entities.LdapUser;
-import it.unipi.dsmt.FitConnect.entities.MongoUser;
-import it.unipi.dsmt.FitConnect.repositories.ldap.LdapUserRepository;
-import it.unipi.dsmt.FitConnect.repositories.mongo.MongoUserRepository;
-import it.unipi.dsmt.FitConnect.util.SecurityManager;
+import it.unipi.dsmt.fitconnect.entities.LdapUser;
+import it.unipi.dsmt.fitconnect.entities.MongoUser;
+import it.unipi.dsmt.fitconnect.repositories.ldap.LdapUserRepository;
+import it.unipi.dsmt.fitconnect.repositories.mongo.MongoUserRepository;
+import it.unipi.dsmt.fitconnect.util.SecurityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -132,12 +132,15 @@ public class AuthService {
      * @param mongoNewUser: user data to insert in mongodb
      * @throws Exception
      */
-    public void signup(final LdapUser ldapNewUser, final MongoUser mongoNewUser) throws Exception {
+    public void signup(LdapUser ldapNewUser, MongoUser mongoNewUser) throws Exception {
+        System.out.println("in signup");
 
         // check if username is already used
-        if(search(ldapNewUser.getUsername()) != null){
+        if(search(ldapNewUser.getUsername()) != null
+                || mongoUserRepository.existsByUsername(mongoNewUser.getUsername())) {
             throw new Exception("Username already used. Retry");
-        }
+        } else
+            System.out.println("username ok");
 
         boolean ldapSuccess = createLdapUser(ldapNewUser);
         boolean mongoSuccess = createMongoUser(mongoNewUser);
@@ -145,6 +148,25 @@ public class AuthService {
         if (!ldapSuccess || !mongoSuccess) {
             throw new Exception("Error in registration phase");
         }
+        /* todo: gestire la doppia registrazione utente in altro modo
+        -> se fallisce la registrazione su ldap, non va eseguita nemmeno quella su mongo,
+        -> se fallisce solo su mongo => va rifatto un tentativo (?), altrimenti va cancellato tutto e restituito errore
+        */
+/*        ad es.
+        if (!createLdapUser(ldapNewUser)) {
+            throw new Exception("Error in registration phase");
+        }
+        */
+/*
+        if (createLdapUser(ldapNewUser)) {
+            if (createMongoUser(mongoNewUser)) {
+                return;
+            }
+            ldapUserRepository.delete(ldapNewUser);
+        }
+        throw new Exception("Error in registration phase");
+
+ */
 
     }
 
@@ -168,12 +190,12 @@ public class AuthService {
         String hashedPassword = securityManager.hashPassword(user.getPassword());
         context.setAttributeValue("userPassword", hashedPassword);
 
-        try{
+        try {
             // insert user into ldap db
             ldapTemplate.bind(context);
             System.out.println("User: " + user.getUsername() + " registered in ldap");
             return true;
-        }catch(Exception e){
+        } catch(Exception e) {
             System.out.println("error in ldap registration: " + e.getMessage());
             return false;
         }
@@ -187,11 +209,11 @@ public class AuthService {
      */
     public boolean createMongoUser(final MongoUser user){
         // insert user into mongo db
-        try{
+        try {
             mongoUserRepository.save(user);
             System.out.println("User: " + user.getUsername() + " registered in mongodb");
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("error in mongodb registration: " + e.getMessage());
             return false;
         }
