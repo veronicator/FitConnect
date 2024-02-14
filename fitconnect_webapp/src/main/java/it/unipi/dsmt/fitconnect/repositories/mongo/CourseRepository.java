@@ -26,7 +26,7 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     List<Course> findByCourseName(CourseType courseName);
     @Query("{'trainerUsername': { $regex: ?0, $options: 'i'}}")
     List<Course> findByTrainerUsername(String trainer);
-    @Query("{'weekSchedule.dayOfWeek': ?0}")
+    @Query("{'weekSchedule.dayOfWeek': ?0}") //
     List<Course> findByDay(DayOfWeek dayOfWeek);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}, 'trainer': { $regex: ?1, $options: 'i'} }")
     Optional<Course> findByCourseNameAndTrainer(CourseType course, String trainer);

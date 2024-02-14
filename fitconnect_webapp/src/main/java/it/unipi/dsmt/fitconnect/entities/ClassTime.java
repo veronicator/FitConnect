@@ -20,7 +20,7 @@ public class ClassTime {
     public ClassTime(DayOfWeek dayOfWeek, LocalTime startTime) {
         this.dayOfWeek = dayOfWeek;
         this.startTime = startTime;
-        this.endTime = startTime.minusHours(1);
+        this.endTime = startTime.plusHours(1);
     }
     @Override
     public boolean equals(Object obj) {

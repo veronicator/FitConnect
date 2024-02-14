@@ -141,8 +141,8 @@ public class PagesController {
         HttpSession session = request.getSession(false);
         if(session != null) {
             MongoUser loggedUser = (MongoUser) session.getAttribute("loggedUser");
-            System.out.println(trainerCourse.getEnrolledUsers());
-            isJoined = trainerCourse.getEnrolledUsers().contains(loggedUser.getId());
+            System.out.println(trainerCourse.getEnrolledClients());
+            isJoined = trainerCourse.getEnrolledClients().contains(loggedUser.getId());
 
         }
 
