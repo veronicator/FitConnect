@@ -82,9 +82,18 @@ public class Course {
         return c.id.equals(this.id);
     }
 
+//    @Override
+//    public String toString() {
+//        return String.format("course: %s class, trainer: %s", courseName, trainer);
+//    }
+
+
     @Override
     public String toString() {
-        return String.format("course: %s, trainer: %s", courseName, trainer);
+        return "Course{" +
+                "courseName='" + courseName + '\'' +
+                ", trainer='" + trainer + '\'' +
+                '}';
     }
 }
 

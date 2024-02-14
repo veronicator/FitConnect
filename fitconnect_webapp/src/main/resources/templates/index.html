@@ -19,55 +19,21 @@
     <link rel="stylesheet" href="/dropdown/css/style.css">
     <link rel="stylesheet" href="/socicon/css/styles.css">
     <link rel="stylesheet" href="/theme/css/style.css">
-    <link rel="preload" href="https://fonts.googleapis.com/css?family=Inter+Tight:100,200,300,400,500,600,700,800,900,100i,200i,300i,400i,500i,600i,700i,800i,900i&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter+Tight:100,200,300,400,500,600,700,800,900,100i,200i,300i,400i,500i,600i,700i,800i,900i&display=swap"></noscript>
-    <link rel="preload" as="style" href="/mobirise/css/mbr-additional.css"><link rel="stylesheet" href="/mobirise/css/mbr-additional.css" type="text/css">
-
-
+    <link rel="preload"
+          href="https://fonts.googleapis.com/css?family=Inter+Tight:100,200,300,400,500,600,700,800,900,100i,200i,300i,400i,500i,600i,700i,800i,900i&display=swap"
+          as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css?family=Inter+Tight:100,200,300,400,500,600,700,800,900,100i,200i,300i,400i,500i,600i,700i,800i,900i&display=swap">
+    </noscript>
+    <link rel="preload" as="style" href="/mobirise/css/mbr-additional.css">
+    <link rel="stylesheet" href="/mobirise/css/mbr-additional.css" type="text/css">
 
 
 </head>
 <body>
 
-<section data-bs-version="5.1" class="menu menu4 cid-tYmt7xBL0B" once="menu" id="menu04-5">
-
-
-    <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
-        <div class="container">
-            <div class="navbar-brand">
-				<span class="navbar-logo">
-					<a href="https://mobiri.se">
-						<img src="/images/fitconnect-logo.jpg" alt="Mobirise Website Builder" style="height: 4rem;">
-					</a>
-				</span>
-
-            </div>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbarSupportedContent" data-bs-target="#navbarSupportedContent" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <div class="hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav nav-dropdown" data-app-modern-menu="true">
-                    <li class="nav-item">
-                        <a class="nav-link link text-black display-4" href="https://mobiri.se">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link link text-black show display-4" href="https://mobiri.se" aria-expanded="false">Services</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link link text-black display-4" href="https://mobiri.se">Contacts</a>
-                    </li>
-                </ul>
-
-                <div class="navbar-buttons mbr-section-btn"><a class="btn btn-primary display-4" th:href="@{/login}">Login</a></div>
-            </div>
-        </div>
-    </nav>
-</section>
+<div th:replace="~{header.html}"></div>
 
 <section data-bs-version="5.1" class="header16 cid-tYmnPtY2Ub mbr-fullscreen mbr-parallax-background" id="header17-1">
 
@@ -79,15 +45,13 @@
                     <strong><br>Elevate your fitness journey to new heights</strong></h1>
 
                 <p class="mbr-fonts-style mbr-text mbr-white mb-4 display-5">Does this trapeze fit? I highly doubt it.&nbsp;</p>
-                <div class="mbr-section-btn"><a class="btn btn-white-outline display-7" href="https://mobiri.se">Learn More</a></div>
+                <div class="mbr-section-btn"><a class="btn btn-white-outline display-7" href="#">Learn More</a></div>
             </div>
         </div>
     </div>
 </section>
 
 <section data-bs-version="5.1" class="features1 cid-tYmo1gmLGi" id="features01-2">
-
-
 
 
     <div class="container-fluid">
@@ -104,21 +68,19 @@
                     <div class="image-wrap">
                         <img src="/images/mbr.jpg" alt="Mobirise Website Builder">
                         <div class="social-row display-7">
-                            <div class="soc-item tag1">
-                <span class="tag1 mbr-fonts-style display-7">
-                  Free</span>
-                            </div>
+                            <div class="soc-item tag1"></div>
                         </div>
                     </div>
                     <div class="content-wrap">
-                        <h5 class="mbr-card-title card-title1 mbr-fonts-style align-left mb-2 display-5"><strong>Yoga</strong></h5>
+                        <h5 class="mbr-card-title card-title1 mbr-fonts-style align-left mb-2 display-5">
+                            <strong>Yoga</strong></h5>
 
                         <p class="card-text1 mbr-fonts-style align-left mb-3 display-7">
                             Lorem ipsum dolor sit amet nulla vel, consectetur adipiscing.
                             Donec massa nulla gravida pulvinar.
                         </p>
                         <div class="mbr-section-btn align-left content-footer">
-                            <a class="btn article-btn btn-info display-7" href="https://mobiri.se"><strong>Read more</strong></a>
+                            <a class="btn article-btn btn-info display-7" th:href="@{/courses/__${'yoga'}__}"><strong>Read more</strong></a>
                         </div>
                     </div>
                 </div>
@@ -129,20 +91,20 @@
                     <div class="image-wrap">
                         <img src="/images/mbr-1-1158x772.jpg" alt="Mobirise Website Builder">
                         <div class="social-row display-7">
-                            <div class="soc-item tag2">
-                <span class="tag2 mbr-fonts-style display-7">
-                  Pro</span>
-                            </div>
+                            <div class="soc-item tag2"></div>
                         </div>
                     </div>
                     <div class="content-wrap">
-                        <h5 class="mbr-card-title card-title2 mbr-fonts-style align-left mb-2 display-5"><strong>Crossfit</strong></h5>
+                        <h5 class="mbr-card-title card-title2 mbr-fonts-style align-left mb-2 display-5"><strong>Crossfit</strong>
+                        </h5>
 
                         <p class="card-text2 mbr-fonts-style align-left mb-3 display-7">
                             Lorem ipsum dolor sit amet nulla vel, consectetur adipiscing.
                             Donec massa nulla gravida pulvinar.<br>
                         </p>
-                        <div class="mbr-section-btn btn-section align-left content-footer"><a class="btn article-btn btn-white display-7" href="https://mobiri.se"><strong>Read more</strong></a></div>
+                        <div class="mbr-section-btn btn-section align-left content-footer"><a
+                                class="btn article-btn btn-white display-7" href="#"><strong>Read more</strong></a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -151,10 +113,7 @@
                     <div class="image-wrap">
                         <img src="/images/mbr-1158x771.jpg" alt="Mobirise Website Builder">
                         <div class="social-row display-7">
-                            <div class="soc-item tag3">
-                <span class="tag3 mbr-fonts-style display-7">
-                  Basic</span>
-                            </div>
+                            <div class="soc-item tag3"></div>
                         </div>
                     </div>
                     <div class="content-wrap">
@@ -166,7 +125,7 @@
                             Donec massa nulla gravida pulvinar.
                         </p>
                         <div class="mbr-section-btn btn-section align-left content-footer">
-                            <a class="btn article-btn btn-black display-7" href="https://mobiri.se"><strong>Read more</strong></a>
+                            <a class="btn article-btn btn-black display-7" href="#"><strong>Read more</strong></a>
                         </div>
                     </div>
                 </div>
@@ -177,10 +136,7 @@
                     <div class="image-wrap">
                         <img src="/images/mbr-1158x772.jpg" alt="Mobirise Website Builder">
                         <div class="social-row display-7">
-                            <div class="soc-item tag4">
-                <span class="tag4 mbr-fonts-style display-7">
-                  Free</span>
-                            </div>
+                            <div class="soc-item tag4"></div>
                         </div>
                     </div>
                     <div class="content-wrap">
@@ -192,7 +148,7 @@
                             Donec massa nulla gravida pulvinar.
                         </p>
                         <div class="mbr-section-btn btn-section align-left content-footer">
-                            <a class="btn article-btn btn-primary display-7" href="https://mobiri.se"><strong>Read more</strong></a>
+                            <a class="btn article-btn btn-primary display-7" href="#"><strong>Read more</strong></a>
                         </div>
                     </div>
                 </div>
@@ -204,8 +160,6 @@
 <section data-bs-version="5.1" class="social05 cid-tYmqilRyik" id="social05-3">
 
 
-
-
     <div class="container">
         <div class="row">
             <h3 class="mbr-section-title align-center mb-5 mbr-fonts-style display-2">
@@ -214,27 +168,27 @@
             <div class="col-12">
                 <div class="social-row">
                     <div class="soc-item">
-                        <a href="https://mobiri.se/" target="_blank">
+                        <a href="#" target="_blank">
                             <span class="mbr-iconfont socicon socicon-facebook"></span>
                         </a>
                     </div>
                     <div class="soc-item">
-                        <a href="https://mobiri.se/" target="_blank">
+                        <a href="#" target="_blank">
                             <span class="mbr-iconfont socicon-twitter socicon"></span>
                         </a>
                     </div>
                     <div class="soc-item">
-                        <a href="https://mobiri.se/" target="_blank">
+                        <a href="#" target="_blank">
                             <span class="mbr-iconfont socicon-instagram socicon"></span>
                         </a>
                     </div>
                     <div class="soc-item">
-                        <a href="https://mobiri.se/" target="_blank">
+                        <a href="#" target="_blank">
                             <span class="mbr-iconfont socicon socicon-linkedin"></span>
                         </a>
                     </div>
                     <div class="soc-item">
-                        <a href="https://mobiri.se/" target="_blank">
+                        <a href="#" target="_blank">
                             <span class="mbr-iconfont socicon-youtube socicon"></span>
                         </a>
                     </div>
@@ -247,9 +201,6 @@
 <section data-bs-version="5.1" class="footer4 cid-tYmqkHlnJx" once="footers" id="footer04-4">
 
 
-
-
-
     <div class="container">
         <div class="media-container-row align-center mbr-white">
             <div class="col-12">
@@ -259,6 +210,6 @@
             </div>
         </div>
     </div>
-
+</section>
 </body>
 </html>

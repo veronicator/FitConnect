@@ -36,7 +36,7 @@ public class DBService {
     @Autowired
     private MessageRepositories messageRepositories;
 
-//    @Scheduled(cron = "@midnight")
+    //    @Scheduled(cron = "@midnight")
     @Scheduled(cron = "0 */1 * * * *")  // for testing: scheduled every minute
     public void updateReservationsCollection() {
         try {
@@ -403,7 +403,7 @@ public class DBService {
             if (oldDay.equals(LocalDate.now().getDayOfWeek()) &&
                     ((oldStartTime.isAfter(LocalTime.now()) &&
                             oldStartTime.isBefore(LocalTime.now().plusHours(1))) ||
-                        newStartTime.isBefore(LocalTime.now().plusHours(1)))) {
+                            newStartTime.isBefore(LocalTime.now().plusHours(1)))) {
                 System.out.println("Error: too late to modify this class, try later for the next week schedule");
                 return false;
             }
@@ -451,9 +451,9 @@ public class DBService {
 
             for (MongoUser u: bookedUsers) {
                 /* todo: chiamare la rispettiva funzione java-erlang per le notifiche di modifica orario ai nodi
-                * -> ErlangNode/ErlangController
-                *
-                * */
+                 * -> ErlangNode/ErlangController
+                 *
+                 * */
             }
         } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {
             e.printStackTrace();
