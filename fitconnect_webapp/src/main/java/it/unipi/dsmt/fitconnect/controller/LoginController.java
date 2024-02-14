@@ -1,12 +1,11 @@
-package it.unipi.dsmt.FitConnect.controller;
+package it.unipi.dsmt.fitconnect.controller;
 
-
-import it.unipi.dsmt.FitConnect.entities.LdapUser;
-import it.unipi.dsmt.FitConnect.entities.MongoUser;
-import it.unipi.dsmt.FitConnect.enums.UserRole;
-import it.unipi.dsmt.FitConnect.services.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import it.unipi.dsmt.fitconnect.entities.LdapUser;
+import it.unipi.dsmt.fitconnect.entities.MongoUser;
+import it.unipi.dsmt.fitconnect.enums.UserRole;
+import it.unipi.dsmt.fitconnect.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

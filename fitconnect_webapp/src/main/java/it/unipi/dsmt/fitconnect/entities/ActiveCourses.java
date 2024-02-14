@@ -1,4 +1,4 @@
-package it.unipi.dsmt.FitConnect.entities;
+package it.unipi.dsmt.fitconnect.entities;
 
 import org.springframework.stereotype.Component;
 

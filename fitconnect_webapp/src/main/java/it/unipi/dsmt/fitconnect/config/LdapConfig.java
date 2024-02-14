@@ -1,9 +1,7 @@
-package it.unipi.dsmt.FitConnect.config;
+package it.unipi.dsmt.fitconnect.config;
 
-import it.unipi.dsmt.FitConnect.services.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
+import it.unipi.dsmt.fitconnect.services.AuthService;
 import org.springframework.context.annotation.*;
-import org.springframework.core.env.Environment;
 import org.springframework.data.ldap.repository.config.EnableLdapRepositories;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;

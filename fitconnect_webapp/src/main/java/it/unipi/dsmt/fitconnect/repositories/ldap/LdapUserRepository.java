@@ -1,10 +1,9 @@
-package it.unipi.dsmt.FitConnect.repositories.ldap;
+package it.unipi.dsmt.fitconnect.repositories.ldap;
 
-import it.unipi.dsmt.FitConnect.entities.LdapUser;
+import it.unipi.dsmt.fitconnect.entities.LdapUser;
 import org.springframework.data.ldap.repository.LdapRepository;
 import org.springframework.stereotype.Repository;
 
-import javax.naming.Name;
 import java.util.List;
 @Repository("ldapUserRepository")
 public interface LdapUserRepository extends LdapRepository<LdapUser> {

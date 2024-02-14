@@ -1,4 +1,4 @@
-package it.unipi.dsmt.FitConnect.util;
+package it.unipi.dsmt.fitconnect.util;
 
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;

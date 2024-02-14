@@ -1,6 +1,6 @@
-package it.unipi.dsmt.FitConnect.util;
+package it.unipi.dsmt.fitconnect.util;
 
-import it.unipi.dsmt.FitConnect.entities.MongoUser;
+import it.unipi.dsmt.fitconnect.entities.MongoUser;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mongodb.core.mapping.DocumentPointer;

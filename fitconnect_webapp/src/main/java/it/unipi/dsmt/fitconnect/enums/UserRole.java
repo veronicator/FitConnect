@@ -1,4 +1,4 @@
-package it.unipi.dsmt.FitConnect.enums;
+package it.unipi.dsmt.fitconnect.enums;
 
 public enum UserRole {
     client,

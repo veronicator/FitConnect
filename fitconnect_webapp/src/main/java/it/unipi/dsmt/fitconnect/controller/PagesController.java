@@ -1,10 +1,11 @@
-package it.unipi.dsmt.FitConnect.controller;
+package it.unipi.dsmt.fitconnect.controller;
 
-import it.unipi.dsmt.FitConnect.entities.*;
-import it.unipi.dsmt.FitConnect.enums.UserRole;
-import it.unipi.dsmt.FitConnect.services.DBService;
+import it.unipi.dsmt.fitconnect.enums.CourseType;
+import it.unipi.dsmt.fitconnect.enums.UserRole;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import it.unipi.dsmt.fitconnect.entities.*;
+import it.unipi.dsmt.fitconnect.services.DBService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +22,7 @@ public class PagesController {
     private DBService dbService;
     @Autowired
     private ActiveCourses courses;  // all gym courses in the db or only those of a user?
+//    private ErlangNodeController;
 
     @GetMapping({"/", "/index"})
     public String index() {     // todo: cambiare nome metodo?
@@ -37,12 +39,12 @@ public class PagesController {
         courses.clear();
         // todo: da modificare in base alla nuova struttura del document
         // va cambiata con userRepository.findCourses() -> va dichiarato il metodo corretto
-        courses.addAll(dbService.getCourseRepository().findByUser(username));
+//        courses.addAll(dbService.getCourseRepository().findByUser(username));
     }
 
     private void loadTrainerCourses(String trainer) {
         courses.clear();
-        courses.addAll(dbService.getCourseRepository().findByTrainer(trainer));
+        courses.addAll(dbService.browseUserCourses(trainer));
     }
     /* todo: aggiungere i vari metodi */
 
@@ -60,11 +62,15 @@ public class PagesController {
          *       => decrement availablePlaces field
          *       => add the reservation to the user object
          *       => save the Schedule doc on the db
-         * } catch(ObjectOptimisticLockingFailureException e) {
-         *   return false
-         * }
-         * return true
-         * */
+        * [join, coursename]
+        * [deleteC
+        * String command = "join-Yoga"
+        * erlangNodeController.sendCommandToNode(username, command)
+        * } catch(ObjectOptimisticLockingFailureException e) {
+        *   return false
+        * }
+        * return true
+        * */
         return false;
     }
 
@@ -99,13 +105,17 @@ public class PagesController {
     @GetMapping("/courses")
     public String courses(Model model) {
         List<Course> courses = dbService.getCourseRepository().findAll();
-        Collections.sort(courses, Comparator.comparing(Course::getCourseName));
+        /*Collections.sort(courses, Comparator.comparing(Course::getCourseName));
 
         Set<String> uniqueCourseNames = courses.stream()
                 .map(Course::getCourseName)
                 .collect(Collectors.toSet());
 
-        model.addAttribute("courseName", uniqueCourseNames);
+//        model.addAttribute("courseName", uniqueCourseNames);
+
+         */
+        // todo: check
+        model.addAttribute("courseName", CourseType.values());
         model.addAttribute("courseList", courses);
 
         return "courses";
@@ -115,15 +125,17 @@ public class PagesController {
     public String viewCourseSchedule(@PathVariable String course, @PathVariable String trainer,
                                      HttpServletRequest request, Model model) {
 
-        Course trainerCourse = dbService.getCourseRepository().findByTrainer(trainer).get(0);
+        Course trainerCourse = dbService.getCourseRepository().findByTrainerUsername(trainer).get(0);
         List<ClassTime> weekSchedule = trainerCourse.getWeekSchedule();
 
         List<Course> courses = dbService.getCourseRepository().findAll();
-        Collections.sort(courses, Comparator.comparing(Course::getCourseName));
+        /*Collections.sort(courses, Comparator.comparing(Course::getCourseName));
 
         Set<String> uniqueCourseNames = courses.stream()
                 .map(Course::getCourseName)
                 .collect(Collectors.toSet());
+
+         */
         boolean isJoined = false;
         // check if logged user is subscribed to this course
         HttpSession session = request.getSession(false);
@@ -135,7 +147,8 @@ public class PagesController {
         }
 
         model.addAttribute("isJoined", isJoined);
-        model.addAttribute("courseName", uniqueCourseNames);
+//        model.addAttribute("courseName", uniqueCourseNames);
+        model.addAttribute("courseName", CourseType.values());
         model.addAttribute("courseList", courses);
         model.addAttribute("weekSchedule", weekSchedule);
         model.addAttribute("trainer", trainer);
@@ -148,7 +161,7 @@ public class PagesController {
                              @PathVariable String course) {
 
 
-        List<Course> courses = dbService.getCourseRepository().findByCourseName(course);
+        List<Course> courses = dbService.getCourseRepository().findByCourseName(CourseType.valueOf(course));
 
 
         List<ClassTime> weekSchedule = courses.get(0).getWeekSchedule();
@@ -311,7 +324,8 @@ public class PagesController {
     }
 
     private void populate_courses() {
-        // Ripopolamento del documento "courses"
+        // Ripopolamento della collection "courses"
+        /*
         dbService.addCourse("yoga", "Mario Rossi");
         dbService.addCourse("yoga", "Giulia Bianchi");
         dbService.addCourse("yoga", "Luca Verdi");
@@ -355,6 +369,8 @@ public class PagesController {
         dbService.addCourse("gym", "Chiara Ferrari");
         dbService.addCourse("gym", "Luigi Romano");
         dbService.addCourse("gym", "Martina Rosso");
+
+         */
     }
 
 }

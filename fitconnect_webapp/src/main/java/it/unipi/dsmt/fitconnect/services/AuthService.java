@@ -1,10 +1,10 @@
-package it.unipi.dsmt.FitConnect.services;
+package it.unipi.dsmt.fitconnect.services;
 
-import it.unipi.dsmt.FitConnect.entities.LdapUser;
-import it.unipi.dsmt.FitConnect.entities.MongoUser;
-import it.unipi.dsmt.FitConnect.repositories.ldap.LdapUserRepository;
-import it.unipi.dsmt.FitConnect.repositories.mongo.MongoUserRepository;
-import it.unipi.dsmt.FitConnect.util.SecurityManager;
+import it.unipi.dsmt.fitconnect.entities.LdapUser;
+import it.unipi.dsmt.fitconnect.entities.MongoUser;
+import it.unipi.dsmt.fitconnect.repositories.ldap.LdapUserRepository;
+import it.unipi.dsmt.fitconnect.repositories.mongo.MongoUserRepository;
+import it.unipi.dsmt.fitconnect.util.SecurityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ldap.core.DirContextAdapter;

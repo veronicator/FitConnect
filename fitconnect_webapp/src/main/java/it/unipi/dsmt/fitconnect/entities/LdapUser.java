@@ -1,4 +1,4 @@
-package it.unipi.dsmt.FitConnect.entities;
+package it.unipi.dsmt.fitconnect.entities;
 
 import lombok.*;
 import org.springframework.ldap.odm.annotations.Attribute;
