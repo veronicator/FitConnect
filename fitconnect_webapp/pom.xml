@@ -78,10 +78,10 @@
         <!--        </dependency>-->
 
         <dependency>
-    		<groupId>com.ericsson.otp</groupId>
-    		<artifactId>erlang</artifactId>
-    		<version>1.12.1</version>
-		</dependency>
+            <groupId>clojang</groupId>
+            <artifactId>erlang-jinterface</artifactId>
+            <version>1.10-1</version>
+        </dependency>
     </dependencies>
 
     <build>
