@@ -2,6 +2,9 @@ package it.unipi.dsmt.fitconnect.erlang;
 
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpErlangExit;
+import it.unipi.dsmt.fitconnect.entities.CourseNotification;
+import it.unipi.dsmt.fitconnect.entities.UserNotification;
+
 import java.time.LocalDateTime;
 
 public class ErlangNodeListener extends Thread{

@@ -157,6 +157,8 @@ public class DBService {
             Course course = optCourse.get();
             if (client.addCourse(course)) {
                 userRepository.save(client);
+                String joinCommand = String.format("join-%s", course.getId().toString());
+                erlangNodesController.sendCommandToNode(client.getUsername(), joinCommand);
                 System.out.println("JoinCourse succeeded for the course: " + course.getCourseName() +
                         " taught by: " + course.getTrainer());
                 return true;
@@ -198,6 +200,10 @@ public class DBService {
 
             if (reservations.addBooking(user)) {
                 reservations = reservationsRepository.save(reservations);
+                String bookingCommand = String.format("i-%s-%d",
+                        reservations.getId().toString(),
+                        reservations.getActualClassTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+                erlangNodesController.sendCommandToNode(user.getUsername(), bookingCommand);
                 System.out.println("class booking made for the day " + reservations.getClassDate() +
                         ", at " + reservations.getStartTime());
             } else {
@@ -270,7 +276,7 @@ public class DBService {
         return courseRepository.findAll();
     }
 
-    public boolean removeBooking(String reservationsId, String username) {
+    public boolean unbookClass(String reservationsId, String username) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername(username);
             if (optUser.isEmpty()) {
@@ -291,6 +297,9 @@ public class DBService {
             }
             if (reservation.removeBooking(user)) {
                 reservationsRepository.save(reservation);
+                String unbookingCommand = String.format("i-%s",
+                        reservation.getId().toString());
+                erlangNodesController.sendCommandToNode(user.getUsername(), unbookingCommand);
                 System.out.println("booking removed for the day " + reservation.getClassDate() +
                         ", at " + reservation.getStartTime());
                 return true;
@@ -326,6 +335,8 @@ public class DBService {
             }
             if (client.removeCourse(course)) {
                 userRepository.save(client);
+                String leaveCommand = String.format("leave-%s", course.getId().toString());
+                erlangNodesController.sendCommandToNode(client.getUsername(), leaveCommand);
                 System.out.println("Subscription from course: " + course.getCourseName() +
                         " removed successfully");
                 return true;
@@ -446,10 +457,10 @@ public class DBService {
                 r.setEndTime(newEndTime.toString());
                 r.setActualClassTime(newActualTime);
                 for (MongoUser u: r.getBookedUsers()) {
-                    String commandToNode = String.format("%s-%d",
+                    String editCommand = String.format("e-%s-%d",
                             r.getId().toString(),
                             newActualTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-                    erlangNodesController.sendCommandToNode(u.getUsername(), commandToNode);
+                    erlangNodesController.sendCommandToNode(u.getUsername(), editCommand);
                 }
                 reservationsRepository.save(r);
             }
@@ -460,6 +471,15 @@ public class DBService {
             return false;
         }
         return true;
+    }
+
+    public Course getCourse(String courseId) {
+        Optional<Course> optCourse = courseRepository.findById(courseId);
+        if (optCourse.isEmpty()) {
+            System.out.println("Error: course not found");
+            return null;
+        }
+        return optCourse.get();
     }
 
 }
