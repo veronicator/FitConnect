@@ -17,29 +17,31 @@ import java.time.temporal.ChronoUnit;
 public class Message {
     @Id
     private String id;
-    @DocumentReference(collection = "courses")
-    private Course course;
-    @DocumentReference(collection = "users", lookup = "{ 'username': ?#{#target} }")
-    private MongoUser sender;
+    private String course;
+//    @DocumentReference(collection = "courses")
+//    private Course course;
+//    @DocumentReference(collection = "users", lookup = "{ 'username': ?#{#target} }")
+//    private MongoUser sender;
+    private String sender;
     private LocalDateTime sendTime;
     private String text;
 
-    public Message (Course course, MongoUser sender, LocalDateTime sendTime, String text) {
+    public Message (String course, String sender, String text, LocalDateTime sendTime) {
         this.course = course;
         this.sender = sender;
-        this.sendTime = sendTime;
         this.text = text;
+        this.sendTime = sendTime;
     }
 
-    public Message (Course course, MongoUser sender, String text) {
-        this(course, sender, LocalDateTime.now(), text);
+    public Message (String course, String sender, String text) {
+        this(course, sender, text, LocalDateTime.now());
     }
 
     @Override
     public String toString() {
         return "Message{" +
-                " course=" + course.getCourseName() +
-                ", sender=" + sender.getUsername() +
+                " course=" + course +
+                ", sender=" + sender +
                 ", sendTime=" + sendTime.truncatedTo(ChronoUnit.MINUTES) +
                 ", text='" + text + '\'' +
                 '}';

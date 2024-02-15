@@ -33,11 +33,10 @@ public class MessageErl {
 
     @Override
     public String toString() {
-        StringBuilder builtString = new StringBuilder();
-        builtString.append("Course: " + course + "\n");
-        builtString.append("Sender: " + username + "\n");
-        builtString.append("Content: " + text + "\n");
-        builtString.append("Timestamp: " + time + "\n");
-        return builtString.toString();
+        String builtString = "Course: " + course + "\n" +
+                "Sender: " + username + "\n" +
+                "Content: " + text + "\n" +
+                "Timestamp: " + time + "\n";
+        return builtString;
     }
 }

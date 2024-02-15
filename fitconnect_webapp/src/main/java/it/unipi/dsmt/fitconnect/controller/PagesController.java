@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.*;
 import java.time.format.*;
 import java.util.*;
-import java.util.stream.*;
 
 @Controller
 public class PagesController {
@@ -25,15 +24,11 @@ public class PagesController {
     private ErlangNodesController erlangNodesController;
 
     @Autowired
-    private ActiveCourses courses;  // all gym courses in the db or only those of a user?
+    private ActiveCourses courses;  // all gym courses in the db or only those of a user, update everytime
 
-    @GetMapping({"/", "/index"})
-    public String index() {     // todo: cambiare nome metodo?
-        return "index";
-    }
 
     // gestire il contesto per l'autenticazione, in modo da sapere sempre qual è l'utente connesso
-    private void browseCourses() {
+    private void loadCourses() {
         courses.clear();
         courses.addAll(dbService.browseAllCourses());
     }
@@ -46,6 +41,11 @@ public class PagesController {
     private void loadTrainerCourses(String trainer) {
         courses.clear();
         courses.addAll(dbService.browseUserCourses(trainer));
+    }
+
+    @GetMapping({"/", "/index"})
+    public String index() {     // todo: cambiare nome metodo?
+        return "index";
     }
 
     /**
@@ -104,7 +104,7 @@ public class PagesController {
 
     @GetMapping("/courses")
     public String courses(Model model) {
-        List<Course> courses = dbService.getCourseRepository().findAll();
+        loadCourses();
         /*Collections.sort(courses, Comparator.comparing(Course::getCourseName));
 
         Set<String> uniqueCourseNames = courses.stream()

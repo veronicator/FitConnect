@@ -3,6 +3,7 @@ package it.unipi.dsmt.fitconnect.erlang;
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpErlangExit;
 import it.unipi.dsmt.fitconnect.entities.CourseNotification;
+import it.unipi.dsmt.fitconnect.entities.Message;
 import it.unipi.dsmt.fitconnect.entities.UserNotification;
 
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class ErlangNodeListener extends Thread{
                             System.out.println(userNotification);
                             break;
                         case "message":
-                            MessageErl message = new MessageErl(response[1], response[2], response[3], LocalDateTime.now());
+                            Message message = new Message(response[1], response[2], response[3], LocalDateTime.now());
                             System.out.println(message);
                             break;
                         default:
