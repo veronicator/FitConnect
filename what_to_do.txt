@@ -1,0 +1,48 @@
+SRPING-MACHINE:
+- We first need to know where the jar is issuing the command:
+    erl
+    code:priv_dir(jinterface).
+- We need to add the following to be able to use Jinterface:
+    mvn install:install-file \
+   -Dfile=*Insert the path retrieved from above*\
+   -DgroupId=com.ericsson.otp \
+   -DartifactId=erlang \
+   -Dversion=*Insert version installed* \
+   -Dpackaging=jar \
+   -DgeneratePom=true
+- Then we can add the dependency to the pom.xml:
+    <dependency>
+        <groupId>com.ericsson.otp</groupId>
+        <artifactId>erlang</artifactId>
+        <version>*Insert version installed*</version>
+    </dependency>
+- Each time that the machine start to be able to create nodes in java code we need to start the epmd daemon:
+    epmd -daemon
+- To run application while in dir /home/FitConnect:
+    mvn spring-boot:run
+
+ERLANG-MACHINE:
+- We need to compile all three files with:
+    ./exec.sh
+- We need to activate the node so we do:
+    erl -sname server -setcookie dsmt
+- Then we need to start the backup and the supervisor by issuing:
+    superserver:start_link().
+
+
+---- NOTE FOR CONTAINER: ----
+In case of container the directory is:
+/usr/lib/erlang/lib/jinterface-1.12.1/priv/OtpErlang.jar
+So the command is:
+    mvn install:install-file \
+   -Dfile=/usr/lib/erlang/lib/jinterface-1.12.1/priv/OtpErlang.jar \
+   -DgroupId=com.ericsson.otp \
+   -DartifactId=erlang \
+   -Dversion=1.12.1 \
+   -Dpackaging=jar \
+   -DgeneratePom=true
+
+---- COMMANDS FOR THE CONTAINERS: ----
+    SPRING: docker exec -it ubuntu-spring-dsmt bash
+    ERLANG: docker exec -it ubuntu-erlang-dsmt bash
+    MYSQL:  docker exec -it ubuntu-mysql-dsmt bash

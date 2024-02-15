@@ -1,0 +1,10 @@
+FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y wget unzip gnupg nano curl
+RUN apt-get install -y openjdk-19-jdk openjdk-19-jre
+RUN apt-get install -y maven
+RUN apt install -y wget apt-transport-https gnupg2 software-properties-common
+RUN curl -fsSL https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/erlang.gpg
+RUN apt update && apt install -y erlang
+ENV JAVA_HOME /usr/lib/jvm/java-19-openjdk-amd64
+ENV MAVEN_HOME /usr/share/maven
+ENV PATH ${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${PATH}

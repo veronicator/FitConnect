@@ -4,122 +4,74 @@
 
 -compile([debug_info]).
 
--import(fitDb, [init_db/0, start/0, recover_notifications/0, insert_notification/4, delete_notification/1, edit_notification/4]).
+-import(fitDb, [init_db/0, restart/0, check_for_schedules_ts/1, check_for_schedules_scheduleId/1, read_all_schedules/0, insert_schedule/2, delete_schedule/1, edit_schedule/2]).
 
 -export([start_link/0]).
--export([init/1, handle_call/3, notify_wrapper/2, update_wrapper/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+-export([init/1, handle_call/3, notify/0, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
+% Called by the supervisor to start the fitNotifier
 start_link() ->
     gen_server:start_link({local, fitNotifier}, ?MODULE, [], []).
 
-% Structure of the notifications in mnesiaDB -> record(notifications, {course, trainer, delay, requestTime})
+% If it crashed then when need to resync it
+% ROUND TO 5 OR 10 MIN
 init([]) ->
-    init_db(),
-    Recover = recover_notifications(),
-    NewTimers = lists:map(fun({notifications, Course, Trainer, Delay, RequestTime}) ->
-       CurrentTime = erlang:system_time(millisecond),
-       NewDelay = Delay - (CurrentTime - RequestTime),
-       io:format("The new delay is ~p~n", [NewDelay]),
-       if
-           NewDelay >= 0 ->
-               TimerRef = timer:apply_after(NewDelay, ?MODULE, notify_wrapper, [Course, Trainer]),
-               {TimerRef, Course, Trainer};
-           true ->
-               io:format("Delay is negative, skipping timer~n"),
-               delete_notification(Course)
-       end
-   end, Recover),
-   FilteredTimers = lists:filter(fun(X) -> X /= ok end, NewTimers),
-   io:format("States: ~p~n", [FilteredTimers]),
-   {ok, FilteredTimers}.
+    restart(),
+    control_schedules(expired, erlang:system_time(millisecond)),
+    {{_,_,_}, {_, Minute, Seconds}} = calendar:now_to_local_time(os:timestamp()),
+    case Minute rem 10 of
+        D when D >= 5 ->
+            Rest = 9 - D;
+        D ->
+            Rest = 4 - D
+    end,
+    io:format("Rest: ~p, Seconds: ~p~n", [Rest, Seconds]),
+    %RemainingMilliseconds = ((Rest * 60) + (60 - Seconds)) * 1000,
+    %io:format("Milli remaining: ~p~n", [RemainingMilliseconds]),
+    RemainingMilliseconds = 10000, % DEBUG
+    timer:apply_after(RemainingMilliseconds, ?MODULE, notify, []),
+    {ok, []}.
 
+% Reads all schedules in the db
+handle_call({read}, _From, Timers) ->
+    Schedules = read_all_schedules(),
+    io:format("Schedules: ~p~n", [Schedules]),
+    {reply, {read, ok}, Timers};
 
-handle_call({insert, Course, Trainer, Delay}, _From, Timers) ->
-    TimerRef = timer:apply_after(Delay, ?MODULE, notify_wrapper, [Course, Trainer]),
-    io:format("TimerRef generated ~p~n", [TimerRef]),
-    NewTimer = {TimerRef, Course, Trainer},
-    NewTimers = [NewTimer | Timers],
-    io:format("Timers active ~p~n", [NewTimers]),
-    % Update the mnesiaDB
-    Time = erlang:system_time(millisecond),
-    insert_notification(Course, Trainer, Delay, Time),
-    {reply, {added, ok}, NewTimers};
-handle_call({edit, Course, Trainer, NewDelay}, _From, Timers) ->
-    {{_Ok, TimerRef}, _Course, _Trainer} = extract_state(Course, Timers),
-    Timer = {{_Ok, TimerRef}, Course, Trainer},
-    timer:cancel(TimerRef),
-    NewTimers = lists:delete(Timer, Timers),
-    NewTimerRef = timer:apply_after(NewDelay, ?MODULE, notify_wrapper, [Course, Trainer]),
-    % Update the mnesiaDB
-    Time = erlang:system_time(millisecond),
-    edit_notification(Course, Trainer, NewDelay, Time),
-    % Notification to all clients in few seconds to tell that the schedule has changed
-    ExpectedTime = NewDelay + Time,
-    timer:apply_after(3000, ?MODULE, update_wrapper, [Course, Trainer, ExpectedTime]), % 3 seconds after the update
-    UpdatedTimers = [{NewTimerRef, Course, Trainer} | NewTimers],
-    {reply, {edited, ok}, UpdatedTimers};
-handle_call({delete, Course, Trainer, _}, _From, Timers) ->
-    {{_Ok, TimerRef}, _Course, _Trainer} = extract_state(Course, Timers),
-    Timer = {{_Ok, TimerRef}, Course, Trainer},
-    timer:cancel(TimerRef),
-    NewTimers = lists:delete(Timer, Timers),
-    io:format("Timers active ~p~n", [NewTimers]),
-    % Update the mnesiaDB
-    delete_notification(Course),
-    {reply, {delited, ok}, NewTimers};
-handle_call(get_state, _From, Timers) ->
-    {reply, Timers, Timers};
-handle_call({set_state, NewTimers}, _From, _Timers) ->
-    io:format("Timers set to: ~p~n", [NewTimers]),
-    {reply, NewTimers, NewTimers};
+% DEBUG
+handle_call({match, Ts}, _From, Timers) ->
+    control_schedules(expired, Ts),
+    {reply, {read, ok}, Timers};
+
+% Generates a new timer and add a tuple representing it to the persistent db
+handle_call({insert, Username, ScheduleId, Timestamp}, _From, Timers) ->
+    Key = {Username, ScheduleId},
+    insert_schedule(Key, Timestamp),
+    {reply, {added, ok}, Timers};
+
+% Edits a timer that already existed and modifies the tuple representing it into the persistent db
+handle_call({edit, _Username, ScheduleId, Timestamp}, _From, Timers) ->
+    control_schedules(edited, {ScheduleId, Timestamp}),
+    {reply, {edited, ok}, Timers};
+
+% Removes timer and removes the tuple representing it from the persistent db
+handle_call({delete, Username, ScheduleId, _Timestamp}, _From, Timers) ->
+    Key = {Username, ScheduleId},
+    delete_schedule(Key),
+    {reply, {deleted, ok}, Timers};
+
 handle_call(Request, _From, Timers) ->
     {ok, {error, "Unhandled Request", Request}, Timers}.
 
-notify_wrapper(Course, Trainer) ->
-    Args = {Course, Trainer},
-      notify(Args).
-notify(Args) ->
-    Timers = get_state(),
-    io:format("Timers situation ~p~n", [Timers]),
-    % Remove the Timer from the list
-    {Course, Trainer} = Args,
-    % Update the mnesiaDB
-    delete_notification(Course),
-    {{_Ok, TimerRef}, _Course, _Trainer} = extract_state(Course, Timers),
-    Timer = {{_Ok, TimerRef}, Course, Trainer},
-    NewTimers = lists:delete(Timer, Timers),
-    set_state(NewTimers),
-    case whereis(fitMessanger) of
-        undefined ->
-            {reply, {error, "Messanger not found"}, NewTimers};
-        _ ->
-          Message = {notification, Course, Trainer},
-          % Use gen_server:call to send the message to fitMessanger
-          Reply = gen_server:call(fitMessanger, Message),
-          io:format("Notification for course ~p -> Outcome: ~p~n", [Course, Reply]),
-          {noreply, NewTimers}
-    end.
-
-update_wrapper(Course, Trainer, ExpectedTime) ->
-        Args = {Course, Trainer, ExpectedTime},
-          update(Args).
-update(Args) -> 
-    Timers = get_state(),
-    {Course, Trainer, ExpectedTime} = Args,
-    case whereis(fitMessanger) of
-        undefined ->
-            {reply, {error, "Messanger not found"}, Timers};
-        _ ->
-          Message = {notification, Course, Trainer, ExpectedTime},
-          % Use gen_server:call to send the message to fitMessanger
-          Reply = gen_server:call(fitMessanger, Message),
-          io:format("Notification for course ~p -> Outcome: ~p~n", [Course, Reply]),
-          {noreply, Timers}
-    end.
+% Used to notify the users that the course is going to start sending a message to the fitMessanger
+notify() ->
+    io:format("Checking for schedules~n").%,
+    %control_schedules(expired, erlang:system_time(millisecond)),
+    %timer:apply_after(30000, ?MODULE, notify, []). % every 5 minutes a control is performed
 
 handle_cast(_Request, Timers) ->
     {noreply, Timers}.
-
+    
 handle_info(_Info, Timers) ->
     {noreply, Timers}.
 
@@ -129,14 +81,53 @@ terminate(_Reason, _Timers) ->
 code_change(_OldVsn, Timers, _Extra) ->
     {ok, Timers}.
 
-% Useful functions
+% Couple can be: expired -> Timestamp | edited -> {ScheduleId, Timestamp}
+control_schedules(Mode, Element) ->
+    case Mode of
+        expired ->
+            Schedules = check_for_schedules_ts(Element),
+            if
+                Schedules == [] ->
+                    io:format("No schedules to send~n");
+                true ->
+                    [process_expired_schedule(Mode, Schedule) || Schedule <- Schedules]
+            end;
+        edited -> 
+            {ScheduleId, Timestamp} = Element,
+            Schedules = check_for_schedules_scheduleId(ScheduleId),
+            if
+                Schedules == [] ->
+                    io:format("No schedules to send~n");
+                true ->
+                    [process_edited_schedule(Mode, Timestamp, Schedule) || Schedule <- Schedules]
+            end
+    end.
 
-get_state() ->
-    gen_server:call(?MODULE, get_state).
+process_expired_schedule(Mode, {schedules, {Username, ScheduleId}, Timestamp}) ->
+    Message = {schedule, Mode, Username, ScheduleId, Timestamp},
+    io:format("Message to send: ~p~n", [Message]),
+    Result = broadcast(Message),
+    io:format("Result: ~p~n", [Result]),
+    if
+        Result == {ok} ->
+            delete_schedule({Username, ScheduleId});
+        true ->
+            %io:format("Error sending notification~n"),
+            ok % Do nothing
+    end.
 
-set_state(Timers) -> 
-    gen_server:call(?MODULE, {set_state, Timers}).
+process_edited_schedule(Mode, NewTimestamp, {schedules, {Username, ScheduleId}, _Timestamp}) ->
+    Message = {schedule, Mode, Username, ScheduleId, NewTimestamp},
+    edit_schedule({Username, ScheduleId}, NewTimestamp),
+    io:format("Message to send: ~p~n", [Message]),
+    broadcast(Message).
 
-extract_state(Course, States) ->
-    State = lists:keyfind(Course, 2, States),
-    State.
+broadcast(Msg) -> 
+    case whereis(fitMessanger) of
+        undefined ->
+            io:format("Error: fitMessanger process not found.~n"),
+            error;
+        _ ->
+            Reply = gen_server:call(fitMessanger, Msg),
+            Reply   
+    end.

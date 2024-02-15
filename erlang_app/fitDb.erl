@@ -1,78 +1,75 @@
 -module(fitDb).
 -include("fitDbStructure.hrl").
+-include_lib("stdlib/include/qlc.hrl").
 
 -compile([debug_info]).
 
--export([init_db/0, check_table_existence/0, recover_notifications/0, read_all_notifications/0, insert_notification/4, read_notification/1, delete_notification/1, edit_notification/4]).
+-export([init_db/0, restart/0, check_for_schedules_ts/1, check_for_schedules_scheduleId/1, read_all_schedules/0, insert_schedule/2, delete_schedule/1, edit_schedule/2]).
 
-% This function is called only once to create the table
+% This function is called only once to create the table in the mnesiaDB with persistence
 init_db() ->
     Node = [node()],
     mnesia:create_schema(Node),
     application:start(mnesia),
     mnesia:change_table_copy_type(schema, node(), disc_copies), % Persistence is activated on local disk (default is in RAM)
-    mnesia:create_table(notifications, [{attributes, record_info(fields, notifications)}, {disc_copies, Node}]),
+    mnesia:create_table(schedules, [{attributes, record_info(fields, schedules)}, {disc_copies, Node}]),
     {ok, []}.
 
-check_table_existence() ->
-    TableName = notifications,  % Replace with the actual table name
-    case table_exists(TableName) of
-        true ->
-            io:format("Table ~p exists.~n", [TableName]);
-        false ->
-            io:format("Table ~p does not exist.~n", [TableName])
-    end.
-
-recover_notifications() ->
+% Called whenever the fitNotifier restarts
+restart() ->
   application:start(mnesia),
-  TableName = notifications,
-  mnesia:wait_for_tables([TableName], 30000),
-    Records = mnesia:async_dirty(fun()-> qlc:e(mnesia:table(TableName)) end),
-    Records.
+  TableName = schedules,
+  mnesia:wait_for_tables([TableName], 30000).
 
-    read_all_notifications() ->
-      F = fun() ->
-        mnesia:foldl(
-          fun(#notifications{course = C, trainer = T, delay = D, requestTime = R}, Acc) ->
-            [{C, T, D, R} | Acc]
-          end,
-          [],
-          notifications)
-      end,
-      mnesia:activity(transaction, F).
-     
-
-% Insert a record into the db 
-insert_notification(Course, Trainer, Delay, RequestTime) ->
-    F = fun() ->
-      mnesia:write(#notifications{course=Course, trainer=Trainer, delay=Delay, requestTime=RequestTime})
-    end,
-    mnesia:activity(transaction, F).
-
-% Searches for the record with the corresponding key equal to Course number
-read_notification(Course) ->
+% Returns all schedules with equal or lower timestamp than the one specified
+check_for_schedules_ts(Time) ->
   F = fun() ->
-    case mnesia:read({notifications, Course}) of
-      [#notifications{trainer = T, delay= D, requestTime = R}] ->
-        {Course, T, D, R};
-    [] ->
-      undefined
-    end
+    Query = qlc:q([
+        X || X <- mnesia:table(schedules),
+              element(#schedules.timestamp, X) =< Time % MODIFY TO CHECK FOR 30 BEFORE
+    ]),
+    qlc:eval(Query)
   end,
   mnesia:activity(transaction, F).
 
-delete_notification(Course) ->
-  F = fun() -> mnesia:delete({notifications, Course}) end,
+% Returns all schedules with equal or lower timestamp than the one specified
+check_for_schedules_scheduleId(ScheduleId) ->
+  F = fun() ->
+    Query = qlc:q([
+        X || X <- mnesia:table(schedules),
+          element(2, element(#schedules.key, X)) == ScheduleId % It takes the 2nd element of the 1st element (key) of X
+    ]),
+    qlc:eval(Query)
+  end,
   mnesia:activity(transaction, F).
 
-edit_notification(Course, Trainer, Delay, RequestTime) ->
-    delete_notification(Course),
-    insert_notification(Course, Trainer, Delay, RequestTime).
+% Reads all tuples and returns them as showed below
+read_all_schedules() ->
+  F = fun() ->
+    mnesia:foldl(
+      fun(#schedules{key = K, timestamp = T}, Acc) ->
+        [{K, T} | Acc]
+      end,
+      [],
+      schedules)
+  end,
+  mnesia:activity(transaction, F).
+     
+% Insert a record into the db 
+insert_schedule(Key, Timestamp) ->
+    F = fun() ->
+      mnesia:write(#schedules{key = Key, timestamp = Timestamp})
+    end,
+    mnesia:activity(transaction, F).
 
-table_exists(TableName) ->
-  case mnesia:table_info(TableName, disc_copies) of
-      [server@a09ac34a7c62] ->
-          true;  % Table exists
-      undefined ->
-          false   % Table does not exist
-  end.
+% Deletes a tuple (schedule) from the db
+delete_schedule(Key) ->
+  io:format("delete: ~p;~n", [Key]),
+  F = fun() -> mnesia:delete({schedules, Key}) end,
+  mnesia:activity(transaction, F).
+
+% Edits the state of a tuple just removing it and adding it modified
+edit_schedule(Key, Timestamp) ->
+  io:format("edit: ~p, ~p;~n", [Key, Timestamp]),
+  delete_schedule(Key),
+  insert_schedule(Key, Timestamp).
