@@ -13,9 +13,15 @@ import java.util.List;
 @Repository
 public interface MessageRepositories extends MongoRepository<Message, String> {
 
-    @Query("{'course': ?0, 'sender': { $regex: ?1, $options: 'i'} }")
+    @Query(value="{'course': ?0, 'sender': { $regex: ?1, $options: 'i'} }", sort = "{'sendTime': 1}")
     List<Message> findByCourseAndSender(ObjectId courseId, String sendUsername);
 
+    @Query(value="{'course': ?0, 'sender': { $regex: ?1, $options: 'i'} }", sort = "{'sendTime': 1}")
+    Page<Message> findByCourseAndSender(ObjectId courseId, String sendUsername, Pageable pageable);
+
+    @Query(value="{'course': ?0 }", sort = "{'sendTime': 1}")
     List<Message> findByCourse(ObjectId course);
+
+    @Query(value="{'course': ?0 }", sort = "{'sendTime': 1}")
     Page<Message> findByCourse(ObjectId course, Pageable pageable);
 }

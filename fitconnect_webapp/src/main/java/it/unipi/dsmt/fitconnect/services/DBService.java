@@ -475,11 +475,11 @@ public class DBService {
 
     public Course getCourse(String courseId) {
         Optional<Course> optCourse = courseRepository.findById(courseId);
-        if (optCourse.isEmpty()) {
-            System.out.println("Error: course not found");
-            return null;
-        }
-        return optCourse.get();
+        return optCourse.orElse(null);
+    }
+
+    public List<Message> getMessages(String courseId) {
+        return messageRepositories.findByCourse(new ObjectId(courseId));
     }
 
 }
