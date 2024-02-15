@@ -24,18 +24,21 @@ public class Message {
     private MongoUser sender;
     private LocalDateTime sendTime;
     private String text;
+    private boolean seen;
 
     public Message (Course course, MongoUser sender, LocalDateTime sendTime, String text) {
         this.course = course;
         this.sender = sender;
         this.sendTime = sendTime;
         this.text = text;
+        this.seen = false;
     }
 
     public Message (MongoUser sender, LocalDateTime sendTime, String text) {
         this.sender = sender;
         this.sendTime = sendTime;
         this.text = text;
+        this.seen = false;
     }
 
     public Message (Course course, MongoUser sender, String text) {

@@ -48,6 +48,7 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -79,21 +80,30 @@
             <artifactId>spring-security-core</artifactId>
             <version>6.2.1</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.security</groupId>-->
-<!--            <artifactId>spring-security-web</artifactId>-->
-<!--            <version>6.2.1</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.security</groupId>-->
-<!--            <artifactId>spring-security-config</artifactId>-->
-<!--            <version>6.2.1</version>-->
-<!--        </dependency>-->
+
         <!--        <dependency>-->
-<!--            <groupId>org.apache.tomcat.embed</groupId>-->
-<!--            <artifactId>tomcat-embed-core</artifactId>-->
-<!--            <version>9.0.74</version>-->
-<!--        </dependency>-->
+        <!--            <groupId>com.ericsson.otp.erlang</groupId>-->
+        <!--            <artifactId>otperlang</artifactId>-->
+        <!--&lt;!&ndash;            <version>1.5.3</version>&ndash;&gt;-->
+        <!--        </dependency>-->
+
+        <!--        <dependency>-->
+        <!--            <groupId>org.erlang.otp</groupId>-->
+        <!--            <artifactId>jinterface</artifactId>-->
+        <!--&lt;!&ndash;            <version>1.6</version>&ndash;&gt;-->
+        <!--        </dependency>-->
+
+        <!--        <dependency>-->
+        <!--            <groupId>com.ericsson.otp</groupId>-->
+        <!--            <artifactId>erlang</artifactId>-->
+        <!--&lt;!&ndash;            <version>26</version>&ndash;&gt;-->
+        <!--        </dependency>-->
+
+        <dependency>
+            <groupId>clojang</groupId>
+            <artifactId>erlang-jinterface</artifactId>
+            <version>1.10-1</version>
+        </dependency>
     </dependencies>
 
     <build>

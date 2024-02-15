@@ -1,0 +1,6 @@
+FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y wget unzip gnupg nano curl
+RUN apt install -y wget apt-transport-https gnupg2 software-properties-common
+RUN curl -fsSL https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/erlang.gpg
+RUN apt update && apt install -y erlang
+RUN apt update && apt install -y erlang-mnesia

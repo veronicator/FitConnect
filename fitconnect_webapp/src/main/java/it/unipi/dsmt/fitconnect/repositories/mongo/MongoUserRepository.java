@@ -24,8 +24,10 @@ public interface MongoUserRepository extends MongoRepository<MongoUser, String> 
     Optional<MongoUser> findByEmail(String email);
     List<MongoUser> findByRole(UserRole role);
 
-    // da testare se va passato l'id o l'oggetto Course
-    List<MongoUser> findByCourses(String courseId);
+    List<MongoUser> findByCourses(ObjectId courseId);
+
+    @Query("{'role': ?0, 'courses': ?1 }")
+    List<MongoUser> findByCourse(UserRole role, ObjectId course);
 
     /** exists methods */
     @Query(value = "{'firstname' : { $regex: ?0, $options: 'i'} }", exists = true)

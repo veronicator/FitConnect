@@ -1,0 +1,20 @@
+erl -sname server -setcookie dsmt
+fitNotifier:start_link().
+gen_server:call(fitNotifier, {insert, "mario", 123, 3000}).
+gen_server:call(fitNotifier, {insert, "pippo", 123, 3000}).
+gen_server:call(fitNotifier, {edit, "pippo", 123, 4000}).
+gen_server:call(fitNotifier, {delete, "pippo", 123}).
+gen_server:call(fitNotifier, {read}).
+gen_server:call(fitNotifier, {match, }).
+gen_server:call(fitNotifier, {edit, "ciao", 123, 1000}).
+
+
+Approx time: ->
+%{{Year, Month, Day}, {Hours, Minute, _}} = calendar:now_to_local_time(os:timestamp()),
+    %TimeToSearch = convert_to_millis({{Year, Month, Day}, {Hours, Minute, 00}}), % Approx time
+
+convert_to_millis(Time) ->
+    Base = calendar:datetime_to_gregorian_seconds({{1970,1,1}, {0,0,0}}),
+    Now = calendar:datetime_to_gregorian_seconds(Time),
+    Return = (Now - Base) * 1000,
+    Return.
