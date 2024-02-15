@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  ubuntu-spring-dsmt:
+    container_name: ubuntu-spring-dsmt
+    restart: always
+    build:
+      context: .
+      dockerfile: Spring_Dockerfile
+    tty: true
+    volumes:
+    - type: bind
+      source: ./fitconnect_webapp
+      target: /home/FitConnect
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      network:
+        ipv4_address: 10.4.0.2
+
+  ubuntu-erlang-dsmt:
+    container_name: ubuntu-erlang-dsmt
+    restart: always
+    build:
+      context: .
+      dockerfile: Erlang_Dockerfile
+    tty: true
+    volumes:
+      - ./erlang_app:/app
+    ports:
+      - "127.0.0.1:1234:1234"
+    networks:
+      network:
+        ipv4_address: 10.4.0.3
+
+  ubuntu-mysql-dsmt:
+    container_name: ubuntu-mysql-dsmt
+    restart: always
+    image: mysql          
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: fitconnect_db
+      MYSQL_USER: DSMT
+      MYSQL_PASSWORD: password
+    volumes:        
+      - ./mysql_server/my/custom:/etc/mysql/conf.d
+    ports:
+      - "127.0.0.1:9906:3306"
+    networks:
+      network:
+        ipv4_address: 10.4.0.4
+
+networks:
+  network:
+    driver: bridge
+    ipam:
+      config:
+        -
+          subnet: 10.4.0.0/16
+          gateway: 10.4.0.1

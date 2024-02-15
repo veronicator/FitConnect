@@ -1,0 +1,183 @@
+[{
+  "_id": {
+    "$oid": "65959df55911cf50d31c5454"
+  },
+  "courseName": "crossfit",
+  "trainer": "vero",
+  "schedules": [
+    {
+      "dayOfTheWeek": "Monday",
+      "classTimes": [
+        {
+          "start_time": "17.30",
+          "end_time": "18.30"
+        },
+        {
+          "start_time": "18.30",
+          "end_time": "19.30"
+        },
+        {
+          "start_time": "19.30",
+          "end_time": "20.30"
+        }
+      ],
+      "places": 5
+    },
+    {
+      "dayOfTheWeek": "Tuesday",
+      "classTimes": [
+        {
+          "start_time": "18.00",
+          "end_time": "19.00"
+        },
+        {
+          "start_time": "19.00",
+          "end_time": "20.00"
+        }
+      ],
+      "places": 10
+    },
+    {
+      "dayOfTheWeek": "Wednesday",
+      "classTimes": [
+        {
+          "start_time": "17.30",
+          "end_time": "18.30"
+        },
+        {
+          "start_time": "18.30",
+          "end_time": "19.30"
+        },
+        {
+          "start_time": "19.30",
+          "end_time": "20.30"
+        }
+      ],
+      "places": 35
+    }
+  ],
+  "enrolled": [],
+  "_class": "unipi.dsmt.fitconnect.entities.Course"
+},
+{
+  "_id": {
+    "$oid": "65959df55911cf50d31c5455"
+  },
+  "courseName": "crossfit",
+  "trainer": "test",
+  "schedules": [
+    {
+      "dayOfTheWeek": "Monday",
+      "classTimes": [
+        {
+          "start_time": "17.30",
+          "end_time": "18.30"
+        },
+        {
+          "start_time": "18.30",
+          "end_time": "19.30"
+        },
+        {
+          "start_time": "19.30",
+          "end_time": "20.30"
+        }
+      ],
+      "places": 5
+    },
+    {
+      "dayOfTheWeek": "Tuesday",
+      "classTimes": [
+        {
+          "start_time": "18.00",
+          "end_time": "19.00"
+        },
+        {
+          "start_time": "19.00",
+          "end_time": "20.00"
+        }
+      ],
+      "places": 10
+    },
+    {
+      "dayOfTheWeek": "Wednesday",
+      "classTimes": [
+        {
+          "start_time": "17.30",
+          "end_time": "18.30"
+        },
+        {
+          "start_time": "18.30",
+          "end_time": "19.30"
+        },
+        {
+          "start_time": "19.30",
+          "end_time": "20.30"
+        }
+      ],
+      "places": 35
+    }
+  ],
+  "enrolled": [],
+  "_class": "unipi.dsmt.fitconnect.entities.Course"
+},
+{
+  "_id": {
+    "$oid": "65959df55911cf50d31c5456"
+  },
+  "courseName": "functional",
+  "trainer": "test",
+  "schedules": [
+    {
+      "dayOfTheWeek": "Monday",
+      "classTimes": [
+        {
+          "start_time": "17.30",
+          "end_time": "18.30"
+        },
+        {
+          "start_time": "18.30",
+          "end_time": "19.30"
+        },
+        {
+          "start_time": "19.30",
+          "end_time": "20.30"
+        }
+      ],
+      "places": 5
+    },
+    {
+      "dayOfTheWeek": "Tuesday",
+      "classTimes": [
+        {
+          "start_time": "18.00",
+          "end_time": "19.00"
+        },
+        {
+          "start_time": "19.00",
+          "end_time": "20.00"
+        }
+      ],
+      "places": 10
+    },
+    {
+      "dayOfTheWeek": "Wednesday",
+      "classTimes": [
+        {
+          "start_time": "17.30",
+          "end_time": "18.30"
+        },
+        {
+          "start_time": "18.30",
+          "end_time": "19.30"
+        },
+        {
+          "start_time": "19.30",
+          "end_time": "20.30"
+        }
+      ],
+      "places": 35
+    }
+  ],
+  "enrolled": [],
+  "_class": "unipi.dsmt.fitconnect.entities.Course"
+}]

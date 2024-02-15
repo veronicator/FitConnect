@@ -31,3 +31,6 @@ replay_pid*
 
 ### Mac OS ###
 .DS_Store
+
+### various ###
+/notes.txt

@@ -1,2 +1,4 @@
 # FitConnect
-University project for DSMT course, MSc Computer Engineering @Unipi
+University project for *Distributed Systems and Middleware Technologies* course.
+
+MSc Computer Engineering @ University of Pisa

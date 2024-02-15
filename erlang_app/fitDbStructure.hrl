@@ -1,0 +1,1 @@
+-record(schedules, {key = {username, scheduleId}, timestamp}).
