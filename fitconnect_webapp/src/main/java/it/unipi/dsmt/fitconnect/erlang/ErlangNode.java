@@ -53,6 +53,7 @@ public class ErlangNode {
         OtpErlangString user = new OtpErlangString(this.username);
         OtpErlangString course = new OtpErlangString(courseName);
         OtpErlangInt delay = new OtpErlangInt(time);
+//        OtpErlangLong delayLong = new OtpErlangInt(time);
         OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, user, course, delay});
         OtpErlangObject msg_gen = new OtpErlangTuple(new OtpErlangObject[] {
             new OtpErlangAtom("$gen_call"), this.from, outMsg });

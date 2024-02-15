@@ -95,7 +95,7 @@ public class ErlangNodesController {
     private boolean nodeExists(String nodeName){
         for (int i = 0; i < erlangNodeCount; i++) {
                 if (erlangNodes[i].getNodeName().equalsIgnoreCase(nodeName))
-                return true;
+                    return true;
         }
         return false;
     }

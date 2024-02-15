@@ -2,6 +2,7 @@ package it.unipi.dsmt.fitconnect.controller;
 
 import it.unipi.dsmt.fitconnect.enums.CourseType;
 import it.unipi.dsmt.fitconnect.enums.UserRole;
+import it.unipi.dsmt.fitconnect.erlang.ErlangNodesController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import it.unipi.dsmt.fitconnect.entities.*;
@@ -21,8 +22,10 @@ public class PagesController {
     @Autowired
     private DBService dbService;
     @Autowired
+    private ErlangNodesController erlangNodesController;
+
+    @Autowired
     private ActiveCourses courses;  // all gym courses in the db or only those of a user?
-//    private ErlangNodeController;
 
     @GetMapping({"/", "/index"})
     public String index() {     // todo: cambiare nome metodo?
@@ -32,21 +35,18 @@ public class PagesController {
     // gestire il contesto per l'autenticazione, in modo da sapere sempre qual è l'utente connesso
     private void browseCourses() {
         courses.clear();
-        courses.addAll(dbService.getCourseRepository().findAll());
+        courses.addAll(dbService.browseAllCourses());
     }
 
     private void loadClientCourses(String username) {
         courses.clear();
-        // todo: da modificare in base alla nuova struttura del document
-        // va cambiata con userRepository.findCourses() -> va dichiarato il metodo corretto
-//        courses.addAll(dbService.getCourseRepository().findByUser(username));
+        courses.addAll(dbService.browseUserCourses(username));
     }
 
     private void loadTrainerCourses(String trainer) {
         courses.clear();
         courses.addAll(dbService.browseUserCourses(trainer));
     }
-    /* todo: aggiungere i vari metodi */
 
     /**
      * called when a client clicks on the bookedButton in the UI

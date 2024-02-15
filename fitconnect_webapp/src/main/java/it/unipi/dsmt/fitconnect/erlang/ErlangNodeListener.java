@@ -25,16 +25,16 @@ public class ErlangNodeListener extends Thread{
                         case "expired":
                         case "edited":
                             CourseNotification courseNotification = new CourseNotification(response[0], response[1], response[2]);
-                            System.out.println(courseNotification.toString());
+                            System.out.println(courseNotification);
                             break;
                         case "userJoined":
                         case "userExited":
                             UserNotification userNotification = new UserNotification(response[0], response[1], response[2]);
-                            System.out.println(userNotification.toString());
+                            System.out.println(userNotification);
                             break;
                         case "message":
-                            Message message = new Message(response[1], response[2], response[3], LocalDateTime.now());
-                            System.out.println(message.toString());
+                            MessageErl message = new MessageErl(response[1], response[2], response[3], LocalDateTime.now());
+                            System.out.println(message);
                             break;
                         default:
                             System.out.println("Operation: " + response[0]);

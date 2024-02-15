@@ -3,6 +3,7 @@ package it.unipi.dsmt.fitconnect.services;
 import it.unipi.dsmt.fitconnect.entities.*;
 import it.unipi.dsmt.fitconnect.enums.CourseType;
 import it.unipi.dsmt.fitconnect.enums.UserRole;
+import it.unipi.dsmt.fitconnect.erlang.ErlangNodesController;
 import it.unipi.dsmt.fitconnect.repositories.mongo.*;
 import lombok.Getter;
 import org.bson.types.ObjectId;
@@ -15,10 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +34,9 @@ public class DBService {
     private ReservationsRepository reservationsRepository;
     @Autowired
     private MessageRepositories messageRepositories;
+
+    @Autowired
+    private ErlangNodesController erlangNodesController;
 
     //    @Scheduled(cron = "@midnight")
     @Scheduled(cron = "0 */1 * * * *")  // for testing: scheduled every minute
@@ -438,23 +440,20 @@ public class DBService {
                     course.getId(), oldDay, oldStartTime.toString());
 
             LocalDateTime newActualTime = getDatetimeFromDayAndTime(newDay, newStartTime);
-            List<MongoUser> bookedUsers = new ArrayList<>();
             for (Reservations r: reservations) {
                 r.setDayOfWeek(newDay);
                 r.setStartTime(newStartTime.toString());
                 r.setEndTime(newEndTime.toString());
                 r.setActualClassTime(newActualTime);
-                bookedUsers.addAll(r.getBookedUsers());
+                for (MongoUser u: r.getBookedUsers()) {
+                    String commandToNode = String.format("%s-%d",
+                            r.getId().toString(),
+                            newActualTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+                    erlangNodesController.sendCommandToNode(u.getUsername(), commandToNode);
+                }
                 reservationsRepository.save(r);
             }
             course = courseRepository.save(course);
-
-            for (MongoUser u: bookedUsers) {
-                /* todo: chiamare la rispettiva funzione java-erlang per le notifiche di modifica orario ai nodi
-                 * -> ErlangNode/ErlangController
-                 *
-                 * */
-            }
         } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {
             e.printStackTrace();
             System.err.println("editClassTime failed");
