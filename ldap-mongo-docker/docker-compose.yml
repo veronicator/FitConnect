@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27018:27017"
+    networks:
+      - fitconnect_network
+
+  openldap:
+    image: osixia/openldap:latest
+    container_name: openldap
+    restart: always
+    environment:
+      LDAP_ORGANISATION: "FitConnect"
+      LDAP_DOMAIN: "fitconnect.com"
+      LDAP_ADMIN_PASSWORD: "password"
+    ports:
+      - "389:389"
+    networks:
+      - fitconnect_network
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: phpldapadmin
+    restart: always
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: openldap
+    ports:
+      - "6443:443"
+    networks:
+      - fitconnect_network
+
+networks:
+  fitconnect_network:

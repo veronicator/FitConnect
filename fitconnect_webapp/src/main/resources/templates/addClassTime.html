@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Courses</title>
+    <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"/>
+</head>
+
+<body>
+<div th:replace="~{header.html}"></div>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Add Class Time</h2>
+    <form th:action="@{/add-class-time}" th:object="${classTime}" method="post">
+        <div class="form-group">
+            <label for="dayOfWeek">Day of Week:</label>
+            <select th:field="*{dayOfWeek}" class="form-control" id="dayOfWeek">
+                <option value="MONDAY">Monday</option>
+                <option value="TUESDAY">Tuesday</option>
+                <option value="WEDNESDAY">Wednesday</option>
+                <option value="THURSDAY">Thursday</option>
+                <option value="FRIDAY">Friday</option>
+                <option value="SATURDAY">Saturday</option>
+                <option value="SUNDAY">Sunday</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="startTime">Start Time:</label>
+            <input type="time" th:field="*{startTime}" class="form-control" id="startTime"/>
+        </div>
+
+        <div class="form-group">
+            <label for="endTime">End Time:</label>
+            <input type="time" th:field="*{endTime}" class="form-control" id="endTime"/>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Class Time</button>
+    </form>
+</div>
+
+</body>
+</html>

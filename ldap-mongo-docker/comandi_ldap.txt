@@ -1,0 +1,7 @@
+sudo apt install ldap-utils
+ldapsearch -x -H ldap://127.0.0.1:8389 -D "cn=admin,dc=fitconnect,dc=com" -w password -b "dc=fitconnect,dc=com" "(objectClass=*)"
+
+docker run -p 389:389 -p 636:636 --name ldap-service -h ldap-service -e LDAP_ORGANISATION="fitconnect" -e LDAP_DOMAIN="fitconnect.com" -e LDAP_ADMIN_PASSWORD="password" -d osixia/openldap:latest
+
+docker run -p 6443:443 --name phpldapadmin-service -h phpldapadmin-service --link ldap-service:ldap-host -e PHPLDAPADMIN_LDAP_HOSTS=ldap-host --detach osixia/phpldapadmin:latest
+

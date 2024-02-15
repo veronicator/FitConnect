@@ -1,0 +1,33 @@
+[{
+  "_id": {
+    "$oid": "65959df45911cf50d31c5451"
+  },
+  "password": "password",
+  "role": "PT",
+  "firstName": "test",
+  "lastName": "test",
+  "email": "test@email.com",
+  "_class": "unipi.dsmt.fitconnect.entities.User"
+},
+{
+  "_id": {
+    "$oid": "65959df45911cf50d31c5452"
+  },
+  "password": "password",
+  "role": "PT",
+  "firstName": "vero",
+  "lastName": "torr",
+  "email": "vero@email.com",
+  "_class": "unipi.dsmt.fitconnect.entities.User"
+},
+{
+  "_id": {
+    "$oid": "65959df45911cf50d31c5453"
+  },
+  "password": "password",
+  "role": "client",
+  "firstName": "client",
+  "lastName": "clientLast",
+  "email": "client@email.com",
+  "_class": "unipi.dsmt.fitconnect.entities.User"
+}]
