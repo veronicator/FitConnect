@@ -40,10 +40,11 @@ public class LoginController {
             return "login";
         else {
             HttpSession session = request.getSession(true);
-            session.setAttribute("loggedUser", loggedUser);
+            //session.setAttribute("loggedUser", loggedUser);
             session.setAttribute("uid", loggedUser.getId());
             session.setAttribute("username", loggedUser.getUsername());
             session.setAttribute("role", loggedUser.getRole());
+
             model.addAttribute("username", loggedUser.getUsername());
 
             return "home";

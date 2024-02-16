@@ -276,6 +276,10 @@ public class DBService {
         return courseRepository.findAll();
     }
 
+    public List<Course> browseCourses(CourseType courseType) {
+        return courseRepository.findByCourseName(courseType);
+    }
+
     public boolean unbookClass(String reservationsId, String username) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername(username);
