@@ -27,7 +27,7 @@ public class Course {
     @Version
     private Long version;
 
-    private CourseType courseName;
+    private String courseName;
     private String trainer; // firstname lastname
     private String trainerUsername; // it's unique, so it can be used as an identifier
     private Integer maxReservablePlaces;
@@ -38,7 +38,7 @@ public class Course {
     @DocumentReference(collection = "users", lookup = "{ 'courses': ?#{#self._id} }")
     private List<MongoUser> enrolledClients; // id clients enrolled at this course (it will also contain the trainerId)
 
-    public Course (CourseType courseName, String trainerCompleteName, String trainerUsername, Integer maxReservablePlaces) {
+    public Course (String courseName, String trainerCompleteName, String trainerUsername, Integer maxReservablePlaces) {
         this.courseName = courseName;
         this.trainer = trainerCompleteName;
         this.trainerUsername = trainerUsername;

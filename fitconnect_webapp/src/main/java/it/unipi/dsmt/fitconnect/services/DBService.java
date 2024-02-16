@@ -76,7 +76,7 @@ public class DBService {
                 return false;
             }
 
-            Course newCourse = new Course(courseName, trainer.getCompleteName(), trainer.getUsername(), maxReservablePlaces);
+            Course newCourse = new Course(courseName.name(), trainer.getCompleteName(), trainer.getUsername(), maxReservablePlaces);
             newCourse = courseRepository.insert(newCourse);
             trainer.addCourse(newCourse);
             userRepository.save(trainer);
