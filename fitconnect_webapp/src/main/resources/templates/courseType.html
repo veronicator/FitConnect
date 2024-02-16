@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Courses</title>
+    <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"/>
+    <style>
+        .table {
+            border-collapse: collapse;
+            width: fit-content;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+            height: 2rem;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{header.html}"></div>
+<h1 class="text-center" th:text="${courseName}">Course</h1>
+<div class="d-flex flex-row justify-content-center align-items-lg-center m-auto">
+
+    <div class="container m-auto">
+        <ul th:each="course : ${courseList}">
+            <li>
+                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainer()}}">
+                    <span th:text="${course.getTrainer()}"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="container w-50" th:if="(${weekSchedule} != null) and (${!session.isEmpty()})">
+
+        <div class="container" th:if="${isJoined == false}">
+            <p>You are not subscribed to this course</p>
+            <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainer()} +'/' + ${trainerCourse.getId()} + '/joinCourse'}" method="post">
+                <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+        </div>
+
+        <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainer()} +'/' + ${trainerCourse.getId()} + '/bookClass'}" th:if="${isJoined == true}" method="post">
+            <div class="form-group mb-4">
+                <label for="trainer">Trainer:</label>
+                <input type="text" class="form-control" id="trainer"  placeholder="Enter trainer's name" th:value="${trainer}" readonly>
+            </div>
+            <div class="form-group mb-4">
+                <label for="day">Day:</label>
+                <select class="form-control" id="day" name="day">
+                    <option>Monday</option>
+                    <option>Tuesday</option>
+                    <option>Wednesday</option>
+                    <option>Thursday</option>
+                    <option>Friday</option>
+                    <option>Saturday</option>
+                </select>
+            </div>
+            <div class="form-group mb-4">
+                <label for="startTime">Time:</label>
+                <select class="form-control" id="startTime" name="startTime">
+                    <option th:each="classtime : ${weekSchedule}" th:text="${classtime.getStartTime()}"></option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Book Class</button>
+        </form>
+
+    </div>
+
+    <div class="container m-auto" th:if="${weekSchedule} != null">
+        <table id="classSchedule3" class="table align-content-center mb-lg-5"
+               th:attr="data-weekSchedule=${weekSchedule}">
+            <tr class="table-header">
+                <!-- Intestazione della tabella con i giorni della settimana -->
+                <th>MONDAY</th>
+                <th>TUESDAY</th>
+                <th>WEDNESDAY</th>
+                <th>THURSDAY</th>
+                <th>FRIDAY</th>
+                <th>SATURDAY</th>
+            </tr>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+
+<!--<div class="container" th:if="${weekSchedule} != null">-->
+<!--    <table id="classSchedule2" class="table align-content-center mb-lg-5">-->
+<!--        <tr class="table-header">-->
+<!--            &lt;!&ndash; Intestazione della tabella con i giorni della settimana &ndash;&gt;-->
+<!--            <th>MONDAY</th>-->
+<!--            <th>TUESDAY</th>-->
+<!--            <th>WEDNESDAY</th>-->
+<!--            <th>THURSDAY</th>-->
+<!--            <th>FRIDAY</th>-->
+<!--            <th>SATURDAY</th>-->
+<!--        </tr>-->
+<!--        <tbody>-->
+
+<!--        </tbody>-->
+<!--    </table>-->
+<!--</div>-->
+
+<!--<div class="container m-auto" th:if="${weekSchedule} != null">-->
+
+<!--    <table id="classSchedule1" class="table align-content-center m-auto">-->
+<!--        <tr class="table-header">-->
+<!--            <th>MONDAY</th>-->
+<!--            <th>TUESDAY</th>-->
+<!--            <th>WEDNESDAY</th>-->
+<!--            <th>THURSDAY</th>-->
+<!--            <th>FRIDAY</th>-->
+<!--            <th>SATURDAY</th>-->
+<!--        </tr>-->
+<!--        <tbody>-->
+
+<!--        </tbody>-->
+<!--    </table>-->
+
+<!--</div>-->
+
+</body>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const weekSchedule = /*[[${weekSchedule}]]*/ [];
+    /*]]>*/
+</script>
+
+
+<script>
+    // Lista degli orari di classe per ogni giorno della settimana
+    const classTimes = [
+        {dayOfWeek: "THURSDAY", startTime: "18:30", endTime: "19:30"},
+        {dayOfWeek: "THURSDAY", startTime: "8:30", endTime: "9:30"},
+        {dayOfWeek: "MONDAY", startTime: "10:30", endTime: "11:30"},
+        {dayOfWeek: "MONDAY", startTime: "11:00", endTime: "12:00"},
+        {dayOfWeek: "WEDNESDAY", startTime: "18:00", endTime: "19:00"},
+        {dayOfWeek: "TUESDAY", startTime: "18:00", endTime: "19:00"},
+        {dayOfWeek: "SATURDAY", startTime: "8:00", endTime: "9:00"},
+        {dayOfWeek: "FRIDAY", startTime: "13:00", endTime: "14:00"},
+        {dayOfWeek: "TUESDAY", startTime: "13:30", endTime: "14:30"},
+        {dayOfWeek: "TUESDAY", startTime: "13:30", endTime: "14:30"}
+        // Aggiungi altri orari di classe qui...
+    ];
+
+    const dayOfWeekValues = {
+        "MONDAY": 1,
+        "TUESDAY": 2,
+        "WEDNESDAY": 3,
+        "THURSDAY": 4,
+        "FRIDAY": 5,
+        "SATURDAY": 6
+    };
+
+    // Funzione per creare e popolare la tabella
+    function populateTable() {
+        const tableBody = document.querySelector('#classSchedule1 tbody');
+
+        // Creiamo una matrice vuota per la tabella con un intervallo di ore da 8 a 20
+        const tableMatrix = Array(13).fill().map(() => Array(6).fill(''));
+
+        // Popoliamo la matrice con gli orari di classe
+        classTimes.forEach(timeSlot => {
+            const dayIndex = dayOfWeekValues[timeSlot.dayOfWeek] - 1;
+            const startTime = parseInt(timeSlot.startTime.split(":")[0]);
+            const endTime = parseInt(timeSlot.endTime.split(":")[0]);
+
+            // Popoliamo ogni riga della tabella con gli orari di classe
+            for (let i = startTime; i < endTime; i++) {
+                tableMatrix[i - 8][dayIndex] = `${timeSlot.startTime} - ${timeSlot.endTime}`;
+            }
+        });
+
+        // Popoliamo la tabella HTML con i dati dalla matrice
+        for (let i = 8; i < 21; i++) {
+            const row = document.createElement('tr');
+            for (let j = 0; j < 6; j++) {
+                const cell = document.createElement('td');
+                cell.innerHTML = tableMatrix[i - 8][j];
+                row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+        }
+    }
+
+    function populateTable2() {
+        const tableBody = document.querySelector('#classSchedule2 tbody');
+
+        // Creiamo una singola riga per la tabella
+        const row = document.createElement('tr');
+
+        // Per ogni giorno della settimana
+        ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"].forEach(day => {
+            // Creiamo una cella per il giorno corrente
+            const cell = document.createElement('td');
+
+            // Troviamo gli orari di classe per il giorno corrente
+            const classTimesForDay = classTimes.filter(timeSlot => timeSlot.dayOfWeek === day);
+
+            // Ordiniamo gli orari di classe per startTime
+            classTimesForDay.sort((a, b) => {
+                const startTimeA = parseInt(a.startTime.replace(":", ""));
+                const startTimeB = parseInt(b.startTime.replace(":", ""));
+                return startTimeA - startTimeB;
+            });
+
+            // Creiamo una lista per gli orari di classe di questo giorno
+            const ul = document.createElement('ul');
+
+            // Per ogni orario di classe
+            classTimesForDay.forEach(timeSlot => {
+                // Creiamo un elemento di lista per ogni orario di classe
+                const li = document.createElement('li');
+                li.textContent = `${timeSlot.startTime} - ${timeSlot.endTime}`;
+                ul.appendChild(li);
+            });
+
+            // Aggiungiamo la lista alla cella
+            cell.appendChild(ul);
+
+            // Aggiungiamo la cella alla riga
+            row.appendChild(cell);
+        });
+
+        // Aggiungiamo la riga al corpo della tabella
+        tableBody.appendChild(row);
+    }
+
+    function populateTable3(weekSchedule) {
+        const tableBody = document.querySelector('#classSchedule3 tbody');
+
+        // Creiamo una matrice vuota per la tabella con un intervallo di ore da 8 a 20
+        const tableMatrix = Array(13).fill().map(() => Array(6).fill(''));
+
+        // Popoliamo la matrice con gli orari di classe
+        weekSchedule.forEach(timeSlot => {
+            const dayIndex = dayOfWeekValues[timeSlot.dayOfWeek] - 1;
+            const startTime = parseInt(timeSlot.startTime.split(":")[0]);
+            const endTime = parseInt(timeSlot.endTime.split(":")[0]);
+
+            // Popoliamo ogni riga della tabella con gli orari di classe
+            for (let i = startTime; i < endTime; i++) {
+                tableMatrix[i - 8][dayIndex] = `${timeSlot.startTime} - ${timeSlot.endTime}`;
+            }
+        });
+
+        // Popoliamo la tabella HTML con i dati dalla matrice
+        for (let i = 8; i < 21; i++) {
+            const row = document.createElement('tr');
+            for (let j = 0; j < 6; j++) {
+                const cell = document.createElement('td');
+                cell.innerHTML = tableMatrix[i - 8][j];
+                row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+        }
+    }
+
+
+    // Funzione per chiamare entrambe le funzioni di popolamento delle tabelle al caricamento della pagina
+    window.onload = function () {
+        //populateTable();
+        //populateTable2();
+        const table = document.getElementById('classSchedule3');
+        // const weekSchedule = JSON.parse(table.getAttribute('data-weekSchedule'));
+        console.log(weekSchedule)
+        const cleanedWeekSchedule = weekSchedule.map(timeSlot => ({
+            dayOfWeek: timeSlot.dayOfWeek,
+            startTime: timeSlot.startTime.split(':').slice(0, 2).join(':'),
+            endTime: timeSlot.endTime.split(':').slice(0, 2).join(':')
+        }));
+        populateTable3(cleanedWeekSchedule);
+    };
+
+</script>
+
+</html>
