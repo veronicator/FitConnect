@@ -297,9 +297,9 @@ public class DBService {
             }
             if (reservation.removeBooking(user)) {
                 reservationsRepository.save(reservation);
-                String unbookingCommand = String.format("i-%s",
+                String unbookCommand = String.format("d-%s",
                         reservation.getId().toString());
-                erlangNodesController.sendCommandToNode(user.getUsername(), unbookingCommand);
+                erlangNodesController.sendCommandToNode(user.getUsername(), unbookCommand);
                 System.out.println("booking removed for the day " + reservation.getClassDate() +
                         ", at " + reservation.getStartTime());
                 return true;
@@ -332,6 +332,10 @@ public class DBService {
             for (Reservations r: clientReservations) {
                 r.removeBooking(client);
                 reservationsRepository.save(r);
+                // todo: check if needed
+                String unbookCommand = String.format("d-%s",
+                        r.getId().toString());
+                erlangNodesController.sendCommandToNode(client.getUsername(), unbookCommand);
             }
             if (client.removeCourse(course)) {
                 userRepository.save(client);
@@ -363,6 +367,18 @@ public class DBService {
             for (MongoUser u: users) {
                 u.removeCourse(course);
                 userRepository.save(u);
+
+                String leaveCommand = String.format("leave-%s", course.getId().toString());
+                erlangNodesController.sendCommandToNode(u.getUsername(), leaveCommand);
+            }
+            // todo: check if needed
+            List<Reservations> reservations = reservationsRepository.findByCourse(course.getId());
+            for (Reservations r: reservations) {
+                for (MongoUser u: r.getBookedUsers()) {
+                    String unbookCommand = String.format("d-%s",
+                            r.getId().toString());
+                    erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
+                }
             }
             reservationsRepository.deleteByCourse(course.getId());
             courseRepository.deleteById(courseId);
@@ -395,6 +411,13 @@ public class DBService {
                 courseRepository.save((course));
                 List<Reservations> reservations = reservationsRepository.findByCourseDayTime(
                         new ObjectId(courseId), dayOfWeek, startTime.toString());
+                for (Reservations r: reservations) {
+                    for (MongoUser u: r.getBookedUsers()) {
+                        String unbookCommand = String.format("d-%s",
+                                r.getId().toString());
+                        erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
+                    }
+                }
                 reservationsRepository.deleteByCourseDayTime(course.getId(), dayOfWeek, startTime.toString());
             }
         } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {
