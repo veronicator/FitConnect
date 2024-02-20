@@ -1,0 +1,66 @@
+
+<div>
+    <h1 class="text-white">My Courses</h1>
+    <table class="table table-light table-striped mt-4 text-center">
+        <thead>
+        <tr>
+            <th>Course</th>
+            <th>Subscribed</th>
+            <th>Max Places</th>
+            <th>View</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="course : ${courses}">
+            <td >
+                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainer()}}" th:text="${course.getCourseName()}"></a>
+            </td>
+            <td th:text="${course.getNumberOfEnrolledUsers()}"></td>
+            <td th:text="${course.getMaxReservablePlaces()}"></td>
+            <td>
+                <a th:href="'/profile?course=' + ${course.getCourseName()}">
+                    <button class="btn btn-primary" type="button">View</button>
+                </a>
+            </td>
+            <td>
+                <form th:action="@{deleteCourse}" method="post">
+                    <input type="text" hidden="hidden" name="courseId" th:value="${course.getId()}">
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:if="${classes != null}">
+    <h1 class="text-white" th:text="${courseName}"></h1>
+    <table class="table table-light table-striped mt-4 text-center">
+        <thead>
+        <tr>
+            <th>Day</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Remove</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="classTime : ${classes}">
+
+            <td th:text="${classTime.getDayOfWeek()}"></td>
+            <td th:text="${classTime.getStartTime()}"></td>
+            <td th:text="${classTime.getEndTime()}"></td>
+            <td>
+                <form th:action="@{deleteClass}" method="post">
+                    <input type="text" name="courseId" hidden="hidden" th:value="${courseId}">
+                    <input type="text" name="day" hidden="hidden" th:value="${classTime.getDayOfWeek()}">
+                    <input type="text" name="startTime" hidden="hidden" th:value="${classTime.getStartTime()}">
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
