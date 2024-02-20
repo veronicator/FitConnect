@@ -37,41 +37,66 @@
         </ul>
     </div>
 
-    <div class="container w-50" th:if="(${weekSchedule} != null) and (${!session.isEmpty()})">
+    <div class="container w-50" th:if="${weekSchedule != null and !session.isEmpty() and session.role.toString().equals('client')}">
 
         <div class="container" th:if="${isJoined == false}">
             <p>You are not subscribed to this course</p>
-            <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainer()} +'/' + ${trainerCourse.getId()} + '/joinCourse'}" method="post">
+            <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainer()} +'/' + ${trainerCourse.getId()} + '/joinCourse'}"
+                  method="post">
                 <button type="submit" class="btn btn-primary">Subscribe</button>
             </form>
         </div>
 
-        <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainer()} +'/' + ${trainerCourse.getId()} + '/bookClass'}" th:if="${isJoined == true}" method="post">
+        <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainer()} +'/' + ${trainerCourse.getId()} + '/bookClass'}"
+              th:if="${isJoined == true}" method="post">
             <div class="form-group mb-4">
                 <label for="trainer">Trainer:</label>
-                <input type="text" class="form-control" id="trainer"  placeholder="Enter trainer's name" th:value="${trainer}" readonly>
+                <input type="text" class="form-control" id="trainer" placeholder="Enter trainer's name"
+                       th:value="${trainer}" readonly>
             </div>
             <div class="form-group mb-4">
                 <label for="day">Day:</label>
                 <select class="form-control" id="day" name="day">
-                    <option>Monday</option>
-                    <option>Tuesday</option>
-                    <option>Wednesday</option>
-                    <option>Thursday</option>
-                    <option>Friday</option>
-                    <option>Saturday</option>
+                    <option th:each="day : ${bookDay}" th:text="${day}" th:value="${day}"></option>
                 </select>
             </div>
             <div class="form-group mb-4">
                 <label for="startTime">Time:</label>
                 <select class="form-control" id="startTime" name="startTime">
-                    <option th:each="classtime : ${weekSchedule}" th:text="${classtime.getStartTime()}"></option>
+                    <option th:each="classtime : ${bookTime}" th:text="${classtime}"></option>
                 </select>
             </div>
             <button type="submit" class="btn btn-primary">Book Class</button>
         </form>
 
     </div>
+    <!--    and session.username.equals(trainerCourse.getTrainerUsername())-->
+
+    <div class="container w-50" th:if="${weekSchedule != null and !session.isEmpty() and session.role.toString().equals('trainer') and session.username.equals(trainerCourse.getTrainerUsername())}">
+
+        <form th:action="@{'/addClass/' + ${trainerCourse.getId()}}"
+              method="post">
+            <div class="form-group mb-4">
+                <label for="trainer2">Trainer:</label>
+                <input type="text" class="form-control" id="trainer2" placeholder="Enter trainer's name"
+                       th:value="${trainer}" readonly>
+            </div>
+            <div class="form-group mb-4">
+                <label for="day2">Day of Week:</label>
+                <select class="form-control" name="day" id="day2">
+                    <option th:each="day : ${daysOfWeek}" th:text="${day}"></option>
+                </select>
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="startTime2">Start Time:</label>
+                <input type="time" class="form-control" name="startTime" id="startTime2"/>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Class</button>
+        </form>
+
+    </div>
+
 
     <div class="container m-auto" th:if="${weekSchedule} != null">
         <table id="classSchedule3" class="table align-content-center mb-lg-5"
