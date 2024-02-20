@@ -11,13 +11,14 @@
             <ul class="navbar-nav ml-auto">
 
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/home}">Homepage</a>
+                    <a class="nav-link" th:href="@{/profile}" th:if="${!session.isEmpty()}">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/courses}">Courses</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/add-class-time}">Add Class</a>
+                    <a class="nav-link" th:href="@{/addCourse}" th:if="${!session.isEmpty() and session.role.toString().equals('trainer') == true}"
+                    >Add Course</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/login}" th:if="${session.isEmpty()}">Login</a>
