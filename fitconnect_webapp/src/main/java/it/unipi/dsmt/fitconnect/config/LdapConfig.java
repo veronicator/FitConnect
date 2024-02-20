@@ -8,9 +8,9 @@ import org.springframework.ldap.core.support.LdapContextSource;
 
 @Configuration
 @PropertySource("classpath:application.properties")
-@ComponentScan(basePackages = {"it.unipi.dsmt.FitConnect.*"})
+@ComponentScan(basePackages = {"it.unipi.dsmt.fitconnect.*"})
 @Profile("default")
-@EnableLdapRepositories(basePackages = "it.unipi.dsmt.FitConnect.repositories.ldap.*")
+@EnableLdapRepositories(basePackages = "it.unipi.dsmt.fitconnect.repositories.ldap.*")
 public class LdapConfig {
 
     @Bean

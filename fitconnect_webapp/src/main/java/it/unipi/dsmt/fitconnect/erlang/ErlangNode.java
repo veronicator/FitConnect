@@ -46,13 +46,14 @@ public class ErlangNode {
      * Sends a message to the fitNotifier to set a new timer
      * @param mode it is either "insert", "edit" or "delete"
      * @param courseName course Id
-     * @param time when the course will be held
+     * @param time timestamp when the course will be held
      */
-    private void sendRequestToNotifier(String mode, String courseName, int time){
+    private void sendRequestToNotifier(String mode, String courseName, long time){
         OtpErlangAtom msgType = new OtpErlangAtom(mode);
         OtpErlangString user = new OtpErlangString(this.username);
         OtpErlangString course = new OtpErlangString(courseName);
-        OtpErlangInt delay = new OtpErlangInt(time);
+//        OtpErlangInt delay = new OtpErlangInt(time);
+        OtpErlangLong delay = new OtpErlangLong(time);
         OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, user, course, delay});
         OtpErlangObject msg_gen = new OtpErlangTuple(new OtpErlangObject[] {
             new OtpErlangAtom("$gen_call"), this.from, outMsg });
@@ -216,13 +217,13 @@ public class ErlangNode {
             case "send": // 3 args: String message, String receiver
                 sendMessage(parts[1].trim(), parts[2].trim());
                 break;
-            case "i": // 2 args: String mode, String courseName, Int time
-                sendRequestToNotifier("insert", parts[1].trim(),Integer.parseInt(parts[2].trim()));
+            case "i": // 2 args: String mode, String courseName, long time
+                sendRequestToNotifier("insert", parts[1].trim(),Long.parseLong(parts[2].trim()));
                 break;
-            case "e": // 2 args: String mode, String courseName, Int time
-                sendRequestToNotifier("edit", parts[1].trim(),Integer.parseInt(parts[2].trim()));
+            case "e": // 2 args: String mode, String courseName, long time
+                sendRequestToNotifier("edit", parts[1].trim(), Long.parseLong(parts[2].trim()));
                 break;
-            case "d": // 2 args: String mode, String courseName, Int time
+            case "d": // 1 args: String mode, String courseName
                 sendRequestToNotifier("delete", parts[1].trim(), 0);
                 break;
             default:

@@ -2,13 +2,13 @@ package it.unipi.dsmt.fitconnect.erlang;
 
 import java.time.LocalDateTime;
 
-public class Message {
+public class MessageErl {
     private String course;
     private String username;
     private String text;
     private LocalDateTime time;
 
-    public Message(String course, String username, String text, LocalDateTime time){
+    public MessageErl(String course, String username, String text, LocalDateTime time){
         this.course = course;
         this.username = username;
         this.text = text;
@@ -33,11 +33,10 @@ public class Message {
 
     @Override
     public String toString() {
-        StringBuilder builtString = new StringBuilder();
-        builtString.append("Course: " + course + "\n");
-        builtString.append("Sender: " + username + "\n");
-        builtString.append("Content: " + text + "\n");
-        builtString.append("Timestamp: " + time + "\n");
-        return builtString.toString();
+        String builtString = "Course: " + course + "\n" +
+                "Sender: " + username + "\n" +
+                "Content: " + text + "\n" +
+                "Timestamp: " + time + "\n";
+        return builtString;
     }
 }

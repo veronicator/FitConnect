@@ -2,6 +2,10 @@ package it.unipi.dsmt.fitconnect.erlang;
 
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpErlangExit;
+import it.unipi.dsmt.fitconnect.entities.CourseNotification;
+import it.unipi.dsmt.fitconnect.entities.Message;
+import it.unipi.dsmt.fitconnect.entities.UserNotification;
+
 import java.time.LocalDateTime;
 
 public class ErlangNodeListener extends Thread{
@@ -25,16 +29,16 @@ public class ErlangNodeListener extends Thread{
                         case "expired":
                         case "edited":
                             CourseNotification courseNotification = new CourseNotification(response[0], response[1], response[2]);
-                            System.out.println(courseNotification.toString());
+                            System.out.println(courseNotification);
                             break;
                         case "userJoined":
                         case "userExited":
                             UserNotification userNotification = new UserNotification(response[0], response[1], response[2]);
-                            System.out.println(userNotification.toString());
+                            System.out.println(userNotification);
                             break;
                         case "message":
                             Message message = new Message(response[1], response[2], response[3], LocalDateTime.now());
-                            System.out.println(message.toString());
+                            System.out.println(message);
                             break;
                         default:
                             System.out.println("Operation: " + response[0]);

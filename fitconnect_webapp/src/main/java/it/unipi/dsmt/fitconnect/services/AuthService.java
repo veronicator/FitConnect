@@ -145,22 +145,6 @@ public class AuthService {
         } else
             System.out.println("username ok");
 
-        boolean ldapSuccess = createLdapUser(ldapNewUser);
-        boolean mongoSuccess = createMongoUser(mongoNewUser);
-
-        if (!ldapSuccess || !mongoSuccess) {
-            throw new Exception("Error in registration phase");
-        }
-        /* todo: gestire la doppia registrazione utente in altro modo
-        -> se fallisce la registrazione su ldap, non va eseguita nemmeno quella su mongo,
-        -> se fallisce solo su mongo => va rifatto un tentativo (?), altrimenti va cancellato tutto e restituito errore
-        */
-/*        ad es.
-        if (!createLdapUser(ldapNewUser)) {
-            throw new Exception("Error in registration phase");
-        }
-        */
-/*
         if (createLdapUser(ldapNewUser)) {
             if (createMongoUser(mongoNewUser)) {
                 return;
@@ -168,8 +152,6 @@ public class AuthService {
             ldapUserRepository.delete(ldapNewUser);
         }
         throw new Exception("Error in registration phase");
-
- */
 
     }
 
