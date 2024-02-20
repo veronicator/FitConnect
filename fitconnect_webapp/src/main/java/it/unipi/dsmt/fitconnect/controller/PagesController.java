@@ -330,6 +330,24 @@ public class PagesController {
             return "error";
     }
 
+    @PostMapping("/unsubscribeCourse")
+    public String unsubscribeCourse(@RequestParam String courseId, HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if(session == null){
+            String errorMessage = "Session error";
+            System.out.println(errorMessage);
+            return "error";
+        }
+
+        String username = getSessionUsername(session);
+
+        boolean ret = dbService.leaveCourse(courseId, username);
+        if (ret) {
+            return "redirect:/profile";
+        } else
+            return "error";
+    }
 
     @PostMapping("/deleteClass")
     public String deleteClass(@RequestParam String courseId, @RequestParam String day, @RequestParam String startTime) {
@@ -358,6 +376,8 @@ public class PagesController {
         } else
             return "error";
     }
+
+
 
 }
 
