@@ -171,7 +171,7 @@ public class DBService {
         return false;
     }
 
-    public boolean bookClass(String username, String courseId, DayOfWeek dayOfWeek, LocalTime startTime) {
+    public boolean bookClass(String username, String courseId, DayOfWeek dayOfWeek, String startTime) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername(username);
             if (optUser.isEmpty()) {
