@@ -1,10 +1,7 @@
 package it.unipi.dsmt.fitconnect.entities;
 
 import it.unipi.dsmt.fitconnect.enums.CourseType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -17,6 +14,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "courses")
@@ -88,12 +86,12 @@ public class Course {
 //    }
 
 
-    @Override
-    public String toString() {
-        return "Course{" +
-                "courseName='" + courseName + '\'' +
-                ", trainer='" + trainer + '\'' +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "Course{" +
+//                "courseName='" + courseName + '\'' +
+//                ", trainer='" + trainer + '\'' +
+//                '}';
+//    }
 }
 
