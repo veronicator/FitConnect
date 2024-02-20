@@ -17,7 +17,6 @@ public class LoginController {
     @Autowired
     private AuthService authService;
 
-
     @GetMapping("/login")
     public String index() {
         return "login";
@@ -47,7 +46,7 @@ public class LoginController {
 
             model.addAttribute("username", loggedUser.getUsername());
 
-            return "home";
+            return "redirect:/profile";
         }
     }
 
@@ -73,12 +72,6 @@ public class LoginController {
             return "signup";
         }
     }
-
-//    @GetMapping("/login-error")
-//    public String loginError(Model model) {
-//        model.addAttribute("loginError", "Login Error");
-//        return "login";
-//    }
 
     @GetMapping("/logout")
     public String logout(HttpServletRequest request) {

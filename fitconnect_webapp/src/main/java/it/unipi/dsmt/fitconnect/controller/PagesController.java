@@ -7,15 +7,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import it.unipi.dsmt.fitconnect.entities.*;
 import it.unipi.dsmt.fitconnect.services.DBService;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.*;
-import java.time.format.*;
 import java.util.*;
 
 @Controller
@@ -24,7 +21,6 @@ public class PagesController {
     private DBService dbService;
     @Autowired
     private ErlangNodesController erlangNodesController;
-
     @Autowired
     private ActiveCourses courses;  // all gym courses in the db or only those of a user, update everytime
 
@@ -62,24 +58,6 @@ public class PagesController {
         return "error";
     }
 
-    @GetMapping("/home")
-    public String home(HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession(false); // non creare una nuova sessione se non esiste già
-
-        if (session != null) {
-            String username = getSessionUsername(session);
-            UserRole role = getSessionRole(session);
-
-
-            if (role != null && role == UserRole.client) {
-                model.addAttribute("username", username);
-                return "home";
-            }
-        }
-
-        return "redirect:/login"; // Reindirizza alla pagina di login se l'utente non è autenticato o non ha il ruolo appropriato
-    }
-
     @GetMapping("/courses")
     public String courses(Model model) {
         loadCourses();
@@ -113,10 +91,9 @@ public class PagesController {
             return "error";
         }
 
-        List<ClassTime> weekSchedule = trainerCourse.get().getWeekSchedule();
-
         // check if logged user is subscribed to this course
         boolean isJoined = false;
+
         HttpSession session = request.getSession(false);
         if (session != null) {
             String username = getSessionUsername(session);
@@ -125,12 +102,42 @@ public class PagesController {
             isJoined = enrolledClients.stream().anyMatch(user -> user.getUsername().equals(username));
         }
 
+        //todo sortare correttamente le liste
+        List<ClassTime> weekSchedule = trainerCourse.get().getWeekSchedule();
+        Set<LocalTime> uniqueStartTimes = new HashSet<>();
+        Set<DayOfWeek> uniqueDaysOfWeek = new HashSet<>();
+
+//        if(!weekSchedule.isEmpty())
+//            for (ClassTime classtime : weekSchedule) {
+//                uniqueStartTimes.add(classtime.getStartTime());
+//                uniqueDaysOfWeek.add(classtime.getDayOfWeek());
+//            }
+//
+//        // Ordinamento dei startTime
+//        List<LocalTime> sortedStartTimes = new ArrayList<>(uniqueStartTimes);
+//        sortedStartTimes.sort(Comparator.naturalOrder());
+//
+//// Ordinamento dei daysOfWeek
+//        List<DayOfWeek> sortedDaysOfWeek = new ArrayList<>(uniqueDaysOfWeek);
+//        sortedDaysOfWeek.sort(Comparator.comparingInt(DayOfWeek::getValue));
+//
+//// Se desideri mantenere ancora un Set, puoi convertire la lista ordinata in un Set
+//        Set<LocalTime> sortedUniqueStartTimes = new HashSet<>(sortedStartTimes);
+//        Set<DayOfWeek> sortedUniqueDaysOfWeek = new HashSet<>(sortedDaysOfWeek);
+
+        List<DayOfWeek> days = new ArrayList<>(Arrays.stream(DayOfWeek.values()).toList());
+        days.remove(DayOfWeek.SUNDAY);
+
         model.addAttribute("isJoined", isJoined);
         model.addAttribute("courseList", courses);
         model.addAttribute("trainerCourse", trainerCourse.get());
         model.addAttribute("weekSchedule", weekSchedule);
         model.addAttribute("trainer", trainer);
+        model.addAttribute("username", getSessionUsername(session));
         model.addAttribute("courseName", course);
+        model.addAttribute("daysOfWeek", days);
+//        model.addAttribute("bookDay", sortedUniqueDaysOfWeek);
+//        model.addAttribute("bookTime", sortedUniqueStartTimes);
 
         return "courseType";
     }
@@ -157,7 +164,7 @@ public class PagesController {
                             @RequestParam String day, @RequestParam String startTime, Model model, HttpServletRequest request) {
 
         HttpSession session = request.getSession(false);
-        if(session == null){
+        if (session == null) {
             String errorMessage = "Session error";
             System.out.println(errorMessage);
             return "error";
@@ -165,238 +172,192 @@ public class PagesController {
 
         String username = getSessionUsername(session);
 
-        // Converti la stringa di startTime in un oggetto LocalTime
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        LocalTime start = LocalTime.parse(startTime, formatter);
+        boolean ret = dbService.bookClass(username, courseId, DayOfWeek.valueOf(day), startTime);
 
-        // Aggiungi un'ora all'orario di inizio per ottenere l'orario di fine
-        LocalTime end = start.plusHours(1);
-
-        boolean ret = dbService.bookClass(username, courseId, DayOfWeek.valueOf(day), start);
+        // todo parte erlang
 
         if (ret)
-            return "home";
+            return "redirect:/profile";
         else
             return "error";
     }
 
+    @GetMapping("/profile")
+    public String profile(HttpServletRequest request, Model model,
+                          @RequestParam(name = "view", defaultValue = "courses") String view,
+                          @RequestParam(name = "course", required = false) String course) {
 
-    private boolean bookClass(String scheduleId, String username) {
-        /* try {
-         *   find the user
-         *   find the schedule
-         *   if available places is <= 0
-         *       => return false
-         *   else
-         *       => book the class adding the user in the bookedUsers list
-         *       => decrement availablePlaces field
-         *       => add the reservation to the user object
-         *       => save the Schedule doc on the db
-         * [join, coursename]
-         * [deleteC
-         * String command = "join-Yoga"
-         * erlangNodeController.sendCommandToNode(username, command)
-         * } catch(ObjectOptimisticLockingFailureException e) {
-         *   return false
-         * }
-         * return true
-         * */
-        return false;
-    }
-
-
-//    @GetMapping("/courses/{course}")
-//    public String viewCourse(Model model,
-//                             @PathVariable String course) {
-//
-//
-//        //List<Course> courses = dbService.getCourseRepository().findByCourseName(CourseType.valueOf(course));
-//
-//
-//        //List<ClassTime> weekSchedule = courses.get(0).getWeekSchedule();
-//
-//
-//
-//
-//        model.addAttribute("courseName", course);
-//        model.addAttribute("courseList", courses);
-//        model.addAttribute("weekSchedule", weekSchedule);
-//
-//
-//        return "courses";
-//
-//        /* getCourse(courseId)
-//         * show course details:
-//         *   tab with list of scheduled classes
-//         * es. yoga
-//         *   Date       |    class time      |   available places    | book button
-//         *   monday 05-02-2024 17:00 -> 18:00        16      book
-//         *
-//         * the book button can be disabled if available places is <= 0
-//         *
-//         * if the logged user is a trainer => the book button is substituted with
-//         * an "edit" or "remove class" button
-//         * and another button to add new class times has to be shown
-//         * */
-//
-//    }
-
-
-    @GetMapping("/add-class-time")
-    public String addCourse(HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession(false); // non creare una nuova sessione se non esiste già
-
-        if (session != null) {
-            String username = (String) session.getAttribute("username");
-            UserRole role = (UserRole) session.getAttribute("role");
-
-
-            if (role != null && role == UserRole.trainer) {
-                model.addAttribute("classTime", new ClassTime());
-                return "addClassTime";
-            }
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "No session found";
+            System.out.println(errorMessage);
+            return "login";
         }
 
-        return "redirect:/";
-    }
+        String username = getSessionUsername(session);
+        UserRole userRole = getSessionRole(session);
 
-    @PostMapping("/add-class-time")
-    public String doAddCourse(@ModelAttribute ClassTime classTime) {
-
-        String courseId = "65bead220356226c852ba311";
-
-        dbService.addClassTime(courseId, classTime.getDayOfWeek(), classTime.getStartTime(), classTime.getEndTime());
-
-        return "courses";
-    }
-
-
-//    @GetMapping("/courses/{courseId}")
-//    public String viewCoursebyId(Model model,
-//                             @PathVariable String courseId) {
-//        /* getCourse(courseId)
-//        * show course details:
-//        *   tab with list of scheduled classes
-//        * es. yoga
-//        *   Date       |    class time      |   available places    | book button
-//        *   monday 05-02-2024 17:00 -> 18:00        16      book
-//        *
-//        * the book button can be disabled if available places is <= 0
-//        *
-//        * if the logged user is a trainer => the book button is substituted with
-//        * an "edit" or "remove class" button
-//        * and another button to add new class times has to be shown
-//        * */
-//        return "home";
-//    }
-
-    /**
-     * raggiungibile solo da un trainer per aggiungere un nuovo corso
-     */
-    @PostMapping("/courses/create")
-    public String addCourse(Model model,
-                            @ModelAttribute(value = "course") Course course) {
-        /* check that the logged user is a trainer (or even the admin ?)
-         * -> retrieve the user logged through the authentication context
-         * if a course with the same trainer and same name already exists (check in the db service)
-         *   => error (an error message to show in the UI ?)
-         * else
-         *   => dbService.addCourse (use try-catch in the db method)
-         *   => if course added correct
-         *       => show success message/ load course page "/course/courseId"
-         * */
-
-        return "home";
-    }
-
-    // todo: metodo per aggiungere/modificare gli orari delle lezioni
-    @PostMapping("/course/schedule")
-    public String addSchedule(Model model, @ModelAttribute(value = "schedule") Reservations reservations) {
-        /* inserire parametri di funzione corretti
-         * controllare che non ci sia sovrapposizione di orari (riferito solo ad uno stesso corso)
-         * schedule.save
-         * gestire eventuali errori*/
-        return "home";
-    }
-
-    @GetMapping("/profile/{username}")
-    public String viewUserProfile(Model model,
-                                  @PathVariable String username) {
-//        todo: create getUser method in DBService
-//        MongoUser user = dbService.getUser(username);
         Optional<MongoUser> optUser = dbService.getUserRepository().findByUsername(username);
         if (optUser.isPresent()) {
             MongoUser user = optUser.get();
             switch (user.getRole()) {
                 case trainer -> {
-                    // todo: load trainer page, showing taught courses
-                    System.out.println("trainer");
+                    model.addAttribute("courses", user.getCourses());
+                    if (course != null) {
+                        String trainerName = user.getCompleteName();
+                        Optional<Course> courseOpt = dbService.getCourseRepository().findByCourseNameAndTrainer(CourseType.valueOf(course), trainerName);
+//                    courseOpt.ifPresent(value -> model.addAttribute("courseName", value.getCourseName()));
+                        model.addAttribute("courseName", courseOpt.get().getCourseName());
+                        model.addAttribute("classes", courseOpt.get().getWeekSchedule());
+                        model.addAttribute("courseId", courseOpt.get().getId());
+                    }
                 }
                 case client -> {
                     // todo: load client page, showing subscribed courses
                     // also show booked classes in a tab, with a button to can remove the reservation
-                    System.out.println("client");
+                    model.addAttribute("courses", user.getCourses());
+                    model.addAttribute("reservations", user.getReservations());
                 }
                 default -> {
-                    // todo: manage error
                     System.out.println("Invalid user role");
+                    return "error";
                 }
             }
-            return "home";  // todo: che ritorno usare?
+            model.addAttribute("view", view);
+            return "profile";
+        } else
+            return "error";
+    }
+
+    @GetMapping("/addCourse")
+    public String addCourse(HttpServletRequest request, Model model) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "Session error";
+            System.out.println(errorMessage);
+            return "redirect:/login";
         }
-        return "home";  // or return "error" ?
+        // only trainer can access to this page
+        if (!getSessionRole(session).toString().equals("trainer")) {
+            String errorMessage = "Content not accessible";
+            System.out.println(errorMessage);
+            return "error";
+        }
+
+        model.addAttribute("courses", CourseType.values());
+
+        return "addCourse";
     }
 
-    private void populate_courses() {
-        // Ripopolamento della collection "courses"
-        /*
-        dbService.addCourse("yoga", "Mario Rossi");
-        dbService.addCourse("yoga", "Giulia Bianchi");
-        dbService.addCourse("yoga", "Luca Verdi");
-        dbService.addCourse("yoga", "Anna Esposito");
-        dbService.addCourse("yoga", "Matteo Russo");
-        dbService.addCourse("yoga", "Sara Ferrari");
-        dbService.addCourse("yoga", "Giovanni Romano");
-        dbService.addCourse("yoga", "Chiara Gialli");
-        dbService.addCourse("yoga", "Andrea Neri");
-        dbService.addCourse("yoga", "Elena Marroni");
+    @PostMapping("/addCourse")
+    public String doAddCourse(@RequestParam String course,
+                              @RequestParam Integer maxReservablePlaces, HttpServletRequest request) {
 
-        dbService.addCourse("crossfit", "Alessandro Moretti");
-        dbService.addCourse("crossfit", "Valentina Rosso");
-        dbService.addCourse("crossfit", "Davide Rossi");
-        dbService.addCourse("crossfit", "Martina Verdi");
-        dbService.addCourse("crossfit", "Roberto Bianchi");
-        dbService.addCourse("crossfit", "Francesca Neri");
-        dbService.addCourse("crossfit", "Paolo Esposito");
-        dbService.addCourse("crossfit", "Giorgio Gialli");
-        dbService.addCourse("crossfit", "Eleonora Marroni");
-        dbService.addCourse("crossfit", "Simone Ferrari");
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "Session error";
+            System.out.println(errorMessage);
+            return "redirect:/login";
+        }
+        // only trainer can access to this page
+        if (!getSessionRole(session).toString().equals("trainer")) {
+            String errorMessage = "Content not accessible";
+            System.out.println(errorMessage);
+            return "error";
+        }
 
-        dbService.addCourse("swim", "Federico Bianchi");
-        dbService.addCourse("swim", "Laura Verdi");
-        dbService.addCourse("swim", "Marco Rossi");
-        dbService.addCourse("swim", "Alessia Esposito");
-        dbService.addCourse("swim", "Nicola Neri");
-        dbService.addCourse("swim", "Cristina Gialli");
-        dbService.addCourse("swim", "Lorenzo Marroni");
-        dbService.addCourse("swim", "Erika Ferrari");
-        dbService.addCourse("swim", "Daniele Romano");
-        dbService.addCourse("swim", "Valeria Rosso");
+        String username = getSessionUsername(session);
 
-        dbService.addCourse("gym", "Gabriele Verdi");
-        dbService.addCourse("gym", "Elisa Rossi");
-        dbService.addCourse("gym", "Massimo Bianchi");
-        dbService.addCourse("gym", "Serena Esposito");
-        dbService.addCourse("gym", "Riccardo Neri");
-        dbService.addCourse("gym", "Alessandra Gialli");
-        dbService.addCourse("gym", "Giacomo Marroni");
-        dbService.addCourse("gym", "Chiara Ferrari");
-        dbService.addCourse("gym", "Luigi Romano");
-        dbService.addCourse("gym", "Martina Rosso");
-
-         */
+        boolean ret = dbService.addNewCourse(CourseType.valueOf(course), username, maxReservablePlaces);
+        if (ret)
+            return "redirect:/profile";
+        else
+            return "error";
     }
 
+
+    @GetMapping("/addClass")
+    public String addClass(HttpServletRequest request, Model model) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "Session error";
+            System.out.println(errorMessage);
+            return "redirect:/login";
+        }
+        // only trainer can access to this page
+        if (!getSessionRole(session).toString().equals("trainer")) {
+            String errorMessage = "Content not accessible";
+            System.out.println(errorMessage);
+            return "error";
+        }
+
+        List<DayOfWeek> days = new ArrayList<>(Arrays.stream(DayOfWeek.values()).toList());
+        days.remove(DayOfWeek.SUNDAY);
+
+        model.addAttribute("classTime", new ClassTime());
+        model.addAttribute("daysOfWeek", days);
+        return "addClassTime";
+
+    }
+
+    @PostMapping("/addClass/{courseId}")
+    public String doAddClass(@PathVariable String courseId, @RequestParam String day, @RequestParam String startTime) {
+
+        // Converti il startTime da stringa a LocalTime
+        LocalTime startTimeLocal = LocalTime.parse(startTime);
+
+        // Calcola l'endTime aggiungendo un'ora al startTime
+        LocalTime endTimeLocal = startTimeLocal.plus(Duration.ofHours(1));
+
+        boolean ret = dbService.addClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal, endTimeLocal);
+        if (ret) {
+            System.out.println("class added");
+            return "redirect:/profile";
+        } else
+            return "index";
+    }
+
+    @PostMapping("/deleteCourse")
+    public String deleteCourse(@RequestParam String courseId) {
+
+        boolean ret = dbService.deleteCourse(courseId);
+        if (ret) {
+            System.out.println("course removed");
+            return "redirect:/profile";
+        } else
+            return "error";
+    }
+
+
+    @PostMapping("/deleteClass")
+    public String deleteClass(@RequestParam String courseId, @RequestParam String day, @RequestParam String startTime) {
+
+        LocalTime startTimeLocal = LocalTime.parse(startTime);
+
+        boolean ret = dbService.removeClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal);
+        if (ret) {
+            return "redirect:/profile";
+        } else
+            return "error";
+    }
+
+    @PostMapping("/editClass")
+    public String editClass(@RequestParam String courseId, @RequestParam String oldDay, @RequestParam String newDay,
+                            @RequestParam String oldStartTime, @RequestParam String newStartTime) {
+
+        LocalTime oldStartTimeLocal = LocalTime.parse(oldStartTime);
+        LocalTime newStartTimeLocal = LocalTime.parse(newStartTime);
+        LocalTime newEndTimeLocal = newStartTimeLocal.plus(Duration.ofHours(1));
+
+        boolean ret = dbService.editCourseClassTime(courseId, DayOfWeek.valueOf(oldDay), oldStartTimeLocal, DayOfWeek.valueOf(newDay), newStartTimeLocal, newEndTimeLocal);
+        if (ret) {
+            System.out.println("class time edited");
+            return "redirect:/profile";
+        } else
+            return "error";
+    }
 
 }
 
