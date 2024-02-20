@@ -171,7 +171,7 @@ public class DBService {
         return false;
     }
 
-    public boolean bookClass(String username, String courseId, DayOfWeek dayOfWeek, LocalTime startTime) {
+    public boolean bookClass(String username, String courseId, DayOfWeek dayOfWeek, String startTime) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername(username);
             if (optUser.isEmpty()) {
@@ -274,6 +274,10 @@ public class DBService {
 
     public List<Course> browseAllCourses() {
         return courseRepository.findAll();
+    }
+
+    public List<Course> browseCourses(CourseType courseType) {
+        return courseRepository.findByCourseName(courseType);
     }
 
     public boolean unbookClass(String reservationsId, String username) {
