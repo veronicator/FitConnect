@@ -14,7 +14,7 @@
             <td th:text="${course.getCourseName()}"></td>
             <td th:text="${course.getTrainer()}"></td>
             <td>
-                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainer()}}">
+                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainerUsername()}}">
                     <button class="btn btn-primary" type="button">View</button>
                 </a>
             </td>

@@ -30,7 +30,7 @@
     <div class="container m-auto">
         <ul th:each="course : ${courseList}">
             <li>
-                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainer()}}">
+                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainerUsername()}}">
                     <span th:text="${course.getTrainer()}"></span>
                 </a>
             </li>
@@ -41,13 +41,13 @@
 
         <div class="container" th:if="${isJoined == false}">
             <p>You are not subscribed to this course</p>
-            <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainer()} +'/' + ${trainerCourse.getId()} + '/joinCourse'}"
+            <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainerUsername()} +'/' + ${trainerCourse.getId()} + '/joinCourse'}"
                   method="post">
                 <button type="submit" class="btn btn-primary">Subscribe</button>
             </form>
         </div>
 
-        <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainer()} +'/' + ${trainerCourse.getId()} + '/bookClass'}"
+        <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainerUsername()} +'/' + ${trainerCourse.getId()} + '/bookClass'}"
               th:if="${isJoined == true}" method="post">
             <div class="form-group mb-4">
                 <label for="trainer">Trainer:</label>
@@ -70,7 +70,6 @@
         </form>
 
     </div>
-    <!--    and session.username.equals(trainerCourse.getTrainerUsername())-->
 
     <div class="container w-50" th:if="${weekSchedule != null and !session.isEmpty() and session.role.toString().equals('trainer') and session.username.equals(trainerCourse.getTrainerUsername())}">
 
