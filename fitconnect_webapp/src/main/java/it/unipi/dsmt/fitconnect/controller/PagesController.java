@@ -49,7 +49,8 @@ public class PagesController {
     }
 
     @GetMapping({"/", "/index"})
-    public String index() {     // todo: cambiare nome metodo?
+    public String index(@RequestParam(required = false) String isLogout, Model model) {
+        model.addAttribute("isLogout", isLogout != null && isLogout.equals("true"));
         return "index";
     }
 

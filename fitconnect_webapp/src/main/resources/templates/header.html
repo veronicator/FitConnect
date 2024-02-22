@@ -26,53 +26,23 @@
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/logout}" th:if="${!session.isEmpty()}">Logout</a>
                 </li>
-                <li class="nav-item dropdown" th:if="${!session.isEmpty()}">
+                <li class="nav-item dropdown d-flex flex-row">
+                    <span class="badge badge-danger m-auto text-center" id="notifications"></span>
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Notifications
-                        <div class="badge badge-danger w-25" id="notifications"></div>
+                        <i class="fas fa-bell"></i>
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="messages_notify">
-                        <!-- Esempio di notifiche -->
-<!--                        <a class="dropdown-item" href="#">New message from John</a>-->
-<!--                        <a class="dropdown-item" href="#">You have 3 new friend requests</a>-->
-<!--                        <div class="dropdown-divider"></div>-->
-<!--                        <a class="dropdown-item" href="#">View all notifications</a>-->
                     </div>
-
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-12">-->
-<!--                            <table id="message-history" class="table table-striped">-->
-<!--                                <thead>-->
-<!--                                <tr>-->
-<!--                                    <th>Messages-->
-<!--                                        <span-->
-<!--                                                id="notifications"-->
-<!--                                                style="-->
-<!--                                    color: white;-->
-<!--                                    background-color: red;-->
-<!--                                    padding-left: 15px;-->
-<!--                                    padding-right: 15px;">-->
-<!--                            </span>-->
-<!--                                    </th>-->
-<!--                                </tr>-->
-<!--                                </thead>-->
-<!--                                <tbody id="messages_notify">-->
-<!--                                </tbody>-->
-<!--                            </table>-->
-<!--                        </div>-->
-<!--                    </div>-->
                 </li>
 
-
             </ul>
-
-
         </div>
     </div>
 </nav>
 
 <!-- Bootstrap CSS -->
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <!-- jQuery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
