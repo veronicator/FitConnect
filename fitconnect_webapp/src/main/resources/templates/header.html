@@ -29,14 +29,38 @@
                 <li class="nav-item dropdown" th:if="${!session.isEmpty()}">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Notifications
+                        <div class="badge badge-danger w-25" id="notifications"></div>
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="messages_notify">
                         <!-- Esempio di notifiche -->
-                        <a class="dropdown-item" href="#">New message from John</a>
-                        <a class="dropdown-item" href="#">You have 3 new friend requests</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">View all notifications</a>
+<!--                        <a class="dropdown-item" href="#">New message from John</a>-->
+<!--                        <a class="dropdown-item" href="#">You have 3 new friend requests</a>-->
+<!--                        <div class="dropdown-divider"></div>-->
+<!--                        <a class="dropdown-item" href="#">View all notifications</a>-->
                     </div>
+
+<!--                    <div class="row">-->
+<!--                        <div class="col-md-12">-->
+<!--                            <table id="message-history" class="table table-striped">-->
+<!--                                <thead>-->
+<!--                                <tr>-->
+<!--                                    <th>Messages-->
+<!--                                        <span-->
+<!--                                                id="notifications"-->
+<!--                                                style="-->
+<!--                                    color: white;-->
+<!--                                    background-color: red;-->
+<!--                                    padding-left: 15px;-->
+<!--                                    padding-right: 15px;">-->
+<!--                            </span>-->
+<!--                                    </th>-->
+<!--                                </tr>-->
+<!--                                </thead>-->
+<!--                                <tbody id="messages_notify">-->
+<!--                                </tbody>-->
+<!--                            </table>-->
+<!--                        </div>-->
+<!--                    </div>-->
                 </li>
 
 
@@ -55,3 +79,8 @@
 
 <!-- Bootstrap JS -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="/webjars/jquery/jquery.min.js"></script>
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="/scripts/scripts.js"></script>
