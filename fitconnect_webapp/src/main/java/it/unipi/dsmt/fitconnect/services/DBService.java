@@ -522,4 +522,9 @@ public class DBService {
         return optUser.orElse(null);
     }
 
+    public Reservations getReservations(String reservationsId) {
+        Optional<Reservations> optReservation = reservationsRepository.findById(reservationsId);
+        return optReservation.orElse(null);
+    }
+
 }
