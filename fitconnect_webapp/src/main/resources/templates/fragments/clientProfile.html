@@ -5,7 +5,8 @@
         <tr>
             <th>Course</th>
             <th>Trainer</th>
-            <th>Edit</th>
+            <th></th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -13,8 +14,14 @@
             <td th:text="${course.getCourseName()}"></td>
             <td th:text="${course.getTrainer()}"></td>
             <td>
-                <form action="#" method="post">
-                    <button class="btn btn-danger" type="submit">Unsubscribe</button>
+                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainerUsername()}}">
+                    <button class="btn btn-primary" type="button">View</button>
+                </a>
+            </td>
+            <td>
+                <form th:action="@{unsubscribeCourse}" method="post">
+                    <input type="text" hidden="hidden" name="courseId" th:value="${course.getId()}">
+                    <button class="btn btn-danger" type="submit">Delete</button>
                 </form>
             </td>
         </tr>

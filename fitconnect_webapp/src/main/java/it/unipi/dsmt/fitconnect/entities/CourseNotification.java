@@ -12,7 +12,7 @@ import lombok.ToString;
 @AllArgsConstructor
 public class CourseNotification {
     private String notificationType;    //expired or modified
-    private String course;
+    private String course;      // Reservations ID
     private String time;
 
     @Override

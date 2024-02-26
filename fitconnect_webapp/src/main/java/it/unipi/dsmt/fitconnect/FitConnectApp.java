@@ -1,12 +1,14 @@
 package it.unipi.dsmt.fitconnect;
 
 import it.unipi.dsmt.fitconnect.erlang.ErlangNodesController;
+import it.unipi.dsmt.fitconnect.services.RestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.Scanner;
 
@@ -17,6 +19,9 @@ public class FitConnectApp implements CommandLineRunner {
 
     @Autowired
     private ErlangNodesController controller;
+    @Autowired
+    private RestService restService;
+
     public static void main(String[] args) {
         SpringApplication.run(FitConnectApp.class, args);
     }
@@ -53,5 +58,11 @@ public class FitConnectApp implements CommandLineRunner {
         } else {
             System.out.println("APPLICATION -> Invalid command format. Use 'node_name:command'");
         }
+    }
+
+    @Scheduled(fixedRate = 10000)
+    private void scheduledPost() {
+        restService.postNotification();
+        System.out.println("scheduledPost");
     }
 }

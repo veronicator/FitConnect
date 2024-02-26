@@ -8,14 +8,19 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class UserNotification {
-    private String action;  // userJoin or userExited
+    private String action;  // userJoined or userExited
     private String course;
     private String username;
 
+    @Override
     public String toString() {
-        StringBuilder builtString = new StringBuilder();
-        builtString.append("Notification:" + username + " has " + action + " course " + course + "\n");
-        return builtString.toString();
+        return "Notification:" + username + " has " + action + " course " + course + "\n";
+    }
+
+    public String getAction() {
+        if (action.equalsIgnoreCase("userJoined"))
+            return "joined";
+        return "exited";
     }
 }
 

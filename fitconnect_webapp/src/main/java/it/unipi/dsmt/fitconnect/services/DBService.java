@@ -17,13 +17,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Getter
 @Service
 public class DBService {
     @Autowired
@@ -505,8 +502,29 @@ public class DBService {
         return optCourse.orElse(null);
     }
 
+    public String getCourseName(String courseId) {
+        Optional<Course> optCourse = courseRepository.findById(courseId);
+        return optCourse.map(Course::getCourseName).orElse(null);
+    }
+
+    public Course getByCourseAndTrainer(CourseType courseName, String trainerUsername) {
+        Optional<Course> optCourse = courseRepository.findByCourseNameAndTrainerUsername(courseName, trainerUsername);
+//        return courseRepository.findByCourseNameAndTrainerUsername(courseName, trainerUsername);
+        return optCourse.orElse(null);
+    }
+
     public List<Message> getMessages(String courseId) {
         return messageRepositories.findByCourse(new ObjectId(courseId));
+    }
+
+    public MongoUser getUser(String username) {
+        Optional<MongoUser> optUser = userRepository.findByUsername(username);
+        return optUser.orElse(null);
+    }
+
+    public Reservations getReservations(String reservationsId) {
+        Optional<Reservations> optReservation = reservationsRepository.findById(reservationsId);
+        return optReservation.orElse(null);
     }
 
 }
