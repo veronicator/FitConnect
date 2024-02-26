@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="/mobirise/css/mbr-additional.css" type="text/css">
 
 
+
 </head>
 <body>
 
@@ -212,4 +213,9 @@
     </div>
 </section>
 </body>
+
+<script th:if="${isLogout == true}">
+    resetNotificationCount();
+</script>
+
 </html>

@@ -1,19 +1,19 @@
 var stompClient = null;
 var notificationCount = 0;
 
-$(document).ready(function() {
+$(document).ready(function () {
     console.log("Index page is ready");
     connect();
 
-    $("#send").click(function() {
+    $("#send").click(function () {
         sendMessage();
     });
 
-    $("#send-private").click(function() {
+    $("#send-private").click(function () {
         sendPrivateMessage();
     });
 
-    $("#notifications").click(function() {
+    $("#notifications").click(function () {
         resetNotificationCount();
     });
 });
@@ -23,13 +23,26 @@ function connect() {
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
         console.log('Connected: ' + frame);
+
+        // Carica le notifiche salvate nella sessionStorage al caricamento della pagina
+        const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+        notifications.forEach(function (message) {
+            showMessage(message);
+            notificationCount = notificationCount + 1;
+        });
+
         updateNotificationDisplay();
+
         stompClient.subscribe('/topic/messages', function (message) {
-            showMessage(JSON.parse(message.body).content);
+            message = JSON.parse(message.body).content;
+            showMessage(message);
+            saveMessage(message);
         });
 
         stompClient.subscribe('/user/topic/private-messages', function (message) {
-            showMessage(JSON.parse(message.body).content);
+            message = JSON.parse(message.body).content;
+            showMessage(message);
+            saveMessage(message);
         });
 
         stompClient.subscribe('/topic/global-notifications', function (message) {
@@ -47,7 +60,14 @@ function connect() {
 function showMessage(message) {
     console.log("msg {} " + message)
     $("#messages_notify").append("<p class=\"dropdown-item\">" + message + "</p>");
-//    $("#messages_notify").append("<tr><td>" + message + "</td></tr>");
+}
+
+function saveMessage(message) {
+    // Salva la notifica nella sessionStorage
+    const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+    notifications.push(message);
+    sessionStorage.setItem('notifications', JSON.stringify(notifications));
+
 }
 
 function sendMessage() {
@@ -68,13 +88,14 @@ function updateNotificationDisplay() {
         $('#notifications').text(notificationCount);
     }
 }
-// todo: aggiungere funzione deleteNotifications al click
+
 function deleteNotifications() {
-// do something
+    $("#messages_notify").empty()
+    sessionStorage.removeItem('notifications')
 }
 
 function resetNotificationCount() {
     notificationCount = 0;
-    updateNotificationDisplay();
     deleteNotifications();
+    updateNotificationDisplay();
 }

@@ -79,6 +79,6 @@ public class LoginController {
         if (session != null) {
             session.invalidate(); // Terminate the current session
         }
-        return "redirect:/";
+        return "redirect:/?isLogout=true";
     }
 }
