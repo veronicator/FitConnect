@@ -372,7 +372,7 @@ public class DBService {
                 String leaveCommand = String.format("leave-%s", course.getId().toString());
                 erlangNodesController.sendCommandToNode(u.getUsername(), leaveCommand);
             }
-            // todo: check if needed
+
             List<Reservations> reservations = reservationsRepository.findByCourse(course.getId());
             for (Reservations r: reservations) {
                 for (MongoUser u: r.getBookedUsers()) {

@@ -11,7 +11,7 @@ import lombok.ToString;
 @Setter
 @AllArgsConstructor
 public class CourseNotification {
-    private String notificationType;    //expired or modified
+    private String notificationType;    //expired or edited
     private String course;      // Reservations ID
     private String time;
 
