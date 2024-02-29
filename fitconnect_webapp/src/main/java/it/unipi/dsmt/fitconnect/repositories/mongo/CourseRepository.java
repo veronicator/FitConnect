@@ -22,7 +22,7 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
     Page<Course> findByCourseName(CourseType courseName, Pageable pageable);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
-    List<Course> findByCourseName(CourseType courseName);
+    List<Course> findByCourseName(String courseName);
     @Query("{'trainerUsername': { $regex: ?0, $options: 'i'}}")
     List<Course> findByTrainerUsername(String trainer);
     @Query("{'weekSchedule.dayOfWeek': ?0}") //

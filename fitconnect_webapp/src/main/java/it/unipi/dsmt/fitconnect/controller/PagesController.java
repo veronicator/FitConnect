@@ -72,7 +72,7 @@ public class PagesController {
     public String viewCourse(@PathVariable String course, Model model) {
 
         courses.clear();
-        courses.addAll(dbService.browseCourses(CourseType.valueOf(course)));
+        courses.addAll(dbService.browseCourses(course));
 
         model.addAttribute("courseName", course);
         model.addAttribute("courseList", courses);

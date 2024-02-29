@@ -276,7 +276,7 @@ public class DBService {
         return courseRepository.findAll();
     }
 
-    public List<Course> browseCourses(CourseType courseType) {
+    public List<Course> browseCourses(String courseType) {
         return courseRepository.findByCourseName(courseType);
     }
 
