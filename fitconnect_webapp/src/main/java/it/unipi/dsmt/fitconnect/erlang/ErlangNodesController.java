@@ -23,7 +23,7 @@ public class ErlangNodesController {
         cookie = "dsmt";
         erlangMessanger = "fitMessanger";
         erlangNotifier = "fitNotifier";
-        erlangServerMailBox = "server@ebb877e39e42";
+        erlangServerMailBox = "server@10.2.1.82";
         erlangNodes = new ErlangNode[10];
         erlangNodeCount = 0;
         pingErlangServer();
@@ -51,7 +51,6 @@ public class ErlangNodesController {
             } else
                 System.out.println("ERLANG CONTROLLER -> Node is down");
         } catch (Exception e) {
-            e.printStackTrace();
             System.err.println("ERLANG CONTROLLER -> Failed to establish Erlang connection.");
         }
     }

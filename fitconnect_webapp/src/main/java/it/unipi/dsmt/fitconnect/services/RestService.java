@@ -29,7 +29,7 @@ public class RestService {
         HttpEntity<WSMessage> entity = new HttpEntity<>(message, headers);
 //        return restTemplate.postForObject(url, entity, WSMessage.class);
         ResponseEntity<String> response = restTemplate.exchange(
-                url, HttpMethod.POST, entity, String.class, "test");
+                url, HttpMethod.POST, entity, String.class, "ig");
         System.out.println("Risposta dal server: " + response.getBody());
         return response.getBody();
     }
