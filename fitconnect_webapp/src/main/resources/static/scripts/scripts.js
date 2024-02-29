@@ -24,13 +24,7 @@ function connect() {
     stompClient.connect({}, function (frame) {
         console.log('Connected: ' + frame);
 
-        // Carica le notifiche salvate nella sessionStorage al caricamento della pagina
-        const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
-        notifications.forEach(function (message) {
-            showMessage(message);
-            notificationCount = notificationCount + 1;
-        });
-
+        loadNotifications();
         updateNotificationDisplay();
 
         stompClient.subscribe('/topic/messages', function (message) {
@@ -63,10 +57,10 @@ function showMessage(message) {
 }
 
 function saveMessage(message) {
-    // Salva la notifica nella sessionStorage
-    const notifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+    // Salva la notifica nella localStorage
+    const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
     notifications.push(message);
-    sessionStorage.setItem('notifications', JSON.stringify(notifications));
+    localStorage.setItem('notifications', JSON.stringify(notifications));
 
 }
 
@@ -90,12 +84,22 @@ function updateNotificationDisplay() {
 }
 
 function deleteNotifications() {
-    $("#messages_notify").empty()
-    sessionStorage.removeItem('notifications')
+    $("#messages_notify").empty();
+    localStorage.removeItem('notifications');
 }
 
 function resetNotificationCount() {
     notificationCount = 0;
     deleteNotifications();
     updateNotificationDisplay();
+}
+
+function loadNotifications(){
+    $("#messages_notify").empty();
+    notificationCount = 0;
+    const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+    notifications.forEach(function (message) {
+        showMessage(message);
+        notificationCount = notificationCount + 1;
+    });
 }

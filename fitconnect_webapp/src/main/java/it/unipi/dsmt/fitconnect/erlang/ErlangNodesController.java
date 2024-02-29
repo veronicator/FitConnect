@@ -59,22 +59,12 @@ public class ErlangNodesController {
      * Used to instantiate a clientNode and remember it
      * @param username name of the node and username of the person
      */
-    public void startErlangNode(String username) {
-        List<String> courseNames = Arrays.asList();
-        // TODO: REPLACE TO GET FROM MONGO DB THE COURSES
-        if (username.equals("p")){
-            courseNames = Arrays.asList("1", "2", "3", "4", "5");
-        } else if (username.equals("pl")){
-            courseNames = Arrays.asList("2", "3", "5");
-        } else if (username.equals("pa")){
-            courseNames = Arrays.asList("1", "2", "4");
-        } else {
-            courseNames = Arrays.asList("1", "2", "3");
-        }
+    public void startErlangNode(String username, List<String> courses) {
+
         try {
             if (!nodeExists(username)){
                 //System.out.println("ERLANG CONTROLLER -> Generating node: " + username);
-                erlangNodes[erlangNodeCount] = new ErlangNode(username, courseNames, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox);
+                erlangNodes[erlangNodeCount] = new ErlangNode(username, courses, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox);
                 erlangNodes[erlangNodeCount].startClientNode();
                 erlangNodeCount++;
             } else {
@@ -109,6 +99,10 @@ public class ErlangNodesController {
                 //System.out.println("ERLANG CONTROLLER -> Node not found: " + nodeName);
             }
         }
+    }
+
+    public void disconnectNode(String username){
+
     }
 }
 
