@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class ErlangNodeListener extends Thread {
 
     private final ErlangNode clientNode;
-    private boolean running = false;
+    private boolean running;
 
     @Autowired
     private NodeMessageService nodeMessageService;
@@ -39,8 +39,9 @@ public class ErlangNodeListener extends Thread {
                         }
                         case "userJoined", "userExited" -> {
                             UserNotification userNotification = new UserNotification(response[0], response[1], response[2]);
-                            nodeMessageService.postUserNotification(userNotification, clientNode.getNodeName());
+                            String res = nodeMessageService.postUserNotification(userNotification, clientNode.getNodeName());
                             System.out.println(userNotification);
+                            System.out.println(res);
                         }
                         case "message" -> {
                             Message message = new Message(response[1], response[2], response[3], LocalDateTime.now());

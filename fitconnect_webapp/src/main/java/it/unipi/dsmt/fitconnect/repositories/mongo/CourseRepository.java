@@ -1,7 +1,6 @@
 package it.unipi.dsmt.fitconnect.repositories.mongo;
 
 import it.unipi.dsmt.fitconnect.entities.Course;
-import it.unipi.dsmt.fitconnect.entities.MongoUser;
 import it.unipi.dsmt.fitconnect.enums.CourseType;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
@@ -19,7 +18,7 @@ public interface CourseRepository extends MongoRepository<Course, String> {
 
     /** find methods */
     //DEFAULT (case-insensitive) {"firstname" : { $regex: firstname, $options: 'i'}}
-    Page<Course> findAll(Pageable pageable);
+//    Page<Course> findAll(Pageable pageable);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}}")
     Page<Course> findByCourseName(CourseType courseName, Pageable pageable);
     @Query("{'courseName': { $regex: ?0, $options: 'i'}}")

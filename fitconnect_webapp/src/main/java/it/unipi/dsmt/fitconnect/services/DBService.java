@@ -5,7 +5,6 @@ import it.unipi.dsmt.fitconnect.enums.CourseType;
 import it.unipi.dsmt.fitconnect.enums.UserRole;
 import it.unipi.dsmt.fitconnect.erlang.ErlangNodesController;
 import it.unipi.dsmt.fitconnect.repositories.mongo.*;
-import lombok.Getter;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -48,6 +47,12 @@ public class DBService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void clearAll() {
+        courseRepository.deleteAll();
+        userRepository.deleteAll();
+        reservationsRepository.deleteAll();
     }
 
     public LocalDateTime getDatetimeFromDayAndTime(DayOfWeek dayOfWeek, LocalTime atTime) {
@@ -178,7 +183,7 @@ public class DBService {
             MongoUser user = optUser.get();
 
             List<Reservations> availableClasses = reservationsRepository.findByCourseDayTime(
-                    new ObjectId(courseId), dayOfWeek, startTime.toString());
+                    new ObjectId(courseId), dayOfWeek, startTime);
             if (availableClasses.isEmpty()) {
                 System.out.println("Booking failed: no available courses for the day-time selected found");
                 return false;
@@ -235,8 +240,7 @@ public class DBService {
         MongoUser user = optUser.get();
 
         List<Reservations> userReservations = user.getReservations();
-        Page<Reservations> reservations = new PageImpl<Reservations>(userReservations, PageRequest.of(page, size), userReservations.size());
-        return reservations;
+        return new PageImpl<>(userReservations, PageRequest.of(page, size), userReservations.size());
     }
 
     public List<Course> browseUserCourses(String username) {
@@ -258,8 +262,7 @@ public class DBService {
         MongoUser user = optUser.get();
 
         List<Course> userCourses = user.getCourses();
-        Page<Course> courses = new PageImpl<Course>(userCourses, PageRequest.of(page, size), userCourses.size());
-        return courses;
+        return new PageImpl<>(userCourses, PageRequest.of(page, size), userCourses.size());
     }
 
     public List<Course> browseAllCoursesPageable(int page, int size) {
@@ -488,7 +491,7 @@ public class DBService {
                 }
                 reservationsRepository.save(r);
             }
-            course = courseRepository.save(course);
+            courseRepository.save(course);
         } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {
             e.printStackTrace();
             System.err.println("editClassTime failed");

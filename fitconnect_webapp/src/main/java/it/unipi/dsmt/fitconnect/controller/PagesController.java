@@ -154,8 +154,11 @@ public class PagesController {
             return "error";
         }
         String username = getSessionUsername(session);
-        dbService.joinCourse(courseId, username);
-        System.out.println(username + " subscribed correctly!");
+        if (dbService.joinCourse(courseId, username))
+            System.out.println(username + " subscribed correctly!");
+        else
+            System.out.println("subscription failed: retry");
+        // todo: sistemare check return value
 
         return "redirect:/courses/" + course + "/" + trainer;
     }

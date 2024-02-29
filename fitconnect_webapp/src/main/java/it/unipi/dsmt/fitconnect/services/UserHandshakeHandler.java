@@ -13,18 +13,9 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 import java.security.Principal;
 import java.util.Map;
-import java.util.UUID;
 
 public class UserHandshakeHandler extends DefaultHandshakeHandler {
     private final Logger LOG = LoggerFactory.getLogger(UserHandshakeHandler.class);
-
-//    @Override
-//    protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
-//        final String randomId = UUID.randomUUID().toString();
-//        LOG.info("User with ID '{}' opened the page", randomId);
-//
-//        return new UserPrincipal(randomId);
-//    }
 
     @Override
     protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
@@ -32,6 +23,8 @@ public class UserHandshakeHandler extends DefaultHandshakeHandler {
         HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
 
         HttpSession session = servletRequest.getSession(false);
+        if (session == null)
+            return null;
         final String username = (String) session.getAttribute("username");
 
         LOG.info("User with ID '{}' opened the page", username);
