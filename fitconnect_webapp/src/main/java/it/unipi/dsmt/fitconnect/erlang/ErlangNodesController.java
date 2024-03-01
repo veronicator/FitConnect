@@ -3,7 +3,6 @@ package it.unipi.dsmt.fitconnect.erlang;
 import com.ericsson.otp.erlang.OtpNode;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -24,8 +23,8 @@ public class ErlangNodesController {
         erlangMessanger = "fitMessanger";
         erlangNotifier = "fitNotifier";
         erlangServerMailBox = "server@10.2.1.82";
-        erlangNodes = new ErlangNode[10];
-        erlangNodeCount = 0;
+        erlangNodeCount = 10;
+        erlangNodes = new ErlangNode[erlangNodeCount];
         pingErlangServer();
     }
 
@@ -51,8 +50,36 @@ public class ErlangNodesController {
             } else
                 System.out.println("ERLANG CONTROLLER -> Node is down");
         } catch (Exception e) {
+            e.printStackTrace();
             System.err.println("ERLANG CONTROLLER -> Failed to establish Erlang connection.");
         }
+    }
+
+    /**
+     * Returns the poistion of the node
+     * @param nodeName username of the node that we are trying to find
+     * @return index of node seached
+     */
+    private int findNode(String nodeName){
+        for (int i = 0; i < erlangNodeCount; i++) {
+            if (erlangNodes[i].getNodeName().equalsIgnoreCase(nodeName)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the first empty poistion for a new node
+     * @return index of empty node
+     */
+    private int findEmpty(){
+        for (int i = 0; i < erlangNodeCount; i++) {
+            if (erlangNodes[i] == null) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -60,15 +87,13 @@ public class ErlangNodesController {
      * @param username name of the node and username of the person
      */
     public void startErlangNode(String username, List<String> courses) {
-
         try {
-            if (!nodeExists(username)){
-                //System.out.println("ERLANG CONTROLLER -> Generating node: " + username);
-                erlangNodes[erlangNodeCount] = new ErlangNode(username, courses, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox);
-                erlangNodes[erlangNodeCount].startClientNode();
-                erlangNodeCount++;
-            } else {
-                //System.out.println("ERLANG CONTROLLER -> node: " + username + " already exists");
+            if (findNode(username) == -1){
+                int index = findEmpty();
+                if (index == -1 )
+                    throw new Exception("Max nodes reached");
+                erlangNodes[index] = new ErlangNode(username, courses, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox);
+                erlangNodes[index].startClientNode();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,33 +101,13 @@ public class ErlangNodesController {
         }
     }
 
-    /**
-     * Checks if a user with that username is already connected
-     * @param nodeName username of the node and the user that is trying to connecting
-     * @return true if it exists, false otherwise
-     */
-    private boolean nodeExists(String nodeName){
-        for (int i = 0; i < erlangNodeCount; i++) {
-                if (erlangNodes[i].getNodeName().equalsIgnoreCase(nodeName))
-                    return true;
-        }
-        return false;
+    public void sendCommandToNode(String nodeName, String nodeCommand){
+        erlangNodes[findNode(nodeName)].processCommand(nodeCommand);
     }
 
-    // TODO: REMOVE AND USE THE THREAD SENDER
-    public void sendCommandToNode(String nodeName, String nodeCommand) {
-        for (int i = 0; i < erlangNodeCount; i++) {
-            if (erlangNodes[i].getNodeName().equalsIgnoreCase(nodeName)) {
-                //System.out.println("ERLANG CONTROLLER -> Sending command to: " + nodeName);
-                erlangNodes[i].processCommand(nodeCommand);
-            } else {
-                //System.out.println("ERLANG CONTROLLER -> Node not found: " + nodeName);
-            }
-        }
-    }
-
-    public void disconnectNode(String username){
-
+    public void disconnectNode(String nodeName){
+        int index = findNode(nodeName); // Find index to reference
+        erlangNodes[index].processCommand("disconnect"); // Disconnect node
+        erlangNodes[index] = null; // Empty the reference
     }
 }
-
