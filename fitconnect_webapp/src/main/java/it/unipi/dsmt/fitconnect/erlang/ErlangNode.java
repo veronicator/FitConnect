@@ -104,22 +104,19 @@ public class ErlangNode {
             return null;
         }
 
-        OtpErlangObject replyObj = reply; // Assign your reply here
-        
-        if (replyObj instanceof OtpErlangTuple) {
-            OtpErlangTuple t = (OtpErlangTuple) replyObj;
-            
+//        OtpErlangObject replyObj = reply; // Assign your reply here
+
+        if (reply instanceof OtpErlangTuple t) {
+
             // Pattern match to distinguish between the two cases
-            if (t.elementAt(0) instanceof OtpErlangRef && t.elementAt(1) instanceof OtpErlangTuple) {
+            if (t.elementAt(0) instanceof OtpErlangRef && t.elementAt(1) instanceof OtpErlangTuple innerTuple) {
                 // Example -> {#Ref<p@42de442284e2.1.0.0>,{connection,ok}}
-                OtpErlangTuple innerTuple = (OtpErlangTuple) t.elementAt(1);
                 String operation = innerTuple.elementAt(0).toString();
                 String result = innerTuple.elementAt(1).toString();
                 return new String[] {operation, result};
-            } else if (t.elementAt(0) instanceof OtpErlangAtom) {
+            } else if (t.elementAt(0) instanceof OtpErlangAtom atom) {
                 // Example -> {userExited,"1","p"}
                 String[] values = new String[t.arity()]; // Create an array to hold the string values
-                OtpErlangAtom atom = (OtpErlangAtom) t.elementAt(0);
                 values[0] = atom.toString();
                 for (int i = 1; i < t.arity(); i++) {
                     values[i - 1] = t.elementAt(i).toString();
@@ -225,32 +222,24 @@ public class ErlangNode {
         String commandName = parts[0].trim();
         try{
             switch (commandName) {
-            case "display": // 1 args: String something = (Users, Courses, Clients)
-                display(parts[1].trim());
-                break;
-            case "join": // 1 args: String courseName
-                joinCourse(parts[1].trim());
-                break;
-            case "disconnect": // 0 args
-                disconnect();
-                break;
-            case "leave": // 1 args: String courseName
-                leaveCourse(parts[1].trim());
-                break;
-            case "send": // 3 args: String message, String receiver
-                sendMessage(parts[1].trim(), parts[2].trim());
-                break;
-            case "i": // 2 args: String mode, String courseName, long time
-                sendRequestToNotifier("insert", parts[1].trim(),Long.parseLong(parts[2].trim()));
-                break;
-            case "e": // 2 args: String mode, String courseName, long time
-                sendRequestToNotifier("edit", parts[1].trim(), Long.parseLong(parts[2].trim()));
-                break;
-            case "d": // 1 args: String mode, String courseName
-                sendRequestToNotifier("delete", parts[1].trim(), 0);
-                break;
-            default:
-                break;
+                case "display" -> // 1 args: String something = (Users, Courses, Clients)
+                        display(parts[1].trim());
+                case "join" -> // 1 args: String courseName
+                        joinCourse(parts[1].trim());
+                case "disconnect" -> // 0 args
+                        disconnect();
+                case "leave" -> // 1 args: String courseName
+                        leaveCourse(parts[1].trim());
+                case "send" -> // 3 args: String message, String receiver
+                        sendMessage(parts[1].trim(), parts[2].trim());
+                case "i" -> // 2 args: String mode, String courseName, long time
+                        sendRequestToNotifier("insert", parts[1].trim(), Long.parseLong(parts[2].trim()));
+                case "e" -> // 2 args: String mode, String courseName, long time
+                        sendRequestToNotifier("edit", parts[1].trim(), Long.parseLong(parts[2].trim()));
+                case "d" -> // 1 args: String mode, String courseName
+                        sendRequestToNotifier("delete", parts[1].trim(), 0);
+                default -> {
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

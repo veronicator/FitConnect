@@ -5,7 +5,6 @@ import it.unipi.dsmt.fitconnect.enums.CourseType;
 import it.unipi.dsmt.fitconnect.enums.UserRole;
 import it.unipi.dsmt.fitconnect.erlang.ErlangNodesController;
 import it.unipi.dsmt.fitconnect.repositories.mongo.*;
-import lombok.Getter;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -50,15 +49,20 @@ public class DBService {
         }
     }
 
+    private void clearAll() {
+        courseRepository.deleteAll();
+        userRepository.deleteAll();
+        reservationsRepository.deleteAll();
+    }
+
     public LocalDateTime getDatetimeFromDayAndTime(DayOfWeek dayOfWeek, LocalTime atTime) {
         LocalDate nextWeekClass = LocalDate.now().with(TemporalAdjusters.next(dayOfWeek));
         return nextWeekClass.atTime(atTime);
     }
 
-    /* usare l'username o l'id del trainer? */
     public boolean addNewCourse(CourseType courseName, String trainerUsername, Integer maxReservablePlaces) {
         try {
-            Optional<MongoUser> optUser = userRepository.findByUsername(trainerUsername);
+            Optional<MongoUser> optUser = userRepository.findByUsername("^" + trainerUsername + "$");
             if (optUser.isEmpty()) {
                 System.out.println("addCourse failed: user not found");
                 return false;
@@ -68,12 +72,15 @@ public class DBService {
                 System.out.println("addCourse failed: logged user does not have permissions");
                 return false;
             }
-            if (courseRepository.existsByCourseNameAndTrainer(courseName, trainerUsername)) {
+
+            String course = "^" + courseName.toString() + "$";
+            String trainerName = "^" + trainer.getUsername() + "$";
+            if (courseRepository.existsByCourseNameAndTrainer(course, trainerName)) {
                 System.out.println("same course with same trainer already exists");
                 return false;
             }
 
-            Course newCourse = new Course(courseName.name(), trainer.getCompleteName(), trainer.getUsername(), maxReservablePlaces);
+            Course newCourse = new Course(courseName.toString(), trainer.getCompleteName(), trainer.getUsername(), maxReservablePlaces);
             newCourse = courseRepository.insert(newCourse);
             trainer.addCourse(newCourse);
             userRepository.save(trainer);
@@ -135,7 +142,7 @@ public class DBService {
 
     public boolean joinCourse(String courseId, String username) {
         try {
-            Optional<MongoUser> optUser = userRepository.findByUsername(username);
+            Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
             if (optUser.isEmpty()) {
                 System.out.println("joinCourse failed: user not found");
                 return false;
@@ -170,7 +177,7 @@ public class DBService {
 
     public boolean bookClass(String username, String courseId, DayOfWeek dayOfWeek, String startTime) {
         try {
-            Optional<MongoUser> optUser = userRepository.findByUsername(username);
+            Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
             if (optUser.isEmpty()) {
                 System.out.println("Booking failed: user not found.");
                 return false;
@@ -178,7 +185,7 @@ public class DBService {
             MongoUser user = optUser.get();
 
             List<Reservations> availableClasses = reservationsRepository.findByCourseDayTime(
-                    new ObjectId(courseId), dayOfWeek, startTime.toString());
+                    new ObjectId(courseId), dayOfWeek, startTime);
             if (availableClasses.isEmpty()) {
                 System.out.println("Booking failed: no available courses for the day-time selected found");
                 return false;
@@ -217,7 +224,7 @@ public class DBService {
     }
 
     public List<Reservations> browseBookedClasses(String username) {
-        Optional<MongoUser> optUser = userRepository.findByUsername(username);
+        Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
         if (optUser.isEmpty()) {
             System.out.println("Error: user not found.");
             return null;
@@ -227,7 +234,7 @@ public class DBService {
     }
 
     public Page<Reservations> browseBookedClassesPageable(String username, int page, int size) {
-        Optional<MongoUser> optUser = userRepository.findByUsername(username);
+        Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
         if (optUser.isEmpty()) {
             System.out.println("Error: user not found.");
             return null;
@@ -235,12 +242,11 @@ public class DBService {
         MongoUser user = optUser.get();
 
         List<Reservations> userReservations = user.getReservations();
-        Page<Reservations> reservations = new PageImpl<Reservations>(userReservations, PageRequest.of(page, size), userReservations.size());
-        return reservations;
+        return new PageImpl<>(userReservations, PageRequest.of(page, size), userReservations.size());
     }
 
     public List<Course> browseUserCourses(String username) {
-        Optional<MongoUser> optUser = userRepository.findByUsername(username);
+        Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
         if (optUser.isEmpty()) {
             System.out.println("Error: user not found.");
             return null;
@@ -250,7 +256,7 @@ public class DBService {
     }
 
     public Page<Course> browseUserCoursesPageable(String username, int page, int size) {
-        Optional<MongoUser> optUser = userRepository.findByUsername(username);
+        Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
         if (optUser.isEmpty()) {
             System.out.println("Error: user not found.");
             return null;
@@ -258,8 +264,7 @@ public class DBService {
         MongoUser user = optUser.get();
 
         List<Course> userCourses = user.getCourses();
-        Page<Course> courses = new PageImpl<Course>(userCourses, PageRequest.of(page, size), userCourses.size());
-        return courses;
+        return new PageImpl<>(userCourses, PageRequest.of(page, size), userCourses.size());
     }
 
     public List<Course> browseAllCoursesPageable(int page, int size) {
@@ -273,13 +278,14 @@ public class DBService {
         return courseRepository.findAll();
     }
 
-    public List<Course> browseCourses(CourseType courseType) {
-        return courseRepository.findByCourseName(courseType);
+    public List<Course> browseCourses(String courseType) {
+        String courseName = "^" + courseType + "$";
+        return courseRepository.findByCourseName(courseName);
     }
 
     public boolean unbookClass(String reservationsId, String username) {
         try {
-            Optional<MongoUser> optUser = userRepository.findByUsername(username);
+            Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
             if (optUser.isEmpty()) {
                 System.out.println("Error: user not found.");
                 return false;
@@ -315,7 +321,7 @@ public class DBService {
 
     public boolean leaveCourse(String courseId, String username) {
         try {
-            Optional<MongoUser> optUser = userRepository.findByUsername(username);
+            Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
             if (optUser.isEmpty()) {
                 System.out.println("Error: user not found.");
                 return false;
@@ -372,7 +378,7 @@ public class DBService {
                 String leaveCommand = String.format("leave-%s", course.getId().toString());
                 erlangNodesController.sendCommandToNode(u.getUsername(), leaveCommand);
             }
-            // todo: check if needed
+
             List<Reservations> reservations = reservationsRepository.findByCourse(course.getId());
             for (Reservations r: reservations) {
                 for (MongoUser u: r.getBookedUsers()) {
@@ -488,7 +494,7 @@ public class DBService {
                 }
                 reservationsRepository.save(r);
             }
-            course = courseRepository.save(course);
+            courseRepository.save(course);
         } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {
             e.printStackTrace();
             System.err.println("editClassTime failed");
@@ -507,8 +513,10 @@ public class DBService {
         return optCourse.map(Course::getCourseName).orElse(null);
     }
 
-    public Course getByCourseAndTrainer(CourseType courseName, String trainerUsername) {
-        Optional<Course> optCourse = courseRepository.findByCourseNameAndTrainerUsername(courseName, trainerUsername);
+    public Course getByCourseAndTrainer(String courseName, String trainerUsername) {
+        String course = "^" + courseName + "$";
+        String trainer = "^" + trainerUsername + "$";
+        Optional<Course> optCourse = courseRepository.findByCourseNameAndTrainerUsername(course, trainer);
 //        return courseRepository.findByCourseNameAndTrainerUsername(courseName, trainerUsername);
         return optCourse.orElse(null);
     }
@@ -517,9 +525,30 @@ public class DBService {
         return messageRepositories.findByCourse(new ObjectId(courseId));
     }
 
+    /**
+     * Function for creating user object to store into mongo database
+     * @param user: user data
+     * @return true|false
+     */
+    public boolean createMongoUser(final MongoUser user) {
+        // insert user into mongo db
+        try {
+            userRepository.save(user);
+            System.out.println("User: " + user.getUsername() + " registered in mongodb");
+            return true;
+        } catch (Exception e) {
+            System.out.println("error in mongodb registration: " + e.getMessage());
+            return false;
+        }
+    }
+
     public MongoUser getUser(String username) {
-        Optional<MongoUser> optUser = userRepository.findByUsername(username);
+        Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
         return optUser.orElse(null);
+    }
+
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername("/^" + username + "$");
     }
 
     public Reservations getReservations(String reservationsId) {

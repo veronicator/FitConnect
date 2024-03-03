@@ -1,6 +1,5 @@
 package it.unipi.dsmt.fitconnect.entities;
 
-import it.unipi.dsmt.fitconnect.enums.CourseType;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;

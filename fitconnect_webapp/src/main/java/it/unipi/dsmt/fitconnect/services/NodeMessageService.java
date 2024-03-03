@@ -17,9 +17,10 @@ public class NodeMessageService {
             System.out.println("postCourse failed: reservations not found");
             return "errorPost";
         }
-        String msgToSend = String.format("%s class booked will start at %s today",
+        String msgToSend = String.format("%s class booked will start at %s on %s",
                 reservations.getCourse().getCourseName(),
-                courseNotification.getTime());
+                courseNotification.getTime(),
+                reservations.getClassDate());
         return restService.postNotification(username, msgToSend);
     }
 

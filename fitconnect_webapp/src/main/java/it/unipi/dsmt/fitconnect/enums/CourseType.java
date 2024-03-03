@@ -12,8 +12,6 @@ public enum CourseType {
     Judo,
     KickBoxing,
     PoleDance,
-    Ballet,
-    SwingDance,
-    Other
+    Ballet
 
 }
