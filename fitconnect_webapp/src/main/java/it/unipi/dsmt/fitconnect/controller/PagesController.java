@@ -84,7 +84,7 @@ public class PagesController {
     public String viewCourseSchedule(@PathVariable String course, @PathVariable String trainer,
                                      HttpServletRequest request, Model model) {
 
-        Course trainerCourse = dbService.getByCourseAndTrainer(CourseType.valueOf(course), trainer);
+        Course trainerCourse = dbService.getByCourseAndTrainer(course, trainer);
 
         if (trainerCourse == null) {
             String errorMessage = "There is no trainer " + trainer + " with course " + course;
@@ -208,7 +208,7 @@ public class PagesController {
                     model.addAttribute("courses", user.getCourses());
                     if (course != null) {
                         String trainerUsername = user.getCompleteName();
-                        Course courseObj = dbService.getByCourseAndTrainer(CourseType.valueOf(course), trainerUsername);
+                        Course courseObj = dbService.getByCourseAndTrainer(course, trainerUsername);
                         if (courseObj != null) {
 //                    courseOpt.ifPresent(value -> model.addAttribute("courseName", value.getCourseName()));
                             model.addAttribute("courseName", courseObj.getCourseName());

@@ -54,9 +54,4 @@ public interface MongoUserRepository extends MongoRepository<MongoUser, String> 
     @Update("{ $set: {'email': ?1 } }")
     void updateEmail(String oldEmail, String newEmail);
 
-    @Query("{'username' : { $regex: ?0, $options: 'i'} }")
-    @Update("{ $push: {'courses': ?1 } }")
-    void updateCourseList(String username, Course course);
-//    void updateCourseList(String username, String courseId);
-
 }

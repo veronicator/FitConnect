@@ -14,7 +14,7 @@
         <tbody>
         <tr th:each="course : ${courses}">
             <td >
-                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainer()}}" th:text="${course.getCourseName()}"></a>
+                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainerUsername()}}" th:text="${course.getCourseName()}"></a>
             </td>
             <td th:text="${course.getNumberOfEnrolledUsers()}"></td>
             <td th:text="${course.getMaxReservablePlaces()}"></td>
