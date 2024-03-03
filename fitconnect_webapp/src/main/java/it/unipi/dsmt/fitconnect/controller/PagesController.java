@@ -199,10 +199,17 @@ public class PagesController {
         }
 
         String username = getSessionUsername(session);
-        UserRole userRole = getSessionRole(session);
 
         MongoUser user = dbService.getUser(username);
         if (user != null) {
+            List<Course> courseList = user.getCourses();
+            List<String> courseNames = new ArrayList<>();
+
+            for (Course c : courseList)
+                courseNames.add(String.valueOf(c.getId()));
+
+            erlangNodesController.startErlangNode(user.getUsername(), courseNames);
+
             switch (user.getRole()) {
                 case trainer -> {
                     model.addAttribute("courses", user.getCourses());
@@ -339,7 +346,7 @@ public class PagesController {
     public String unsubscribeCourse(@RequestParam String courseId, HttpServletRequest request) {
 
         HttpSession session = request.getSession(false);
-        if(session == null){
+        if (session == null) {
             String errorMessage = "Session error";
             System.out.println(errorMessage);
             return "error";
@@ -382,6 +389,18 @@ public class PagesController {
             return "error";
     }
 
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String username = getSessionUsername(session);
+
+            session.invalidate(); // Terminate the current session
+
+            erlangNodesController.disconnectNode(username);
+        }
+        return "redirect:/?isLogout=true";
+    }
 
 
 }

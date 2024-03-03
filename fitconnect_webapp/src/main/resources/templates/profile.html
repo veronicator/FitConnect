@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Title</title>
+    <title>Profile</title>
     <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}" />
 </head>
 <body>
@@ -9,8 +9,8 @@
 
 <div class="container d-flex mt-lg-5">
 
-    <aside class="d-flex flex-column flex-shrink-0 p-3 bg-light" style="width: 20rem;">
-        <img src="https://via.placeholder.com/100" alt="Image Sample">
+    <aside class="d-flex flex-column flex-shrink-0 p-3 bg-light justify-content-center align-items-center" style="width: 20rem;">
+        <img th:src="@{/images/account-sample.jpg}" class="object-fit-contain w-75" alt="Image Sample">
         <h4 th:text="${session.username}" class="text-center"></h4>
         <hr>
         <a th:href="@{/profile?view=courses}">

@@ -76,30 +76,19 @@
             <version>4.2.1</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>com.ericsson.otp.erlang</groupId>-->
-        <!--            <artifactId>otperlang</artifactId>-->
-        <!--&lt;!&ndash;            <version>1.5.3</version>&ndash;&gt;-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>org.erlang.otp</groupId>-->
-        <!--            <artifactId>jinterface</artifactId>-->
-        <!--&lt;!&ndash;            <version>1.6</version>&ndash;&gt;-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.ericsson.otp</groupId>-->
-        <!--            <artifactId>erlang</artifactId>-->
-        <!--&lt;!&ndash;            <version>26</version>&ndash;&gt;-->
-        <!--        </dependency>-->
-
+      <!--
         <dependency>
             <groupId>clojang</groupId>
             <artifactId>erlang-jinterface</artifactId>
             <version>1.10-1</version>
-        </dependency>
+        </dependency> 
+-->
 
+        <dependency>
+            <groupId>com.ericsson.otp</groupId>
+            <artifactId>erlang</artifactId>
+            <version>1.12.1</version>
+        </dependency>
         <!-- Spring Boot Starter WebSocket -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
