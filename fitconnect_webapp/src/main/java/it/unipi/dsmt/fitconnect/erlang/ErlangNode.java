@@ -16,6 +16,8 @@ public class ErlangNode {
     private OtpNode userNode;
     private OtpMbox userMail;
     private OtpErlangTuple from;
+    private ErlangNodeListener myListener;
+    private int connected;
 
     // Generates a erlang node used for communication between the erlang server and the user
     public ErlangNode(String username, List<String> courseNames, String cookie, String erlangMessanger, String erlangNotifier, String erlangServerMailbox) throws IOException{
@@ -26,6 +28,7 @@ public class ErlangNode {
         this.erlangMessanger = erlangMessanger;
         this.erlangNotifier = erlangNotifier;
         this.erlangServerMailbox = erlangServerMailbox;
+        this.connected = 0;
 
         this.mailBoxId = this.username + "Mail";
         this.userNode = new OtpNode(this.username, this.cookie);
@@ -43,6 +46,27 @@ public class ErlangNode {
     }
 
     /**
+     * Increments the connected counter
+     */
+    public void incrementConnected(){
+        if (connected == 0){
+            establishConnection();
+        } else {
+            this.connected++;
+        }
+    }
+
+    /**
+     * Decrements the connected counter
+     */
+    public void decrementConnected(){
+        this.connected = this.connected - 1;
+            if (this.connected == 0){
+                myListener.interrupt(); // Stops Listener from receiving notifications and messages
+            }    
+    }
+
+    /**
      * Sends a message to the fitNotifier to set a new timer
      * @param mode it is either "insert", "edit" or "delete"
      * @param courseName course Id
@@ -52,7 +76,6 @@ public class ErlangNode {
         OtpErlangAtom msgType = new OtpErlangAtom(mode);
         OtpErlangString user = new OtpErlangString(this.username);
         OtpErlangString course = new OtpErlangString(courseName);
-//        OtpErlangInt delay = new OtpErlangInt(time);
         OtpErlangLong delay = new OtpErlangLong(time);
         OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, user, course, delay});
         OtpErlangObject msg_gen = new OtpErlangTuple(new OtpErlangObject[] {
@@ -181,22 +204,22 @@ public class ErlangNode {
     }
 
     /**
-     * Starts the node for the user generating 2 threads for the node, a receiver and a sender
+     * Connects the node to the erlang server
      */
-    public void startClientNode() {
-        ErlangNodeListener myListener = new ErlangNodeListener(this);
-        ErlangNodeSender mySender = new ErlangNodeSender(this);
+    public void establishConnection(){
         try {
-            myListener.start();
-            mySender.start();
-            connect();
+            if (myListener == null || !myListener.isAlive()) {
+                this.connected = 1;
+                this.myListener = new ErlangNodeListener(this);
+                myListener.start();
+                connect();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Something failed.");
         }
     }
     
-    // VA RIMOSSO PERCHé GESTITO DA THREAD X OGNI USER
     public void processCommand(String command){
         String[] parts = command.split("-");
         String commandName = parts[0].trim();
