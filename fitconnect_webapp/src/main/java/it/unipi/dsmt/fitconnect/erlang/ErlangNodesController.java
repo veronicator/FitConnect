@@ -3,6 +3,7 @@ package it.unipi.dsmt.fitconnect.erlang;
 import com.ericsson.otp.erlang.OtpNode;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -13,8 +14,7 @@ public class ErlangNodesController {
     private static String erlangMessanger;
     private static String erlangNotifier;
     private static String erlangServerMailBox;
-    private static ErlangNode[] erlangNodes;
-    private static int erlangNodeCount;
+    private static List<ErlangNode> erlangNodes;
 
     // Generates a Controller that stores all the information in common for all client nodes
     private ErlangNodesController() {
@@ -23,8 +23,7 @@ public class ErlangNodesController {
         erlangMessanger = "fitMessanger";
         erlangNotifier = "fitNotifier";
         erlangServerMailBox = "server@10.2.1.82";
-        erlangNodeCount = 10;
-        erlangNodes = new ErlangNode[erlangNodeCount];
+        erlangNodes = new ArrayList<>();
         pingErlangServer();
     }
 
@@ -61,25 +60,12 @@ public class ErlangNodesController {
      * @return index of node seached
      */
     private int findNode(String nodeName){
-        for (int i = 0; i < erlangNodeCount; i++) {
-            if (erlangNodes[i].getNodeName().equalsIgnoreCase(nodeName)) {
+        for (int i = 0; i < erlangNodes.size(); i++) {
+            if (erlangNodes.get(i).getNodeName().equalsIgnoreCase(nodeName)) {
                 return i;
             }
         }
-        return -1;
-    }
-
-    /**
-     * Returns the first empty poistion for a new node
-     * @return index of empty node
-     */
-    private int findEmpty(){
-        for (int i = 0; i < erlangNodeCount; i++) {
-            if (erlangNodes[i] == null) {
-                return i;
-            }
-        }
-        return -1;
+        return erlangNodes.size();
     }
 
     /**
@@ -88,12 +74,14 @@ public class ErlangNodesController {
      */
     public void startErlangNode(String username, List<String> courses) {
         try {
-            if (findNode(username) == -1){
-                int index = findEmpty();
-                if (index == -1 )
-                    throw new Exception("Max nodes reached");
-                erlangNodes[index] = new ErlangNode(username, courses, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox);
-                erlangNodes[index].startClientNode();
+            int index = findNode(username); // Find index to reference
+            if (index == erlangNodes.size()){
+                erlangNodes.add(new ErlangNode(username, courses, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox));
+                erlangNodes.get(erlangNodes.size() - 1).establishConnection();
+                System.out.println("There are currently " + erlangNodes.size() + " nodes."); // DEBUG
+            } else{
+                erlangNodes.get(index).incrementConnected();
+                System.out.println("A User has reconnected to the service"); // DEBUG
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,12 +90,13 @@ public class ErlangNodesController {
     }
 
     public void sendCommandToNode(String nodeName, String nodeCommand){
-        erlangNodes[findNode(nodeName)].processCommand(nodeCommand);
+        erlangNodes.get(findNode(nodeName)).processCommand(nodeCommand);
     }
 
     public void disconnectNode(String nodeName){
         int index = findNode(nodeName); // Find index to reference
-        erlangNodes[index].processCommand("disconnect"); // Disconnect node
-        erlangNodes[index] = null; // Empty the reference
+        erlangNodes.get(index).processCommand("disconnect"); // Disconnect node
+        erlangNodes.get(index).decrementConnected();
+        System.out.println("A User has disconnected from the service"); // DEBUG
     }
 }

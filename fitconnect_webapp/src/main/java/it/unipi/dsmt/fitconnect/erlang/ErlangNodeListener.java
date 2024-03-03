@@ -27,7 +27,6 @@ public class ErlangNodeListener extends Thread {
     @Override
     public void run() {
         try {
-            //System.out.println("Thread Listener started");
             while(running){
                 String[] response = this.clientNode.receive();
                 if(response != null){

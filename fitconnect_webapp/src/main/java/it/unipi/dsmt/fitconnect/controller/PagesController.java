@@ -394,7 +394,7 @@ public class PagesController {
 
             session.invalidate(); // Terminate the current session
 
-            erlangNodesController.sendCommandToNode(username, "disconnect");
+            erlangNodesController.disconnectNode(username);
         }
         return "redirect:/?isLogout=true";
     }
