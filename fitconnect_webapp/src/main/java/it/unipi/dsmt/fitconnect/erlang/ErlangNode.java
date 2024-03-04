@@ -46,13 +46,21 @@ public class ErlangNode {
     }
 
     /**
-     * Increments the connected counter
+     * Increments the connected counter and establishes a new connection if necessary
      */
     public void incrementConnected(){
         if (connected == 0){
-            establishConnection();
+            try {
+                this.connected = 1;
+                this.myListener = new ErlangNodeListener(this);
+                myListener.start();
+                connect();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Something failed.");
+            }
         } else {
-            this.connected++;
+            this.connected++; // Increments number of connections to the node
         }
     }
 
@@ -60,10 +68,17 @@ public class ErlangNode {
      * Decrements the connected counter
      */
     public void decrementConnected(){
-        this.connected = this.connected - 1;
-            if (this.connected == 0){
-                myListener.interrupt(); // Stops Listener from receiving notifications and messages
-            }    
+        this.connected = this.connected - 1; // Decrements number of connections to the node
+        if (this.connected == 0){
+            try{
+                disconnect();
+                this.myListener.interrupt(); // Stops Listener
+                this.myListener = null; // Makes it possible to generate a new listener
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Something failed.");
+            }  
+        }    
     }
 
     /**
@@ -90,6 +105,7 @@ public class ErlangNode {
     private void sendRequest(OtpErlangTuple msgStructure) throws OtpErlangExit, OtpErlangDecodeException {
         OtpErlangObject msg_gen = new OtpErlangTuple(new OtpErlangObject[] {
                 new OtpErlangAtom("$gen_call"), this.from, msgStructure });
+        System.out.println("Sendind request to Erlang server");
         this.userMail.send(this.erlangMessanger, this.erlangServerMailbox, msg_gen);
     }
 
@@ -103,8 +119,6 @@ public class ErlangNode {
         if (reply == null){
             return null;
         }
-
-//        OtpErlangObject replyObj = reply; // Assign your reply here
 
         if (reply instanceof OtpErlangTuple t) {
 
@@ -199,23 +213,6 @@ public class ErlangNode {
         OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, username});
         sendRequest(outMsg);
     }
-
-    /**
-     * Connects the node to the erlang server
-     */
-    public void establishConnection(){
-        try {
-            if (myListener == null || !myListener.isAlive()) {
-                this.connected = 1;
-                this.myListener = new ErlangNodeListener(this);
-                myListener.start();
-                connect();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Something failed.");
-        }
-    }
     
     public void processCommand(String command){
         String[] parts = command.split("-");
@@ -226,17 +223,15 @@ public class ErlangNode {
                         display(parts[1].trim());
                 case "join" -> // 1 args: String courseName
                         joinCourse(parts[1].trim());
-                case "disconnect" -> // 0 args
-                        disconnect();
                 case "leave" -> // 1 args: String courseName
                         leaveCourse(parts[1].trim());
                 case "send" -> // 3 args: String message, String receiver
                         sendMessage(parts[1].trim(), parts[2].trim());
-                case "i" -> // 2 args: String mode, String courseName, long time
+                case "bookClass" -> // 2 args: String mode, String courseName, long time
                         sendRequestToNotifier("insert", parts[1].trim(), Long.parseLong(parts[2].trim()));
-                case "e" -> // 2 args: String mode, String courseName, long time
+                case "editClass" -> // 2 args: String mode, String courseName, long time
                         sendRequestToNotifier("edit", parts[1].trim(), Long.parseLong(parts[2].trim()));
-                case "d" -> // 1 args: String mode, String courseName
+                case "unbookClass" -> // 1 args: String mode, String courseName
                         sendRequestToNotifier("delete", parts[1].trim(), 0);
                 default -> {
                 }

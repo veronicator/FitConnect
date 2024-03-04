@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 public class ErlangNodeListener extends Thread {
 
     private final ErlangNode clientNode;
-    private boolean running;
 
     @Autowired
     private NodeMessageService nodeMessageService;
@@ -21,13 +20,12 @@ public class ErlangNodeListener extends Thread {
     // The Listener that receives the messages and notifications of the erlang server
     public ErlangNodeListener(ErlangNode clientNode) {
         this.clientNode = clientNode;
-        this.running = true;
     }
 
     @Override
     public void run() {
         try {
-            while(running){
+            while(true){
                 String[] response = this.clientNode.receive();
                 if(response != null){
                     switch (response[0]) {

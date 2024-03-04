@@ -204,7 +204,7 @@ public class DBService {
 
             if (reservations.addBooking(user)) {
                 reservations = reservationsRepository.save(reservations);
-                String bookingCommand = String.format("i-%s-%d",
+                String bookingCommand = String.format("bookClass-%s-%d",
                         reservations.getId().toString(),
                         reservations.getActualClassTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                 erlangNodesController.sendCommandToNode(user.getUsername(), bookingCommand);
@@ -304,7 +304,7 @@ public class DBService {
             }
             if (reservation.removeBooking(user)) {
                 reservationsRepository.save(reservation);
-                String unbookCommand = String.format("d-%s",
+                String unbookCommand = String.format("unbookClass-%s",
                         reservation.getId().toString());
                 erlangNodesController.sendCommandToNode(user.getUsername(), unbookCommand);
                 System.out.println("booking removed for the day " + reservation.getClassDate() +
@@ -340,7 +340,7 @@ public class DBService {
                 r.removeBooking(client);
                 reservationsRepository.save(r);
                 // todo: check if needed
-                String unbookCommand = String.format("d-%s",
+                String unbookCommand = String.format("unbookClass-%s",
                         r.getId().toString());
                 erlangNodesController.sendCommandToNode(client.getUsername(), unbookCommand);
             }
@@ -382,7 +382,7 @@ public class DBService {
             List<Reservations> reservations = reservationsRepository.findByCourse(course.getId());
             for (Reservations r: reservations) {
                 for (MongoUser u: r.getBookedUsers()) {
-                    String unbookCommand = String.format("d-%s",
+                    String unbookCommand = String.format("unbookClass-%s",
                             r.getId().toString());
                     erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
                 }
@@ -420,7 +420,7 @@ public class DBService {
                         new ObjectId(courseId), dayOfWeek, startTime.toString());
                 for (Reservations r: reservations) {
                     for (MongoUser u: r.getBookedUsers()) {
-                        String unbookCommand = String.format("d-%s",
+                        String unbookCommand = String.format("unbookClass-%s",
                                 r.getId().toString());
                         erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
                     }
@@ -487,7 +487,7 @@ public class DBService {
                 r.setEndTime(newEndTime.toString());
                 r.setActualClassTime(newActualTime);
                 for (MongoUser u: r.getBookedUsers()) {
-                    String editCommand = String.format("e-%s-%d",
+                    String editCommand = String.format("editClass-%s-%d",
                             r.getId().toString(),
                             newActualTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                     erlangNodesController.sendCommandToNode(u.getUsername(), editCommand);

@@ -45,9 +45,9 @@ public class ErlangNodesController {
         try {
             OtpNode javaNode = new OtpNode(myName, cookie); // Java node
             if (javaNode.ping(erlangServerMailBox, 100)) {
-                System.out.println("ERLANG CONTROLLER -> Node is up");
+                System.out.println("ERLANG CONTROLLER -> Node is up"); // DEBUG
             } else
-                System.out.println("ERLANG CONTROLLER -> Node is down");
+                System.out.println("ERLANG CONTROLLER -> Node is down"); //DEBUG
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("ERLANG CONTROLLER -> Failed to establish Erlang connection.");
@@ -75,14 +75,9 @@ public class ErlangNodesController {
     public void startErlangNode(String username, List<String> courses) {
         try {
             int index = findNode(username); // Find index to reference
-            if (index == erlangNodes.size()){
+            if (index == erlangNodes.size())
                 erlangNodes.add(new ErlangNode(username, courses, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox));
-                erlangNodes.get(erlangNodes.size() - 1).establishConnection();
-                System.out.println("There are currently " + erlangNodes.size() + " nodes."); // DEBUG
-            } else{
-                erlangNodes.get(index).incrementConnected();
-                System.out.println("A User has reconnected to the service"); // DEBUG
-            }
+            erlangNodes.get(index).incrementConnected();
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("ERLANG CONTROLLER -> Failed to start a new node");
@@ -95,8 +90,6 @@ public class ErlangNodesController {
 
     public void disconnectNode(String nodeName){
         int index = findNode(nodeName); // Find index to reference
-        erlangNodes.get(index).processCommand("disconnect"); // Disconnect node
         erlangNodes.get(index).decrementConnected();
-        System.out.println("A User has disconnected from the service"); // DEBUG
     }
 }
