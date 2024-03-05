@@ -13,9 +13,10 @@ import java.util.List;
 @Repository
 public interface ReservationsRepository extends MongoRepository<Reservations, String> {
 
+    @Query(value = "{ 'course': ?0 }", sort = "{'actualClassTime': 1}")
     List<Reservations> findByCourse(ObjectId courseId);
 
-    @Query("{ 'bookedUsers': { $regex: ?0, $options: 'i'} }")
+    @Query(value = "{ 'bookedUsers': { $regex: ?0, $options: 'i'} }", sort = "{'actualClassTime': 1}")
     List<Reservations> findByBookedUser(String username);
 
     @Query(value = "{ 'course': ?0, 'dayOfWeek': ?1, 'startTime': ?2 }", sort = "{'actualClassTime': 1}")

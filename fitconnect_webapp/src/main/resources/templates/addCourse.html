@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>AddCourses</title>
     <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"/>
@@ -12,17 +12,17 @@
     <h2 class="mb-4">Add New Course</h2>
     <form th:action="@{/addCourse}" method="post">
         <div class="form-group mb-4">
-            <label for="course">Day of Week:</label>
+            <label for="course">Course:</label>
             <select class="form-control" name="course" id="course">
                 <option th:each="course : ${courses}" th:text="${course}" th:value="${course}"></option>
             </select>
         </div>
         <div class="form-group mb-4">
             <label for="maxReservablePlaces">Reservable Places:</label>
-            <input type="number" name="maxReservablePlaces" id="maxReservablePlaces" min="15" placeholder="15">
+            <input type="number" name="maxReservablePlaces" id="maxReservablePlaces" min="1" placeholder="15" value="15" required>
         </div>
 
-        <button type="submit" class="btn btn-primary">Add Class Time</button>
+        <button type="submit" class="btn btn-primary">Add Course</button>
     </form>
 </div>
 
