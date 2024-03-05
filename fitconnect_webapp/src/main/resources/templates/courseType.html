@@ -21,7 +21,7 @@
             padding-left: 0;
         }
     </style>
-    <script src="/scripts/tables.js"></script>
+
 </head>
 
 <body>
@@ -115,12 +115,15 @@
 
 </body>
 
+<script src="/scripts/tables.js"></script>
 <script th:inline="javascript">
-    <![CDATA[
-    const weekSchedule = [[${weekSchedule}]];
-    ]]>
+    /*<![CDATA[*/
+    const weekSchedule = /*[[${weekSchedule}]]*/ [];
+    /*]]>*/
 
-    window.onload = loadTable(weekSchedule);
+    window.onload = function() {
+        loadTable(weekSchedule);
+    };
 </script>
 
 </html>
