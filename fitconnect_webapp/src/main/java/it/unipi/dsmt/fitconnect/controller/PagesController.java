@@ -101,6 +101,7 @@ public class PagesController {
             List<MongoUser> enrolledClients = trainerCourse.getEnrolledClients();
             // Controllare se c'è un MongoUser con lo stesso username nella lista degli utenti iscritti
             isJoined = enrolledClients.stream().anyMatch(user -> user.getUsername().equals(username));
+            model.addAttribute("username", getSessionUsername(session));
         }
 
         //todo sortare correttamente le liste
@@ -134,7 +135,7 @@ public class PagesController {
         model.addAttribute("trainerCourse", trainerCourse);
         model.addAttribute("weekSchedule", weekSchedule);
         model.addAttribute("trainer", trainer);
-        model.addAttribute("username", getSessionUsername(session));
+
         model.addAttribute("courseName", course);
         model.addAttribute("daysOfWeek", days);
 //        model.addAttribute("bookDay", sortedUniqueDaysOfWeek);

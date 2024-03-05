@@ -60,11 +60,11 @@ public class FitConnectApp /*implements CommandLineRunner*/ {
 //        }
 //    }
 
-    @Scheduled(fixedRate = 10000)
-    private void scheduledPost() {
-        String username = "tom";
-        String message = "Test Scheduled Notification";
-        restService.postNotification(username, message);
-        System.out.println("scheduledPost");
-    }
+//    @Scheduled(fixedRate = 10000)
+//    private void scheduledPost() {
+//        String username = "tom";
+//        String message = "Test Scheduled Notification";
+//        restService.postNotification(username, message);
+//        System.out.println("scheduledPost");
+//    }
 }
