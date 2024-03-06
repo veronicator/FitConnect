@@ -104,29 +104,6 @@ public class PagesController {
             isJoined = enrolledClients.stream().anyMatch(user -> user.getUsername().equals(username));
         }
 
-        //todo sortare correttamente le liste
-        List<ClassTime> weekSchedule = trainerCourse.getWeekSchedule();
-        Set<LocalTime> uniqueStartTimes = new HashSet<>();
-        Set<DayOfWeek> uniqueDaysOfWeek = new HashSet<>();
-
-//        if(!weekSchedule.isEmpty())
-//            for (ClassTime classtime : weekSchedule) {
-//                uniqueStartTimes.add(classtime.getStartTime());
-//                uniqueDaysOfWeek.add(classtime.getDayOfWeek());
-//            }
-//
-//        // Ordinamento dei startTime
-//        List<LocalTime> sortedStartTimes = new ArrayList<>(uniqueStartTimes);
-//        sortedStartTimes.sort(Comparator.naturalOrder());
-//
-//// Ordinamento dei daysOfWeek
-//        List<DayOfWeek> sortedDaysOfWeek = new ArrayList<>(uniqueDaysOfWeek);
-//        sortedDaysOfWeek.sort(Comparator.comparingInt(DayOfWeek::getValue));
-//
-//// Se desideri mantenere ancora un Set, puoi convertire la lista ordinata in un Set
-//        Set<LocalTime> sortedUniqueStartTimes = new HashSet<>(sortedStartTimes);
-//        Set<DayOfWeek> sortedUniqueDaysOfWeek = new HashSet<>(sortedDaysOfWeek);
-
         List<DayOfWeek> days = new ArrayList<>(Arrays.stream(DayOfWeek.values()).toList());
         days.remove(DayOfWeek.SUNDAY);
 
@@ -138,8 +115,6 @@ public class PagesController {
 
         model.addAttribute("courseName", course);
         model.addAttribute("daysOfWeek", days);
-//        model.addAttribute("bookDay", sortedUniqueDaysOfWeek);
-//        model.addAttribute("bookTime", sortedUniqueStartTimes);
 
         return "courseType";
     }
