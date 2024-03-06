@@ -49,7 +49,7 @@ public class ErlangNode {
      * Increments the connected counter and establishes a new connection if necessary
      */
     public void incrementConnected(){
-        if (connected == 0){
+        if (this.connected == 0){
             try {
                 this.connected = 1;
                 this.myListener = new ErlangNodeListener(this);
@@ -68,7 +68,8 @@ public class ErlangNode {
      * Decrements the connected counter
      */
     public void decrementConnected(){
-        this.connected = this.connected - 1; // Decrements number of connections to the node
+        this.connected--; // Decrements number of connections to the node
+        System.out.println(this.connected);
         if (this.connected == 0){
             try{
                 disconnect();

@@ -85,7 +85,12 @@ public class ErlangNodesController {
     }
 
     public void sendCommandToNode(String nodeName, String nodeCommand){
-        erlangNodes.get(findNode(nodeName)).processCommand(nodeCommand);
+        try {
+            erlangNodes.get(findNode(nodeName)).processCommand(nodeCommand);
+        } catch (Exception e) {
+            //e.printStackTrace();
+            System.err.println("ERLANG CONTROLLER -> Failed to find node");
+        }     
     }
 
     public void disconnectNode(String nodeName){

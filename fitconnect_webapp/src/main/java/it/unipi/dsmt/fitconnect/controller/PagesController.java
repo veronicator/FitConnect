@@ -205,14 +205,7 @@ public class PagesController {
 
         MongoUser user = dbService.getUser(username);
         if (user != null) {
-            List<Course> courseList = user.getCourses();
-            List<String> courseNames = new ArrayList<>();
-
-            for (Course c : courseList)
-                courseNames.add(String.valueOf(c.getId()));
-
-            erlangNodesController.startErlangNode(user.getUsername(), courseNames);
-
+        
             switch (user.getRole()) {
                 case trainer -> {
                     model.addAttribute("courses", user.getCourses());
