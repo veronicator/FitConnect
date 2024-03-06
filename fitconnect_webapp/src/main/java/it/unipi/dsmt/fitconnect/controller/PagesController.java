@@ -25,6 +25,9 @@ public class PagesController {
     private ActiveCourses courses;  // all gym courses in the db or only those of a user, update everytime
 
     private String getSessionUsername(HttpSession session) {
+        if (session == null) {
+            return null;
+        }
         return (String) session.getAttribute("username");
     }
 
