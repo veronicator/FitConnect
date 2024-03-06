@@ -39,19 +39,22 @@ function populateTable(weekSchedule) {
 
         // Aggiungiamo la cella alla riga
         row.appendChild(cell);
+
+        // Aggiungiamo la riga al corpo della tabella
+        tableBody.appendChild(row);
+
     });
 
-    // Aggiungiamo la riga al corpo della tabella
-    tableBody.appendChild(row);
 }
 
 function loadTable(weekSchedule){
     const table = document.getElementById('classSchedule');
-    console.log(weekSchedule)
+    //const weekSchedule = table.getAttribute('data-weekSchedule');
     const cleanedWeekSchedule = weekSchedule.map(timeSlot => ({
         dayOfWeek: timeSlot.dayOfWeek,
         startTime: timeSlot.startTime.split(':').slice(0, 2).join(':'),
         endTime: timeSlot.endTime.split(':').slice(0, 2).join(':')
     }));
+    console.log(cleanedWeekSchedule);
     populateTable(cleanedWeekSchedule);
 }
