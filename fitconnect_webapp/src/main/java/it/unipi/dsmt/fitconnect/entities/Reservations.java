@@ -90,7 +90,7 @@ public class Reservations {
         if (bookedUsers == null)
             return false;
         if (bookedUsers.remove(user)) {
-            reservablePlaces--;
+            reservablePlaces++;
             return true;
         }
         return false;
