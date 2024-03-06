@@ -104,6 +104,8 @@ public class PagesController {
             isJoined = enrolledClients.stream().anyMatch(user -> user.getUsername().equals(username));
         }
 
+        List<ClassTime> weekSchedule = trainerCourse.getWeekSchedule();
+
         List<DayOfWeek> days = new ArrayList<>(Arrays.stream(DayOfWeek.values()).toList());
         days.remove(DayOfWeek.SUNDAY);
 
