@@ -89,6 +89,7 @@ public class PagesController {
         if (trainerCourse == null) {
             String errorMessage = "There is no trainer " + trainer + " with course " + course;
             System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
             return "error";
         }
 
@@ -110,12 +111,14 @@ public class PagesController {
         days.remove(DayOfWeek.SUNDAY);
 
         model.addAttribute("isJoined", isJoined);
-        model.addAttribute("courseList", courses);
+
         model.addAttribute("trainerCourse", trainerCourse);
         model.addAttribute("weekSchedule", weekSchedule);
         model.addAttribute("trainer", trainer);
 
         model.addAttribute("courseName", course);
+        model.addAttribute("courseList", courses);
+
         model.addAttribute("daysOfWeek", days);
 
         return "courseType";
@@ -125,20 +128,22 @@ public class PagesController {
     public String joinCourse(@PathVariable String course, @PathVariable String trainer, @PathVariable String courseId, HttpServletRequest request, Model model) {
 
         HttpSession session = request.getSession(false);
-        System.out.println(session);
+        
         if (session == null) {
-            String errorMessage = "Session error";
+            String errorMessage = "Session error, please login";
             System.out.println(errorMessage);
+            return "login";
+        }
+
+        String username = getSessionUsername(session);
+
+        if (dbService.joinCourse(courseId, username)){
+            System.out.println(username + " subscribed correctly!");
+            return "redirect:/courses/" + course + "/" + trainer;
+        }else{
+            System.out.println("subscription failed: retry");
             return "error";
         }
-        String username = getSessionUsername(session);
-        if (dbService.joinCourse(courseId, username))
-            System.out.println(username + " subscribed correctly!");
-        else
-            System.out.println("subscription failed: retry");
-        // todo: sistemare check return value
-
-        return "redirect:/courses/" + course + "/" + trainer;
     }
 
     @PostMapping("/courses/{course}/{trainer}/{courseId}/bookClass")
@@ -375,12 +380,12 @@ public class PagesController {
             System.out.println("No session");
             return "login";
         }
-
+        System.out.println("class id: " + classId);
         String username = getSessionUsername(session);
 
         boolean ret = dbService.unbookClass(classId, username);
 
-        return ret ? "redirect:/profile" : "error";
+        return ret ? "redirect:/profile?view=reservations" : "error";
 
     }
 

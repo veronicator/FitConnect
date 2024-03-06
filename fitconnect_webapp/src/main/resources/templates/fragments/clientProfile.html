@@ -50,7 +50,7 @@
             <td th:text="${reservation.getStartTime() + ' - ' + reservation.getEndTime()}"></td>
             <td>
                 <form th:action="@{unbookClass}" method="post">
-                    <input type="text" name="classId" hidden="hidden" th:value="${reservation.getCourse().getId()}">
+                    <input type="text" name="classId" hidden="hidden" th:value="${reservation.getId()}">
                     <button class="btn btn-danger" type="submit">Remove</button>
                 </form>
             </td>

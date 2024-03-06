@@ -25,7 +25,7 @@
 <body>
 <div th:replace="~{header.html}"></div>
 <h1 class="text-center" th:text="${courseName}">Course</h1>
-<div class="d-flex flex-row justify-content-center align-items-lg-center m-auto">
+<div class="container d-flex flex-row justify-content-center">
 
     <div class="container m-auto">
         <ul th:each="course : ${courseList}">
@@ -37,18 +37,16 @@
         </ul>
     </div>
 
-    <div class="container w-50" th:if="${!session.isEmpty() and session.role.toString().equals('client')}">
+    <div class="container" th:if="${isJoined == false}">
+        <p>You are not subscribed to this course</p>
+        <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainerUsername()} +'/' + ${trainerCourse.getId()} + '/joinCourse'}"
+              method="post">
+            <button type="submit" class="btn btn-primary">Subscribe</button>
+        </form>
+    </div>
 
-        <div class="container" th:if="${isJoined == false}">
-            <p>You are not subscribed to this course</p>
-            <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainerUsername()} +'/' + ${trainerCourse.getId()} + '/joinCourse'}"
-                  method="post">
-                <button type="submit" class="btn btn-primary">Subscribe</button>
-            </form>
-        </div>
-
-        <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainerUsername()} +'/' + ${trainerCourse.getId()} + '/bookClass'}"
-              th:if="${isJoined == true}" method="post">
+    <div class="container" th:if="${isJoined == true}">
+        <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainerUsername()} +'/' + ${trainerCourse.getId()} + '/bookClass'}" method="post">
             <div class="form-group mb-4">
                 <label for="trainer">Trainer:</label>
                 <input type="text" class="form-control" id="trainer" placeholder="Enter trainer's name"
@@ -57,22 +55,21 @@
             <div class="form-group mb-4">
                 <label for="day">Day:</label>
                 <select class="form-control" id="day" name="day">
-                    <option th:each="day : ${bookDay}" th:text="${day}" th:value="${day}"></option>
+                    <option th:each="day : ${daysOfWeek}" th:text="${day}" th:value="${day}"></option>
                 </select>
             </div>
             <div class="form-group mb-4">
                 <label for="startTime">Time:</label>
-                <select class="form-control" id="startTime" name="startTime">
-                    <option th:each="classtime : ${bookTime}" th:text="${classtime}"></option>
-                </select>
+                <!--<select class="form-control" id="startTime" name="startTime">
+                    <option th:each="classtime : ${weekSchedule}" th:text="${classtime.getStartTime()}"></option>
+                </select>-->
+                <input type="time"  class="form-control" id="startTime" name="startTime">
             </div>
             <button type="submit" class="btn btn-primary">Book Class</button>
         </form>
-
     </div>
 
-    <div class="container w-50"
-         th:if="${!session.isEmpty() and session.role.toString().equals('trainer') and session.username.equals(trainerCourse.getTrainerUsername())}">
+    <div class="container" th:if="${!session.isEmpty() and session.role.toString().equals('trainer') and session.username.equals(trainerCourse.getTrainerUsername())}">
 
         <form th:action="@{'/addClass/' + ${trainerCourse.getId()}}"
               method="post">
@@ -97,12 +94,10 @@
 
     </div>
 
-
     <div class="container m-auto">
-        <table id="classSchedule" class="table align-content-center mb-lg-5"
-               th:attr="data-weekSchedule=${weekSchedule}">
+        <table id="classSchedule" class="table align-content-center mb-lg-5">
+               <!--th:attr="data-weekSchedule=${weekSchedule}">-->
             <tr class="table-header">
-                <!-- Intestazione della tabella con i giorni della settimana -->
                 <th>MONDAY</th>
                 <th>TUESDAY</th>
                 <th>WEDNESDAY</th>
@@ -110,9 +105,7 @@
                 <th>FRIDAY</th>
                 <th>SATURDAY</th>
             </tr>
-            <tbody>
-
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 
