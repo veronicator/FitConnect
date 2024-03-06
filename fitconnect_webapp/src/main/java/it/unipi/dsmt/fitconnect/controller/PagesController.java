@@ -98,6 +98,7 @@ public class PagesController {
         HttpSession session = request.getSession(false);
         if (session != null) {
             String username = getSessionUsername(session);
+            model.addAttribute("username", getSessionUsername(session));
             List<MongoUser> enrolledClients = trainerCourse.getEnrolledClients();
             // Controllare se c'è un MongoUser con lo stesso username nella lista degli utenti iscritti
             isJoined = enrolledClients.stream().anyMatch(user -> user.getUsername().equals(username));
@@ -134,7 +135,7 @@ public class PagesController {
         model.addAttribute("trainerCourse", trainerCourse);
         model.addAttribute("weekSchedule", weekSchedule);
         model.addAttribute("trainer", trainer);
-        model.addAttribute("username", getSessionUsername(session));
+
         model.addAttribute("courseName", course);
         model.addAttribute("daysOfWeek", days);
 //        model.addAttribute("bookDay", sortedUniqueDaysOfWeek);
@@ -387,6 +388,23 @@ public class PagesController {
             return "redirect:/profile";
         } else
             return "error";
+    }
+
+    @PostMapping("/unbookClass")
+    public String unbookClass(HttpServletRequest request, @RequestParam String classId){
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            System.out.println("No session");
+            return "login";
+        }
+
+        String username = getSessionUsername(session);
+
+        boolean ret = dbService.unbookClass(classId, username);
+
+        return ret ? "redirect:/profile" : "error";
+
     }
 
     @GetMapping("/logout")

@@ -49,7 +49,8 @@
             <td th:text="${reservation.getDayOfWeek()}"></td>
             <td th:text="${reservation.getStartTime() + ' - ' + reservation.getEndTime()}"></td>
             <td>
-                <form action="#" method="post">
+                <form th:action="@{unbookClass}" method="post">
+                    <input type="text" name="classId" hidden="hidden" th:value="${reservation.getCourse().getId()}">
                     <button class="btn btn-danger" type="submit">Remove</button>
                 </form>
             </td>
