@@ -2,10 +2,16 @@ package it.unipi.dsmt.fitconnect.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import it.unipi.dsmt.fitconnect.entities.Course;
 import it.unipi.dsmt.fitconnect.entities.LdapUser;
 import it.unipi.dsmt.fitconnect.entities.MongoUser;
 import it.unipi.dsmt.fitconnect.enums.UserRole;
+import it.unipi.dsmt.fitconnect.erlang.ErlangNodesController;
 import it.unipi.dsmt.fitconnect.services.AuthService;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
     @Autowired
     private AuthService authService;
+    @Autowired
+    private ErlangNodesController erlangNodesController;
 
     @GetMapping("/login")
     public String index() {
@@ -38,6 +46,11 @@ public class LoginController {
         if (loggedUser == null)
             return "login";
         else {
+            List<String> courseNames = new ArrayList<>();
+
+            for (Course c : loggedUser.getCourses())
+                courseNames.add(String.valueOf(c.getId()));
+
             HttpSession session = request.getSession(true);
             //session.setAttribute("loggedUser", loggedUser);
             session.setAttribute("uid", loggedUser.getId());
@@ -45,6 +58,8 @@ public class LoginController {
             session.setAttribute("role", loggedUser.getRole());
 
             model.addAttribute("username", loggedUser.getUsername());
+
+            erlangNodesController.startErlangNode(loggedUser.getUsername(), courseNames);
 
             return "redirect:/profile";
         }

@@ -25,6 +25,9 @@ public class PagesController {
     private ActiveCourses courses;  // all gym courses in the db or only those of a user, update everytime
 
     private String getSessionUsername(HttpSession session) {
+        if (session == null) {
+            return null;
+        }
         return (String) session.getAttribute("username");
     }
 
@@ -199,12 +202,6 @@ public class PagesController {
 
         MongoUser user = dbService.getUser(username);
         if (user != null) {
-            List<Course> courseList = user.getCourses();
-            List<String> courseNames = new ArrayList<>();
-
-            for (Course c : courseList)
-                courseNames.add(String.valueOf(c.getId()));
-
             switch (user.getRole()) {
                 case trainer -> {
                     model.addAttribute("courses", user.getCourses());

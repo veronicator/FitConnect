@@ -23,13 +23,13 @@ public interface ReservationsRepository extends MongoRepository<Reservations, St
     List<Reservations> findByCourseDayTime(ObjectId course, DayOfWeek day, String startTime);
     //{ '$gt': ?2 }
 
-    @Query(value = "{'dateTime': { '$lt': ?0 } }")
+    @Query(value = "{'actualClassTime': { '$lt': ?0 } }")
     List<Reservations> findPastReservations(LocalDateTime dateTime);
 
     @Query(value = "{'course': ?0, 'dayOfWeek': ?1, 'startTime': ?2 }", sort = "{'actualClassTime': 1}", exists = true)
     boolean existsByCourseDayTime(ObjectId course, DayOfWeek day, String startTime);
 
-    @Query(value = "{'dateTime': { '$lt': ?0 } }", delete = true)
+    @Query(value = "{'actualClassTime': { '$lt': ?0 } }", delete = true)
     void deletePastReservations(LocalDateTime dateTime);
 
     void deleteByCourse(ObjectId course);

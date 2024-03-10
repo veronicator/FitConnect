@@ -20,11 +20,4 @@ public class FitConnectApp {
         SpringApplication.run(FitConnectApp.class, args);
     }
 
-    //@Scheduled(fixedRate = 10000)
-    //private void scheduledPost() {
-    //    String username = "tom";
-    //    String message = "Test Scheduled Notification";
-    //    restService.postNotification(username, message);
-    //    //System.out.println("scheduledPost");
-    //}
 }
