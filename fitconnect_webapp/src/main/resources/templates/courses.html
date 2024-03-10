@@ -3,6 +3,13 @@
 <head>
     <title>Courses</title>
     <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"/>
+    <style>
+        .course-card img {
+            height: 20rem;
+            object-fit: cover;
+        }
+
+    </style>
 </head>
 
 <body>
@@ -15,7 +22,7 @@
         <div class="col-md-4 mb-3" th:each="courseName : ${courseNames}">
             <div class="course-card text-center">
 
-                <img th:src="@{'/images/courseTypes/' + ${courseName} + '.jpg'}" class="w-75" alt="Image Course">
+                <img th:src="@{'/images/courseTypes/' + ${courseName} + '.jpg'}" alt="Image Course">
 
                 <div class="card-body">
                     <h5 class="card-title" th:text="${courseName}">Course Name</h5>

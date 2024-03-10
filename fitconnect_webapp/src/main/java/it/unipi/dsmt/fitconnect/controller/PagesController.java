@@ -48,6 +48,11 @@ public class PagesController {
         courses.addAll(dbService.browseUserCourses(trainer));
     }
 
+    private void loadCourses(String course){
+        courses.clear();
+        courses.addAll(dbService.browseCourses(course));
+    }
+
     @GetMapping({"/", "/index"})
     public String index(@RequestParam(required = false) String isLogout, Model model) {
         model.addAttribute("isLogout", isLogout != null && isLogout.equals("true"));
@@ -74,15 +79,20 @@ public class PagesController {
         courses.clear();
         courses.addAll(dbService.browseCourses(course));
 
+        String trainerUsername = courses.get(0).getTrainerUsername();
+
         model.addAttribute("courseName", course);
         model.addAttribute("courseList", courses);
 
-        return "courseType";
+        return "redirect:/courses/" + course + "/" + trainerUsername;
+
     }
 
     @GetMapping("/courses/{course}/{trainer}")
     public String viewCourseSchedule(@PathVariable String course, @PathVariable String trainer,
                                      HttpServletRequest request, Model model) {
+
+        loadCourses(course);
 
         Course trainerCourse = dbService.getByCourseAndTrainer(course, trainer);
 
@@ -191,16 +201,14 @@ public class PagesController {
             for (Course c : courseList)
                 courseNames.add(String.valueOf(c.getId()));
 
-            erlangNodesController.startErlangNode(user.getUsername(), courseNames);
-
             switch (user.getRole()) {
                 case trainer -> {
                     model.addAttribute("courses", user.getCourses());
                     if (course != null) {
                         String trainerUsername = user.getCompleteName();
-                        Course courseObj = dbService.getByCourseAndTrainer(course, trainerUsername);
+                        Course courseObj = dbService.getByCourseAndTrainer(course, username);
                         if (courseObj != null) {
-//                    courseOpt.ifPresent(value -> model.addAttribute("courseName", value.getCourseName()));
+
                             model.addAttribute("courseName", courseObj.getCourseName());
                             model.addAttribute("classes", courseObj.getWeekSchedule());
                             model.addAttribute("courseId", courseObj.getId());

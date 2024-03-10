@@ -12,6 +12,7 @@ function populateTable(weekSchedule) {
     ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"].forEach(day => {
         // Creiamo una cella per il giorno corrente
         const cell = document.createElement('td');
+        cell.setAttribute("class", "text-center")
 
         // Troviamo gli orari di classe per il giorno corrente
         const classTimesForDay = weekSchedule.filter(timeSlot => timeSlot.dayOfWeek === day);
