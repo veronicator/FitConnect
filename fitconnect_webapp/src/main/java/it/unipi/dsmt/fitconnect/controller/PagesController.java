@@ -113,6 +113,7 @@ public class PagesController {
             List<MongoUser> enrolledClients = trainerCourse.getEnrolledClients();
             // Controllare se c'è un MongoUser con lo stesso username nella lista degli utenti iscritti
             isJoined = enrolledClients.stream().anyMatch(user -> user.getUsername().equals(username));
+            System.out.println("isJoind = " + isJoined);
         }
 
         List<ClassTime> weekSchedule = trainerCourse.getWeekSchedule();
@@ -151,7 +152,9 @@ public class PagesController {
             System.out.println(username + " subscribed correctly!");
             return "redirect:/courses/" + course + "/" + trainer;
         }else{
-            System.out.println("subscription failed: retry");
+            String errorMessage = "subscription failed: retry";
+            System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
             return "error";
         }
     }
@@ -164,6 +167,7 @@ public class PagesController {
         if (session == null) {
             String errorMessage = "Session error";
             System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
             return "error";
         }
 

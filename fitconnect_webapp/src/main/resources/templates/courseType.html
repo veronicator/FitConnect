@@ -47,7 +47,7 @@
 
     <div class="d-flex flex-row justify-content-around">
 
-        <div class="d-flex flex-column align-items-center" th:if="${(session.isEmpty() and isJoined == false) or (!session.isEmpty() and session.role.toString() == 'client')}">
+        <div class="d-flex flex-column align-items-center" th:if="${(session.isEmpty() and isJoined == false) or (!session.isEmpty() and session.role.toString() == 'client' and isJoined == false)}">
             <p>You are not subscribed to this course</p>
             <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainerUsername()} +'/' + ${trainerCourse.getId()} + '/joinCourse'}"
                   method="post">
@@ -56,7 +56,7 @@
         </div>
 
         <div th:if="${!session.isEmpty()}" class="d-flex flex-row justify-content-around">
-            <div th:if="${session.role == 'client'}">
+            <div th:if="${session.role.toString() == 'client'}">
 
                 <div class="d-flex flex-column m-auto" th:if="${isJoined == true}">
                     <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainerUsername()} +'/' + ${trainerCourse.getId()} + '/bookClass'}"
