@@ -84,6 +84,8 @@ public class DBService {
             newCourse = courseRepository.insert(newCourse);
             trainer.addCourse(newCourse);
             userRepository.save(trainer);
+            String joinCommand = String.format("join-%s", newCourse.getId().toString());
+            erlangNodesController.sendCommandToNode(trainer.getUsername(), joinCommand);
             System.out.println("new course added: " + newCourse.getCourseName());
         } catch (Exception e) {
             System.out.println("addCourse failed");
@@ -387,6 +389,8 @@ public class DBService {
                     erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
                 }
             }
+            String leaveCommand = String.format("leave-%s", course.getId().toString());
+            erlangNodesController.sendCommandToNode(course.getTrainerUsername(), leaveCommand);
             reservationsRepository.deleteByCourse(course.getId());
             courseRepository.deleteById(courseId);
         } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {

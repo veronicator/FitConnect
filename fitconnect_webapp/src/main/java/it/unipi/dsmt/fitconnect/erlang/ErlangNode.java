@@ -176,6 +176,7 @@ public class ErlangNode {
         OtpErlangString course = new OtpErlangString(courseName);
         OtpErlangString username = new OtpErlangString(this.username);
         OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, course, username});
+        courseNames.add(courseName);
         sendRequest(outMsg);
     }
 
@@ -188,6 +189,7 @@ public class ErlangNode {
         OtpErlangString course = new OtpErlangString(courseName);
         OtpErlangString username = new OtpErlangString(this.username);
         OtpErlangTuple outMsg = new OtpErlangTuple(new OtpErlangObject[]{msgType, course, username});
+        courseNames.remove(courseName);
         sendRequest(outMsg);
     }
 
