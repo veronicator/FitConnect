@@ -58,7 +58,7 @@
         <div th:if="${!session.isEmpty()}" class="d-flex flex-row justify-content-around">
             <div th:if="${session.role.toString() == 'client'}">
 
-                <div class="d-flex flex-column m-auto" th:if="${isJoined == true}">
+                <div class="d-flex flex-column mr-lg-4" th:if="${isJoined == true}">
                     <form th:action="@{'/courses/' + ${trainerCourse.getCourseName()}+'/'+${trainerCourse.getTrainerUsername()} +'/' + ${trainerCourse.getId()} + '/bookClass'}"
                           method="post">
                         <div class="form-group mb-4">

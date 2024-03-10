@@ -41,17 +41,7 @@ public class PagesController {
         courses.addAll(dbService.browseAllCourses());
     }
 
-    private void loadClientCourses(String username) {
-        courses.clear();
-        courses.addAll(dbService.browseUserCourses(username));
-    }
-
-    private void loadTrainerCourses(String trainer) {
-        courses.clear();
-        courses.addAll(dbService.browseUserCourses(trainer));
-    }
-
-    private void loadCourses(String course){
+    private void loadCourses(String course) {
         courses.clear();
         courses.addAll(dbService.browseCourses(course));
     }
@@ -142,7 +132,7 @@ public class PagesController {
     public String joinCourse(@PathVariable String course, @PathVariable String trainer, @PathVariable String courseId, HttpServletRequest request, Model model) {
 
         HttpSession session = request.getSession(false);
-        
+
         if (session == null) {
             String errorMessage = "Session error, please login";
             System.out.println(errorMessage);
@@ -151,10 +141,10 @@ public class PagesController {
 
         String username = getSessionUsername(session);
 
-        if (dbService.joinCourse(courseId, username)){
+        if (dbService.joinCourse(courseId, username)) {
             System.out.println(username + " subscribed correctly!");
             return "redirect:/courses/" + course + "/" + trainer;
-        }else{
+        } else {
             String errorMessage = "subscription failed: retry";
             System.out.println(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
@@ -163,8 +153,8 @@ public class PagesController {
     }
 
     @PostMapping("/courses/{course}/{trainer}/{courseId}/bookClass")
-    public String bookClass(@PathVariable String course, @PathVariable String courseId, @PathVariable String trainer,
-                            @RequestParam String day, @RequestParam String startTime, Model model, HttpServletRequest request) {
+    public String bookClass(@PathVariable String courseId, @RequestParam String day, @RequestParam String startTime,
+                            Model model, HttpServletRequest request) {
 
         HttpSession session = request.getSession(false);
         if (session == null) {
@@ -178,12 +168,15 @@ public class PagesController {
 
         boolean ret = dbService.bookClass(username, courseId, DayOfWeek.valueOf(day), startTime);
 
-        // todo parte erlang
-
         if (ret)
             return "redirect:/profile";
-        else
+        else {
+            String errorMessage = "Book class failed: retry";
+            System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
             return "error";
+        }
+
     }
 
     @GetMapping("/profile")
@@ -206,7 +199,6 @@ public class PagesController {
                 case trainer -> {
                     model.addAttribute("courses", user.getCourses());
                     if (course != null) {
-                        String trainerUsername = user.getCompleteName();
                         Course courseObj = dbService.getByCourseAndTrainer(course, username);
                         if (courseObj != null) {
 
@@ -217,8 +209,6 @@ public class PagesController {
                     }
                 }
                 case client -> {
-                    // todo: load client page, showing subscribed courses
-                    // also show booked classes in a tab, with a button to can remove the reservation
                     model.addAttribute("courses", user.getCourses());
                     model.addAttribute("reservations", user.getReservations());
                 }
@@ -320,7 +310,7 @@ public class PagesController {
             System.out.println("class added");
             return "redirect:/profile";
         } else
-            return "index";
+            return "error";
     }
 
     @PostMapping("/deleteCourse")
@@ -382,7 +372,7 @@ public class PagesController {
     }
 
     @PostMapping("/unbookClass")
-    public String unbookClass(HttpServletRequest request, @RequestParam String classId){
+    public String unbookClass(HttpServletRequest request, @RequestParam String classId) {
 
         HttpSession session = request.getSession(false);
         if (session == null) {

@@ -341,9 +341,7 @@ public class DBService {
             for (Reservations r: clientReservations) {
                 r.removeBooking(client);
                 reservationsRepository.save(r);
-                // todo: check if needed
-                String unbookCommand = String.format("unbookClass-%s",
-                        r.getId().toString());
+                String unbookCommand = String.format("unbookClass-%s", r.getId().toString());
                 erlangNodesController.sendCommandToNode(client.getUsername(), unbookCommand);
             }
             if (client.removeCourse(course)) {
@@ -445,8 +443,6 @@ public class DBService {
                                        DayOfWeek newDay, LocalTime newStartTime, LocalTime newEndTime) {
 
         try {
-            // todo: check if the logged user is the trainer of this course
-
             if (oldDay.equals(LocalDate.now().getDayOfWeek()) &&
                     ((oldStartTime.isAfter(LocalTime.now()) &&
                             oldStartTime.isBefore(LocalTime.now().plusHours(1))) ||
