@@ -51,6 +51,11 @@ public class PagesController {
         courses.addAll(dbService.browseUserCourses(trainer));
     }
 
+    private void loadCourses(String course){
+        courses.clear();
+        courses.addAll(dbService.browseCourses(course));
+    }
+
     @GetMapping({"/", "/index"})
     public String index(@RequestParam(required = false) String isLogout, Model model) {
         model.addAttribute("isLogout", isLogout != null && isLogout.equals("true"));
@@ -77,21 +82,27 @@ public class PagesController {
         courses.clear();
         courses.addAll(dbService.browseCourses(course));
 
+        String trainerUsername = courses.get(0).getTrainerUsername();
+
         model.addAttribute("courseName", course);
         model.addAttribute("courseList", courses);
 
-        return "courseType";
+        return "redirect:/courses/" + course + "/" + trainerUsername;
+
     }
 
     @GetMapping("/courses/{course}/{trainer}")
     public String viewCourseSchedule(@PathVariable String course, @PathVariable String trainer,
                                      HttpServletRequest request, Model model) {
 
+        loadCourses(course);
+
         Course trainerCourse = dbService.getByCourseAndTrainer(course, trainer);
 
         if (trainerCourse == null) {
             String errorMessage = "There is no trainer " + trainer + " with course " + course;
             System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
             return "error";
         }
 
@@ -101,47 +112,28 @@ public class PagesController {
         HttpSession session = request.getSession(false);
         if (session != null) {
             String username = getSessionUsername(session);
+            model.addAttribute("username", getSessionUsername(session));
             List<MongoUser> enrolledClients = trainerCourse.getEnrolledClients();
             // Controllare se c'è un MongoUser con lo stesso username nella lista degli utenti iscritti
             isJoined = enrolledClients.stream().anyMatch(user -> user.getUsername().equals(username));
+            System.out.println("isJoind = " + isJoined);
         }
 
-        //todo sortare correttamente le liste
         List<ClassTime> weekSchedule = trainerCourse.getWeekSchedule();
-        Set<LocalTime> uniqueStartTimes = new HashSet<>();
-        Set<DayOfWeek> uniqueDaysOfWeek = new HashSet<>();
-
-//        if(!weekSchedule.isEmpty())
-//            for (ClassTime classtime : weekSchedule) {
-//                uniqueStartTimes.add(classtime.getStartTime());
-//                uniqueDaysOfWeek.add(classtime.getDayOfWeek());
-//            }
-//
-//        // Ordinamento dei startTime
-//        List<LocalTime> sortedStartTimes = new ArrayList<>(uniqueStartTimes);
-//        sortedStartTimes.sort(Comparator.naturalOrder());
-//
-//// Ordinamento dei daysOfWeek
-//        List<DayOfWeek> sortedDaysOfWeek = new ArrayList<>(uniqueDaysOfWeek);
-//        sortedDaysOfWeek.sort(Comparator.comparingInt(DayOfWeek::getValue));
-//
-//// Se desideri mantenere ancora un Set, puoi convertire la lista ordinata in un Set
-//        Set<LocalTime> sortedUniqueStartTimes = new HashSet<>(sortedStartTimes);
-//        Set<DayOfWeek> sortedUniqueDaysOfWeek = new HashSet<>(sortedDaysOfWeek);
 
         List<DayOfWeek> days = new ArrayList<>(Arrays.stream(DayOfWeek.values()).toList());
         days.remove(DayOfWeek.SUNDAY);
 
         model.addAttribute("isJoined", isJoined);
-        model.addAttribute("courseList", courses);
+
         model.addAttribute("trainerCourse", trainerCourse);
         model.addAttribute("weekSchedule", weekSchedule);
         model.addAttribute("trainer", trainer);
-        model.addAttribute("username", getSessionUsername(session));
+
         model.addAttribute("courseName", course);
+        model.addAttribute("courseList", courses);
+
         model.addAttribute("daysOfWeek", days);
-//        model.addAttribute("bookDay", sortedUniqueDaysOfWeek);
-//        model.addAttribute("bookTime", sortedUniqueStartTimes);
 
         return "courseType";
     }
@@ -150,20 +142,24 @@ public class PagesController {
     public String joinCourse(@PathVariable String course, @PathVariable String trainer, @PathVariable String courseId, HttpServletRequest request, Model model) {
 
         HttpSession session = request.getSession(false);
-        System.out.println(session);
+        
         if (session == null) {
-            String errorMessage = "Session error";
+            String errorMessage = "Session error, please login";
             System.out.println(errorMessage);
+            return "login";
+        }
+
+        String username = getSessionUsername(session);
+
+        if (dbService.joinCourse(courseId, username)){
+            System.out.println(username + " subscribed correctly!");
+            return "redirect:/courses/" + course + "/" + trainer;
+        }else{
+            String errorMessage = "subscription failed: retry";
+            System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
             return "error";
         }
-        String username = getSessionUsername(session);
-        if (dbService.joinCourse(courseId, username))
-            System.out.println(username + " subscribed correctly!");
-        else
-            System.out.println("subscription failed: retry");
-        // todo: sistemare check return value
-
-        return "redirect:/courses/" + course + "/" + trainer;
     }
 
     @PostMapping("/courses/{course}/{trainer}/{courseId}/bookClass")
@@ -174,6 +170,7 @@ public class PagesController {
         if (session == null) {
             String errorMessage = "Session error";
             System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
             return "error";
         }
 
@@ -205,15 +202,14 @@ public class PagesController {
 
         MongoUser user = dbService.getUser(username);
         if (user != null) {
-        
             switch (user.getRole()) {
                 case trainer -> {
                     model.addAttribute("courses", user.getCourses());
                     if (course != null) {
                         String trainerUsername = user.getCompleteName();
-                        Course courseObj = dbService.getByCourseAndTrainer(course, trainerUsername);
+                        Course courseObj = dbService.getByCourseAndTrainer(course, username);
                         if (courseObj != null) {
-//                    courseOpt.ifPresent(value -> model.addAttribute("courseName", value.getCourseName()));
+
                             model.addAttribute("courseName", courseObj.getCourseName());
                             model.addAttribute("classes", courseObj.getWeekSchedule());
                             model.addAttribute("courseId", courseObj.getId());
@@ -383,6 +379,23 @@ public class PagesController {
             return "redirect:/profile";
         } else
             return "error";
+    }
+
+    @PostMapping("/unbookClass")
+    public String unbookClass(HttpServletRequest request, @RequestParam String classId){
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            System.out.println("No session");
+            return "login";
+        }
+        System.out.println("class id: " + classId);
+        String username = getSessionUsername(session);
+
+        boolean ret = dbService.unbookClass(classId, username);
+
+        return ret ? "redirect:/profile?view=reservations" : "error";
+
     }
 
     @GetMapping("/logout")
