@@ -83,7 +83,13 @@ public class ErlangNodesController {
         try {
             int index = findNode(username); // Find index to reference
             if (index == erlangNodes.size())
-                erlangNodes.add(new ErlangNode(username, courses, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox, nodeMessageService));
+                erlangNodes.add(
+                        new ErlangNode(
+                                username, courses, cookie,
+                                erlangMessanger, erlangNotifier,
+                                erlangServerMailBox, nodeMessageService
+                        )
+                );
             erlangNodes.get(index).incrementConnected();
         } catch (Exception e) {
             e.printStackTrace();

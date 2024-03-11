@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
 @NoArgsConstructor
 @AllArgsConstructor
+@Service
 public class NodeMessageService {
     @Autowired
     private DBService dbService;
