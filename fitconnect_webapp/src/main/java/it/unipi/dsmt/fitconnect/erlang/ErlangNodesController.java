@@ -1,6 +1,10 @@
 package it.unipi.dsmt.fitconnect.erlang;
 
 import com.ericsson.otp.erlang.OtpNode;
+
+import it.unipi.dsmt.fitconnect.services.NodeMessageService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -15,6 +19,9 @@ public class ErlangNodesController {
     private static String erlangNotifier;
     private static String erlangServerMailBox;
     private static List<ErlangNode> erlangNodes;
+
+    @Autowired
+    private NodeMessageService nodeMessageService;
 
     // Generates a Controller that stores all the information in common for all client nodes
     private ErlangNodesController() {
@@ -76,7 +83,7 @@ public class ErlangNodesController {
         try {
             int index = findNode(username); // Find index to reference
             if (index == erlangNodes.size())
-                erlangNodes.add(new ErlangNode(username, courses, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox));
+                erlangNodes.add(new ErlangNode(username, courses, cookie, erlangMessanger, erlangNotifier, erlangServerMailBox, nodeMessageService));
             erlangNodes.get(index).incrementConnected();
         } catch (Exception e) {
             e.printStackTrace();

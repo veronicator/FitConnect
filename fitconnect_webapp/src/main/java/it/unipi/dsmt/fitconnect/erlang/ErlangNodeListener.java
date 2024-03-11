@@ -6,20 +6,18 @@ import it.unipi.dsmt.fitconnect.entities.CourseNotification;
 import it.unipi.dsmt.fitconnect.entities.Message;
 import it.unipi.dsmt.fitconnect.entities.UserNotification;
 import it.unipi.dsmt.fitconnect.services.NodeMessageService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
 public class ErlangNodeListener extends Thread {
 
     private final ErlangNode clientNode;
-
-    @Autowired
-    private NodeMessageService nodeMessageService;
+    private final NodeMessageService nodeMessageService;
 
     // The Listener that receives the messages and notifications of the erlang server
-    public ErlangNodeListener(ErlangNode clientNode) {
+    public ErlangNodeListener(ErlangNode clientNode, NodeMessageService nodeMessageService) {
         this.clientNode = clientNode;
+        this.nodeMessageService = nodeMessageService;
     }
 
     @Override
@@ -31,7 +29,7 @@ public class ErlangNodeListener extends Thread {
                     switch (response[0]) {
                         case "expired", "edited" -> {
                             CourseNotification courseNotification = new CourseNotification(response[0], response[1], response[2]);
-                            System.out.println(nodeMessageService.postCourseNotification(courseNotification, clientNode.getNodeName()));
+                            //System.out.println(nodeMessageService.postCourseNotification(courseNotification, clientNode.getNodeName()));
                             System.out.println(courseNotification);
                         }
                         case "userJoined", "userExited" -> {
