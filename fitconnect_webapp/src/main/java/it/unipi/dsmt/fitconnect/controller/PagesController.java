@@ -313,7 +313,7 @@ public class PagesController {
         // Converti il startTime da stringa a LocalTime
         LocalTime startTimeLocal = LocalTime.parse(startTime);
 
-        // Calcola l'endTime aggiungendo un'ora al startTime
+        // Calcola l'endTime aggiungendo un'ora allo startTime
         LocalTime endTimeLocal = startTimeLocal.plus(Duration.ofHours(1));
 
         boolean ret = dbService.addClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal, endTimeLocal);

@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.*;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Service
@@ -17,15 +19,23 @@ public class NodeMessageService {
     private RestService restService;
 
     public String postCourseNotification(CourseNotification courseNotification, String username) {
-        Reservations reservations = dbService.getReservations(courseNotification.getCourse());
-        if (reservations == null) {
+        /*Reservations reservations = dbService.getReservations(courseNotification.getCourse());
+        Course course = dbService.getCourse(courseNotification.getCourse());
+        if (course == null) {
             System.out.println("postCourse failed: reservations not found");
             return "errorPost";
-        }
-        String msgToSend = String.format("%s class booked will start at %s on %s",
-                reservations.getCourse().getCourseName(),
+        }*/
+        LocalDateTime classDateTime = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(
+                        Long.parseLong(courseNotification.getTime())), ZoneId.systemDefault());
+
+        String msgToSend = String.format("class booked will start at %s on %s",
+//                course.getCourseName(),
+                LocalTime.from(classDateTime),
+                LocalDate.from(classDateTime)/*
                 courseNotification.getTime(),
-                reservations.getClassDate());
+                reservations.getClassDate()*/);
+
         return restService.postNotification(username, msgToSend);
     }
 
