@@ -204,6 +204,10 @@ public class DBService {
                 }
             }
 
+            if (reservations.isBooked(user)) {
+                System.out.println("class already booked");
+                return reservations;
+            }
             if (reservations.addBooking(user)) {
                 reservations = reservationsRepository.save(reservations);
 //                String bookingCommand = String.format("bookClass-%s-%d",
@@ -320,23 +324,25 @@ public class DBService {
         return null;
     }
 
-    public List<Reservations> leaveCourse(String courseId, String username) {
+    public boolean leaveCourse(String courseId, String username) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername("^" + username + "$");
             if (optUser.isEmpty()) {
                 System.out.println("Error: user not found.");
-                return null;
+                return false;
             }
             MongoUser client = optUser.get();
 
             Optional<Course> optCourse = courseRepository.findById(courseId);
             if (optCourse.isEmpty()) {
                 System.out.println("Error: course not found");
-                return null;
+                return false;
             }
             Course course = optCourse.get();
 
-            List<Reservations> clientReservations = client.getReservations();
+            //List<Reservations> clientReservations = client.getReservations();
+            List<Reservations> clientReservations = reservationsRepository.findByCourseAndUser(
+                    course.getId(), username);
             for (Reservations r: clientReservations) {
                 r.removeBooking(client);
                 reservationsRepository.save(r);
@@ -347,16 +353,16 @@ public class DBService {
                 userRepository.save(client);
 //                String leaveCommand = String.format("leave-%s", course.getId().toString());
 //                erlangNodesController.sendCommandToNode(client.getUsername(), leaveCommand);
-                System.out.println("Subscription from course: " + course.getCourseName() +
-                        " removed successfully");
-                return clientReservations;
+                System.out.println("Subscription from course '" + course.getCourseName() +
+                        "' removed successfully");
+                return true;
             }
         } catch (OptimisticLockingFailureException | NullPointerException | ClassCastException e) {
             e.printStackTrace();
-            return null;
+            return false;
         }
         System.out.println("leaveCourse failed");
-        return null;
+        return false;
     }
 
     // only the trainer of the course its self can do this
@@ -369,7 +375,7 @@ public class DBService {
             }
             Course course = optCourse.get();
             List<MongoUser> users = course.getEnrolledClients();
-            // delete DocumentReferences in MongoUser
+            // removing DocumentReferences in MongoUser
             for (MongoUser u: users) {
                 u.removeCourse(course);
                 userRepository.save(u);
@@ -558,6 +564,10 @@ public class DBService {
 
     public List<Reservations> getReservationsByCourse(String courseId) {
         return reservationsRepository.findByCourse(new ObjectId(courseId));
+    }
+
+    public List<Reservations> getReservationsByCourseAndUser(String courseId, String username) {
+        return reservationsRepository.findByCourseAndUser(new ObjectId(courseId), username);
     }
 
 }

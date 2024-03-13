@@ -332,7 +332,6 @@ public class PagesController {
             return "error";
 
         List<MongoUser> users = course.getEnrolledClients();
-        // delete DocumentReferences in MongoUser
         for (MongoUser u: users) {
             String leaveCommand = String.format("leave-%s", course.getId().toString());
             erlangNodesController.sendCommandToNode(u.getUsername(), leaveCommand);
@@ -346,13 +345,12 @@ public class PagesController {
                 erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
             }
         }
+        String leaveCommand = String.format("leave-%s", course.getId().toString());
+        erlangNodesController.sendCommandToNode(course.getTrainerUsername(), leaveCommand);
 
-//        boolean ret = dbService.deleteCourse(courseId);
         if (dbService.deleteCourse(courseId)) {
-            String leaveCommand = String.format("leave-%s", course.getId().toString());
-            erlangNodesController.sendCommandToNode(course.getTrainerUsername(), leaveCommand);
 
-            System.out.println("course removed");
+            System.out.println("/deleteCourse ok");
             return "redirect:/profile";
         } else
             return "error";
@@ -370,16 +368,18 @@ public class PagesController {
 
         String username = getSessionUsername(session);
 
-        List<Reservations> clientReservations = dbService.leaveCourse(courseId, username);
-        if (clientReservations != null) {
-            for (Reservations r: clientReservations) {
-                String unbookCommand = String.format("unbookClass-%s", r.getId().toString());
-                erlangNodesController.sendCommandToNode(username, unbookCommand);
+        List<Reservations> clientReservations = dbService.getReservationsByCourseAndUser(courseId, username);
+        
+        for (Reservations r: clientReservations) {
+            String unbookCommand = String.format("unbookClass-%s", r.getId().toString());
+            erlangNodesController.sendCommandToNode(username, unbookCommand);
+        }
+        
+        String leaveCommand = String.format("leave-%s", courseId);
+        erlangNodesController.sendCommandToNode(username, leaveCommand);
 
-                String leaveCommand = String.format("leave-%s", courseId);
-                erlangNodesController.sendCommandToNode(username, leaveCommand);
-
-            }
+        if (dbService.leaveCourse(courseId, username)) {
+            System.out.println("course left");
             return "redirect:/profile";
         }
 

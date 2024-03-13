@@ -19,28 +19,22 @@ public class NodeMessageService {
     private RestService restService;
 
     public String postCourseNotification(CourseNotification courseNotification, String username) {
-        /*Reservations reservations = dbService.getReservations(courseNotification.getCourse());
-        Course course = dbService.getCourse(courseNotification.getCourse());
-        if (course == null) {
-            System.out.println("postCourse failed: reservations not found");
-            return "errorPost";
-        }*/
         LocalDateTime classDateTime = LocalDateTime.ofInstant(
                 Instant.ofEpochMilli(
                         Long.parseLong(courseNotification.getTime())), ZoneId.systemDefault());
 
         String msgToSend = String.format("class booked will start at %s on %s",
-//                course.getCourseName(),
                 LocalTime.from(classDateTime),
-                LocalDate.from(classDateTime)/*
-                courseNotification.getTime(),
-                reservations.getClassDate()*/);
+                LocalDate.from(classDateTime));
 
         return restService.postNotification(username, msgToSend);
     }
 
     public String postUserNotification(UserNotification userNotification, String username) {
-        Course course = dbService.getCourse(userNotification.getCourse());
+        //System.out.println("postUserNotif: userNotification.getCourse: " + userNotification.getCourse());
+        //String courseIdString = userNotification.getCourse().split("\"")[1];
+        String courseIdString = userNotification.getCourse().replace("\"", "");
+        Course course = dbService.getCourse(courseIdString);
         if (course == null) {
             System.out.println("postUser failed: course not found");
             return "errorPost";
