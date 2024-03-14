@@ -100,22 +100,23 @@ public class DBService {
      * e.g. if the specified dayOfWeek is Monday, the document for the next Monday and
      * the following Monday are added
      * In this way, class reservations are allowed for the next 2 weeks */
-    public boolean addClassTime(String courseId, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
+    public Course addClassTime(String courseId, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
+
         try {
             if (startTime.isAfter(endTime)) {
                 System.out.println("Error: startTime can not be after endTime");
-                return false;
+                return null;
             }
             Optional<Course> optCourse = courseRepository.findById(courseId);
             if (optCourse.isEmpty()) {
                 System.out.println("addClassTime failed: course not found");
-                return false;
+                return null;
             }
             Course course = optCourse.get();
             ClassTime newClassTime = new ClassTime(dayOfWeek, startTime, endTime);
             if (course.classScheduled(newClassTime)) {
                 System.out.println("class already scheduled at the requested time");
-                return false;
+                return null;
             }
             if (course.addNewClass(newClassTime)) {
                 LocalDateTime actualTime = getDatetimeFromDayAndTime(dayOfWeek, startTime);
@@ -135,11 +136,12 @@ public class DBService {
                         )
                 );
             }
+            return course;
         } catch (OptimisticLockingFailureException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
-        return true;
+
     }
 
     public boolean joinCourse(String courseId, String username) {

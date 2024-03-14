@@ -155,7 +155,8 @@ public class PagesController {
     }
 
     @PostMapping("/courses/{course}/{trainer}/{courseId}/bookClass")
-    public String bookClass(@PathVariable String courseId, @RequestParam String day, @RequestParam String startTime,
+    public String bookClass(@PathVariable String course, @PathVariable String trainer, @PathVariable String courseId,
+                            @RequestParam String day, @RequestParam String startTime,
                             Model model, HttpServletRequest request) {
 
         HttpSession session = request.getSession(false);
@@ -176,7 +177,8 @@ public class PagesController {
                     reservations.getActualClassTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
             erlangNodesController.sendCommandToNode(username, bookingCommand);
 
-            return "redirect:/profile";
+            return "redirect:/profile?view=reservations";
+
         } else {
             String errorMessage = "Book class failed: retry";
             System.out.println(errorMessage);
@@ -316,10 +318,11 @@ public class PagesController {
         // Calcola l'endTime aggiungendo un'ora allo startTime
         LocalTime endTimeLocal = startTimeLocal.plus(Duration.ofHours(1));
 
-        boolean ret = dbService.addClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal, endTimeLocal);
-        if (ret) {
+        Course course = dbService.addClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal, endTimeLocal);
+        if (course != null) {
             System.out.println("class added");
-            return "redirect:/profile";
+
+            return "redirect:/courses/" + course.getCourseName() + '/' + course.getTrainerUsername();
         } else
             return "error";
     }
