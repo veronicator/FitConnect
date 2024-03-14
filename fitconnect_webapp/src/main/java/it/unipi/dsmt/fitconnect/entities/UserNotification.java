@@ -14,7 +14,7 @@ public class UserNotification {
 
     @Override
     public String toString() {
-        return "Notification:" + username + " has " + action + " course " + course + "\n";
+        return "Notification:" + username + " has " + getAction() + " course " + course + "\n";
     }
 
     public String getAction() {

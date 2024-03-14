@@ -18,6 +18,9 @@ public interface ReservationsRepository extends MongoRepository<Reservations, St
 
     @Query(value = "{ 'bookedUsers': { $regex: ?0, $options: 'i'} }", sort = "{'actualClassTime': 1}")
     List<Reservations> findByBookedUser(String username);
+    
+    @Query(value = "{ 'course': ?0, 'bookedUsers': { $regex: ?1, $options: 'i'} }", sort = "{'actualClassTime': 1}")
+    List<Reservations> findByCourseAndUser(ObjectId course, String username);
 
     @Query(value = "{ 'course': ?0, 'dayOfWeek': ?1, 'startTime': ?2 }", sort = "{'actualClassTime': 1}")
     List<Reservations> findByCourseDayTime(ObjectId course, DayOfWeek day, String startTime);

@@ -30,7 +30,7 @@ public class RestService {
 //        return restTemplate.postForObject(url, entity, WSMessage.class);
         ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class, "ig");
-        System.out.println("Risposta dal server: " + response.getBody());
+        //System.out.println("Risposta dal server: " + response.getBody());
         return response.getBody();
     }
 
@@ -48,7 +48,7 @@ public class RestService {
 //        return restTemplate.postForObject(url, entity, WSMessage.class);
         ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class, username);
-        System.out.println("Risposta dal server: " + response.getBody());
+        //System.out.println("Risposta dal server: " + response.getBody());
         return response.getBody();
     }
 

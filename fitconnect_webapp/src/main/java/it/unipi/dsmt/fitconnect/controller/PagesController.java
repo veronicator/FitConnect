@@ -142,6 +142,8 @@ public class PagesController {
         String username = getSessionUsername(session);
 
         if (dbService.joinCourse(courseId, username)) {
+            String joinCommand = String.format("join-%s", courseId);
+            erlangNodesController.sendCommandToNode(username, joinCommand);
             System.out.println(username + " subscribed correctly!");
             return "redirect:/courses/" + course + "/" + trainer;
         } else {
@@ -153,7 +155,8 @@ public class PagesController {
     }
 
     @PostMapping("/courses/{course}/{trainer}/{courseId}/bookClass")
-    public String bookClass(@PathVariable String courseId, @RequestParam String day, @RequestParam String startTime,
+    public String bookClass(@PathVariable String course, @PathVariable String trainer, @PathVariable String courseId,
+                            @RequestParam String day, @RequestParam String startTime,
                             Model model, HttpServletRequest request) {
 
         HttpSession session = request.getSession(false);
@@ -166,11 +169,17 @@ public class PagesController {
 
         String username = getSessionUsername(session);
 
-        boolean ret = dbService.bookClass(username, courseId, DayOfWeek.valueOf(day), startTime);
+        Reservations reservations = dbService.bookClass(username, courseId, DayOfWeek.valueOf(day), startTime);
 
-        if (ret)
-            return "redirect:/profile";
-        else {
+        if (reservations != null) {
+            String bookingCommand = String.format("bookClass-%s-%d",
+                    reservations.getId().toString(),
+                    reservations.getActualClassTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+            erlangNodesController.sendCommandToNode(username, bookingCommand);
+
+            return "redirect:/profile?view=reservations";
+
+        } else {
             String errorMessage = "Book class failed: retry";
             System.out.println(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
@@ -263,9 +272,13 @@ public class PagesController {
 
         String username = getSessionUsername(session);
 
-        boolean ret = dbService.addNewCourse(CourseType.valueOf(course), username, maxReservablePlaces);
-        if (ret)
+        String newCourseId = dbService.addNewCourse(CourseType.valueOf(course), username, maxReservablePlaces);
+        if (newCourseId != null) {
+            String joinCommand = String.format("join-%s", newCourseId);
+            erlangNodesController.sendCommandToNode(username, joinCommand);
+
             return "redirect:/profile";
+        }
         else
             return "error";
     }
@@ -302,13 +315,14 @@ public class PagesController {
         // Converti il startTime da stringa a LocalTime
         LocalTime startTimeLocal = LocalTime.parse(startTime);
 
-        // Calcola l'endTime aggiungendo un'ora al startTime
+        // Calcola l'endTime aggiungendo un'ora allo startTime
         LocalTime endTimeLocal = startTimeLocal.plus(Duration.ofHours(1));
 
-        boolean ret = dbService.addClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal, endTimeLocal);
-        if (ret) {
+        Course course = dbService.addClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal, endTimeLocal);
+        if (course != null) {
             System.out.println("class added");
-            return "redirect:/profile";
+
+            return "redirect:/courses/" + course.getCourseName() + '/' + course.getTrainerUsername();
         } else
             return "error";
     }
@@ -316,9 +330,30 @@ public class PagesController {
     @PostMapping("/deleteCourse")
     public String deleteCourse(@RequestParam String courseId) {
 
-        boolean ret = dbService.deleteCourse(courseId);
-        if (ret) {
-            System.out.println("course removed");
+        Course course = dbService.getCourse(courseId);
+        if (course == null)
+            return "error";
+
+        List<MongoUser> users = course.getEnrolledClients();
+        for (MongoUser u: users) {
+            String leaveCommand = String.format("leave-%s", course.getId().toString());
+            erlangNodesController.sendCommandToNode(u.getUsername(), leaveCommand);
+        }
+
+        List<Reservations> reservations = dbService.getReservationsByCourse(courseId);
+        for (Reservations r: reservations) {
+            for (MongoUser u: r.getBookedUsers()) {
+                String unbookCommand = String.format("unbookClass-%s",
+                        r.getId().toString());
+                erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
+            }
+        }
+        String leaveCommand = String.format("leave-%s", course.getId().toString());
+        erlangNodesController.sendCommandToNode(course.getTrainerUsername(), leaveCommand);
+
+        if (dbService.deleteCourse(courseId)) {
+
+            System.out.println("/deleteCourse ok");
             return "redirect:/profile";
         } else
             return "error";
@@ -336,11 +371,22 @@ public class PagesController {
 
         String username = getSessionUsername(session);
 
-        boolean ret = dbService.leaveCourse(courseId, username);
-        if (ret) {
+        List<Reservations> clientReservations = dbService.getReservationsByCourseAndUser(courseId, username);
+        
+        for (Reservations r: clientReservations) {
+            String unbookCommand = String.format("unbookClass-%s", r.getId().toString());
+            erlangNodesController.sendCommandToNode(username, unbookCommand);
+        }
+        
+        String leaveCommand = String.format("leave-%s", courseId);
+        erlangNodesController.sendCommandToNode(username, leaveCommand);
+
+        if (dbService.leaveCourse(courseId, username)) {
+            System.out.println("course left");
             return "redirect:/profile";
-        } else
-            return "error";
+        }
+
+        return "error";
     }
 
     @PostMapping("/deleteClass")
@@ -348,8 +394,15 @@ public class PagesController {
 
         LocalTime startTimeLocal = LocalTime.parse(startTime);
 
-        boolean ret = dbService.removeClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal);
-        if (ret) {
+        List<Reservations> reservations = dbService.removeClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal);
+        if (reservations != null) {
+            for (Reservations r: reservations) {
+                for (MongoUser u: r.getBookedUsers()) {
+                    String unbookCommand = String.format("unbookClass-%s",
+                            r.getId().toString());
+                    erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
+                }
+            }
             return "redirect:/profile";
         } else
             return "error";
@@ -363,8 +416,16 @@ public class PagesController {
         LocalTime newStartTimeLocal = LocalTime.parse(newStartTime);
         LocalTime newEndTimeLocal = newStartTimeLocal.plus(Duration.ofHours(1));
 
-        boolean ret = dbService.editCourseClassTime(courseId, DayOfWeek.valueOf(oldDay), oldStartTimeLocal, DayOfWeek.valueOf(newDay), newStartTimeLocal, newEndTimeLocal);
-        if (ret) {
+        List<Reservations> reservationsUpdated = dbService.editCourseClassTime(courseId, DayOfWeek.valueOf(oldDay), oldStartTimeLocal, DayOfWeek.valueOf(newDay), newStartTimeLocal, newEndTimeLocal);
+        if (reservationsUpdated != null) {
+            for (Reservations r: reservationsUpdated) {
+                for (MongoUser u: r.getBookedUsers()) {
+                    String editCommand = String.format("editClass-%s-%d",
+                            r.getId().toString(),
+                            r.getActualClassTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+                    erlangNodesController.sendCommandToNode(u.getUsername(), editCommand);
+                }
+            }
             System.out.println("class time edited");
             return "redirect:/profile";
         } else
@@ -382,10 +443,16 @@ public class PagesController {
         System.out.println("class id: " + classId);
         String username = getSessionUsername(session);
 
-        boolean ret = dbService.unbookClass(classId, username);
+        String reservationId = dbService.unbookClass(classId, username);
 
-        return ret ? "redirect:/profile?view=reservations" : "error";
+        if (reservationId != null) {
+            String unbookCommand = String.format("unbookClass-%s",
+                    reservationId);
+            erlangNodesController.sendCommandToNode(username, unbookCommand);
+            return "redirect:/profile?view=reservations";
+        }
 
+        return "error";
     }
 
     @GetMapping("/logout")

@@ -2,6 +2,8 @@ package it.unipi.dsmt.fitconnect.erlang;
 
 import com.ericsson.otp.erlang.*;
 
+import it.unipi.dsmt.fitconnect.services.NodeMessageService;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -18,9 +20,12 @@ public class ErlangNode {
     private OtpErlangTuple from;
     private ErlangNodeListener myListener;
     private int connected;
+    private NodeMessageService nodeMessageService;
 
     // Generates a erlang node used for communication between the erlang server and the user
-    public ErlangNode(String username, List<String> courseNames, String cookie, String erlangMessanger, String erlangNotifier, String erlangServerMailbox) throws IOException{
+    public ErlangNode(String username, List<String> courseNames, String cookie,
+        String erlangMessanger, String erlangNotifier, String erlangServerMailbox,
+        NodeMessageService nodeMessageService) throws IOException{
         // All user information and Erlang server information
         this.username = username;
         this.courseNames = courseNames;
@@ -29,6 +34,7 @@ public class ErlangNode {
         this.erlangNotifier = erlangNotifier;
         this.erlangServerMailbox = erlangServerMailbox;
         this.connected = 0;
+        this.nodeMessageService = nodeMessageService;
 
         this.mailBoxId = this.username + "Mail";
         this.userNode = new OtpNode(this.username, this.cookie);
@@ -52,7 +58,7 @@ public class ErlangNode {
         if (this.connected == 0){
             try {
                 this.connected = 1;
-                this.myListener = new ErlangNodeListener(this);
+                this.myListener = new ErlangNodeListener(this, this.nodeMessageService);
                 myListener.start();
                 connect();
             } catch (Exception e) {
@@ -122,27 +128,25 @@ public class ErlangNode {
         }
 
         if (reply instanceof OtpErlangTuple t) {
-
-            // Pattern match to distinguish between the two cases
-            if (t.elementAt(0) instanceof OtpErlangRef && t.elementAt(1) instanceof OtpErlangTuple innerTuple) {
-                // Example -> {#Ref<p@42de442284e2.1.0.0>,{connection,ok}}
-                String operation = innerTuple.elementAt(0).toString();
-                String result = innerTuple.elementAt(1).toString();
-                return new String[] {operation, result};
-            } else if (t.elementAt(0) instanceof OtpErlangAtom atom) {
-                // Example -> {userExited,"1","p"}
-                String[] values = new String[t.arity()]; // Create an array to hold the string values
-                values[0] = atom.toString();
-                for (int i = 1; i < t.arity(); i++) {
-                    values[i - 1] = t.elementAt(i).toString();
+            //System.out.println(reply);
+            for (int i = 0; i < t.arity(); i++)
+                System.out.println("Var: " + t.elementAt(i) + "; Type: " + t.elementAt(i).getClass().getName());
+                if (t.elementAt(0) instanceof OtpErlangAtom){
+                    String[] values = new String[t.arity()]; // Create an array to hold the string values
+                    for (int i = 0; i < t.arity(); i++) {
+                        values[i] = t.elementAt(i).toString();
+                    }
+                    return values;
+                } else {
+                    OtpErlangTuple innerTuple = (OtpErlangTuple) t.elementAt(1);
+                    String operation = innerTuple.elementAt(0).toString();
+                    String result = innerTuple.elementAt(1).toString();
+                    return new String[] {operation, result};
                 }
-                return values;
-            }
         } else {
             System.out.println("Error instantiating the tuple");
             return new String[] {"Error while communicating with server"};
         }
-        return new String[] {"Generic Java error"};
     }
 
     /**
