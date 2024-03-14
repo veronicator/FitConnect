@@ -26,7 +26,7 @@ check_for_schedules_ts(Time) ->
   F = fun() ->
     Query = qlc:q([
         X || X <- mnesia:table(schedules),
-              element(#schedules.timestamp, X) =< Time % MODIFY TO CHECK FOR 30 BEFORE
+              element(#schedules.timestamp, X) =< (Time - 1800000) % MODIFY TO CHECK FOR 30 BEFORE
     ]),
     qlc:eval(Query)
   end,

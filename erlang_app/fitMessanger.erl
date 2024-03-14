@@ -14,6 +14,10 @@ start_link() ->
 init([]) ->
     {ok, []}.
 
+handle_call({clean}, _From, _Clients) ->
+    Clients = [],
+    {noreply, Clients};
+
 % Connects the user to all his/her courses
 % [{["2","3","5"],"username",#Pid<Ref>}]
 handle_call({From, connect, Courses, Username}, _From, Clients) ->

@@ -26,9 +26,9 @@ init([]) ->
             Rest = 4 - D
     end,
     io:format("Rest: ~p, Seconds: ~p~n", [Rest, Seconds]),
-    %RemainingMilliseconds = ((Rest * 60) + (60 - Seconds)) * 1000,
-    %io:format("Milli remaining: ~p~n", [RemainingMilliseconds]),
-    RemainingMilliseconds = 10000, % DEBUG
+    RemainingMilliseconds = ((Rest * 60) + (60 - Seconds)) * 1000,
+    io:format("Milli remaining: ~p~n", [RemainingMilliseconds]),
+    %RemainingMilliseconds = 10000, % DEBUG
     timer:apply_after(RemainingMilliseconds, ?MODULE, notify, []),
     {ok, []}.
 
@@ -65,9 +65,9 @@ handle_call(Request, _From, Timers) ->
 
 % Used to notify the users that the course is going to start sending a message to the fitMessanger
 notify() ->
-    io:format("Checking for schedules~n").%,
-    %control_schedules(expired, erlang:system_time(millisecond)),
-    %timer:apply_after(30000, ?MODULE, notify, []). % every 5 minutes a control is performed
+    io:format("Checking for schedules~n"),
+    control_schedules(expired, erlang:system_time(millisecond)),
+    timer:apply_after(30000, ?MODULE, notify, []). % every 5 minutes a control is performed
 
 handle_cast(_Request, Timers) ->
     {noreply, Timers}.

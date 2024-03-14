@@ -1,5 +1,9 @@
 package it.unipi.dsmt.fitconnect.erlang;
 
+import com.ericsson.otp.erlang.OtpErlangAtom;
+import com.ericsson.otp.erlang.OtpErlangObject;
+import com.ericsson.otp.erlang.OtpErlangTuple;
+import com.ericsson.otp.erlang.OtpMbox;
 import com.ericsson.otp.erlang.OtpNode;
 
 import it.unipi.dsmt.fitconnect.services.NodeMessageService;
@@ -51,8 +55,17 @@ public class ErlangNodesController {
     private void pingErlangServer() {
         try {
             OtpNode javaNode = new OtpNode(myName, cookie); // Java node
+            OtpMbox javaMail = javaNode.createMbox("erlangControllerMail");
+            OtpErlangTuple from = new OtpErlangTuple(new OtpErlangObject[] {
+                    javaMail.self(), javaNode.createRef() });
             if (javaNode.ping(erlangServerMailBox, 100)) {
                 System.out.println("ERLANG CONTROLLER -> Node is up"); // DEBUG
+                // We clean erlang state since Spring server crashed and disconnected all users
+                OtpErlangTuple cleanCommand = new OtpErlangTuple(new OtpErlangObject[]{new OtpErlangAtom("clean")});
+                OtpErlangObject msg_gen = new OtpErlangTuple(
+                    new OtpErlangObject[] {new OtpErlangAtom("$gen_call"), from, cleanCommand}
+                    );
+                javaMail.send(erlangMessanger, erlangServerMailBox, msg_gen);
             } else
                 System.out.println("ERLANG CONTROLLER -> Node is down"); //DEBUG
         } catch (Exception e) {
