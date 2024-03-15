@@ -31,8 +31,6 @@ public class NodeMessageService {
     }
 
     public String postUserNotification(UserNotification userNotification, String username) {
-        //System.out.println("postUserNotif: userNotification.getCourse: " + userNotification.getCourse());
-        //String courseIdString = userNotification.getCourse().split("\"")[1];
         String courseIdString = userNotification.getCourse().replace("\"", "");
         Course course = dbService.getCourse(courseIdString);
         if (course == null) {
