@@ -30,6 +30,10 @@ public class NodeMessageService {
         return restService.postNotification(username, msgToSend);
     }
 
+    /** method to send a notification message to a specific user through a rest service
+     * @param userNotification notification to send
+     * @param username username of the user to which send the notification
+     * @return a string containing the result of the post method of the rest service*/
     public String postUserNotification(UserNotification userNotification, String username) {
         String courseIdString = userNotification.getCourse().replace("\"", "");
         Course course = dbService.getCourse(courseIdString);

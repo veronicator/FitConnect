@@ -5,17 +5,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
-@Getter
+//@Setter
+//@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Notification {
     private String action;
     private String courseId;  // it's the course id, to cast to ObjectId when interact with MongoDb
-//    private String courseName;
-//    private String trainer;     // username or complete name
     private String username;
-
+/*
     @Override
     public String toString() {
         return "Notification{" +
@@ -25,5 +23,5 @@ public class Notification {
 //                ", trainer='" + trainer + '\'' +
                 ", username='" + username + '\'' +
                 '}';
-    }
+    }*/
 }
