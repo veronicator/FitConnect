@@ -121,6 +121,10 @@ public class ErlangNodesController {
 
     public void disconnectNode(String nodeName){
         int index = findNode(nodeName); // Find index to reference
-        erlangNodes.get(index).decrementConnected();
+        try {
+            erlangNodes.get(index).decrementConnected();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
