@@ -9,8 +9,6 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.util.HtmlUtils;
 
-//import java.security.Principal;
-
 @Controller
 public class MessageController {
     @Autowired

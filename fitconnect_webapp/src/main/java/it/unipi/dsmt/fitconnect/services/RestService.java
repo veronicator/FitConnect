@@ -16,39 +16,22 @@ public class RestService {
 
     /* POST methods */
 
-    public String postNotification() {
-        String url = "http://localhost:8080/send-private-message/{username}";
-        // create headers
-        HttpHeaders headers = new HttpHeaders();
-        // set `content-type` header
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        // set `accept` header
-//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        WSMessage message = new WSMessage("spring post");
-        HttpEntity<WSMessage> entity = new HttpEntity<>(message, headers);
-//        return restTemplate.postForObject(url, entity, WSMessage.class);
-        ResponseEntity<String> response = restTemplate.exchange(
-                url, HttpMethod.POST, entity, String.class, "ig");
-        //System.out.println("Risposta dal server: " + response.getBody());
-        return response.getBody();
-    }
-
+    /** method to post a notification for a specific user
+     * @param username username of the user to which send the notification
+     * @param messageToSend text of the notification to send
+     * @return a string containing the response body of the message sent */
     public String postNotification(String username, String messageToSend) {
         String url = "http://localhost:8080/send-private-message/{username}";
         // create headers
         HttpHeaders headers = new HttpHeaders();
         // set `content-type` header
         headers.setContentType(MediaType.APPLICATION_JSON);
-        // set `accept` header
-//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         WSMessage message = new WSMessage(messageToSend);
         HttpEntity<WSMessage> entity = new HttpEntity<>(message, headers);
-//        return restTemplate.postForObject(url, entity, WSMessage.class);
         ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class, username);
-        //System.out.println("Risposta dal server: " + response.getBody());
         return response.getBody();
     }
 

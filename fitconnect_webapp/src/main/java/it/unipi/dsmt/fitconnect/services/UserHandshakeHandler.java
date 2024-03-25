@@ -14,6 +14,7 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 import java.security.Principal;
 import java.util.Map;
 
+/** class for the initial handshake between the client and the websocket server */
 public class UserHandshakeHandler extends DefaultHandshakeHandler {
     private final Logger LOG = LoggerFactory.getLogger(UserHandshakeHandler.class);
 

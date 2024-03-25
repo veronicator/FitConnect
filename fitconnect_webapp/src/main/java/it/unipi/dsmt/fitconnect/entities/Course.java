@@ -60,11 +60,13 @@ public class Course {
         return weekSchedule.contains(classTime);
     }
 
+    /** method used in the front-end to obtain the actual number of client joined the course
+     * */
     public Integer getNumberOfEnrolledUsers() {
         if (enrolledClients == null)
             return 0;
         if (enrolledClients.size() > 0) {
-            // also the trainer is considered during the lookup
+            // also the trainer is considered during the lookup, so it has to be discarded from the total
             return enrolledClients.size() - 1;
         }
         return 0;
