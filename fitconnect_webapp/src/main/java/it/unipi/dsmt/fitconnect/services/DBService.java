@@ -68,6 +68,7 @@ public class DBService {
      * @param maxReservablePlaces max number of places available for the course
      * @return a string indicated the id of the new course created
      * */
+//    @Transactional
     public String addNewCourse(CourseType courseName, String trainerUsername, Integer maxReservablePlaces) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername("^" + trainerUsername + "$");
@@ -235,7 +236,7 @@ public class DBService {
                         ", at " + reservations.getStartTime());
                 return reservations;
             } else {
-                System.out.println("Booking not possible");
+                System.out.println("Booking not possible: no more places available");
                 return null;
             }
         } catch (OptimisticLockingFailureException | IndexOutOfBoundsException e) {

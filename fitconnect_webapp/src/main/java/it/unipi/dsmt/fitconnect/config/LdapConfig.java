@@ -25,10 +25,6 @@ public class LdapConfig {
     public LdapContextSource contextSource() {
 
         LdapContextSource contextSource = new LdapContextSource();
-//        contextSource.setUrl("ldap://10.2.1.78:389"); // Adjust the URL based on your LDAP server configuration
-//        contextSource.setUserDn("cn=admin,dc=fitconnect,dc=com"); // Adjust the DN based on your LDAP server configuration
-//        contextSource.setPassword("password"); // Adjust the password based on your LDAP server configuration
-
 
         contextSource.setUrl(url); // Adjust the URL based on your LDAP server configuration
         contextSource.setUserDn(userDn); // Adjust the DN based on your LDAP server configuration
