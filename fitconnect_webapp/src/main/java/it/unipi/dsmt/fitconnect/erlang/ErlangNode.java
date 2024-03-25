@@ -75,7 +75,7 @@ public class ErlangNode {
      */
     public void decrementConnected(){
         this.connected--; // Decrements number of connections to the node
-        System.out.println(this.connected);
+        //System.out.println(this.connected);
         if (this.connected == 0){
             try{
                 disconnect();
@@ -112,7 +112,7 @@ public class ErlangNode {
     private void sendRequest(OtpErlangTuple msgStructure) throws OtpErlangExit, OtpErlangDecodeException {
         OtpErlangObject msg_gen = new OtpErlangTuple(new OtpErlangObject[] {
                 new OtpErlangAtom("$gen_call"), this.from, msgStructure });
-        System.out.println("Sendind request to Erlang server");
+        //System.out.println("Sendind request to Erlang server"); // DEBUG
         this.userMail.send(this.erlangMessanger, this.erlangServerMailbox, msg_gen);
     }
 
@@ -129,22 +129,22 @@ public class ErlangNode {
 
         if (reply instanceof OtpErlangTuple t) {
             //System.out.println(reply);
-            for (int i = 0; i < t.arity(); i++)
-                System.out.println("Var: " + t.elementAt(i) + "; Type: " + t.elementAt(i).getClass().getName());
-                if (t.elementAt(0) instanceof OtpErlangAtom){
-                    String[] values = new String[t.arity()]; // Create an array to hold the string values
-                    for (int i = 0; i < t.arity(); i++) {
-                        values[i] = t.elementAt(i).toString();
-                    }
-                    return values;
-                } else {
-                    OtpErlangTuple innerTuple = (OtpErlangTuple) t.elementAt(1);
-                    String operation = innerTuple.elementAt(0).toString();
-                    String result = innerTuple.elementAt(1).toString();
-                    return new String[] {operation, result};
+            //for (int i = 0; i < t.arity(); i++)
+                //System.out.println("Var: " + t.elementAt(i) + "; Type: " + t.elementAt(i).getClass().getName()); // DEBUG
+            if (t.elementAt(0) instanceof OtpErlangAtom){
+                String[] values = new String[t.arity()]; // Create an array to hold the string values
+                for (int i = 0; i < t.arity(); i++) {
+                    values[i] = t.elementAt(i).toString();
                 }
+                return values;
+            } else {
+                OtpErlangTuple innerTuple = (OtpErlangTuple) t.elementAt(1);
+                String operation = innerTuple.elementAt(0).toString();
+                String result = innerTuple.elementAt(1).toString();
+                return new String[] {operation, result};
+            }
         } else {
-            System.out.println("Error instantiating the tuple");
+            System.err.println("Error instantiating the tuple");
             return new String[] {"Error while communicating with server"};
         }
     }
