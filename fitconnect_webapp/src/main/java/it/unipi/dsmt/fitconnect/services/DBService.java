@@ -13,7 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
@@ -68,7 +68,7 @@ public class DBService {
      * @param maxReservablePlaces max number of places available for the course
      * @return a string indicated the id of the new course created
      * */
-//    @Transactional
+    @Transactional
     public String addNewCourse(CourseType courseName, String trainerUsername, Integer maxReservablePlaces) {
         try {
             Optional<MongoUser> optUser = userRepository.findByUsername("^" + trainerUsername + "$");
@@ -112,7 +112,7 @@ public class DBService {
      * @param startTime time at which you want to start the lesson
      * @param endTime end time of the lesson
      * @return the Course object of the course at which the class time was added */
-//    @Transactional
+    @Transactional
     public Course addClassTime(String courseId, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
 
         try {
@@ -398,7 +398,7 @@ public class DBService {
      * and associated reference in the users collection
      * @param courseId id of the course to remove
      * @return true on success, false on failure */
-//    @Transactional
+    @Transactional
     public boolean deleteCourse(String courseId) {
         try {
             Optional<Course> optCourse = courseRepository.findById(courseId);
@@ -431,7 +431,7 @@ public class DBService {
      * @param dayOfWeek day of week of the lesson to remove
      * @param startTime starting time of the lesson to remove
      * @return List of Reservations of the lesson before removing them from the db */
-//    @Transactional
+    @Transactional
     public List<Reservations> removeClassTime(String courseId, DayOfWeek dayOfWeek, LocalTime startTime) {
         try {
             if (dayOfWeek.equals(LocalDate.now().getDayOfWeek()) &&
@@ -474,15 +474,19 @@ public class DBService {
      * @param newStartTime new start time of the lesson
      * @param newEndTime new end time of the lesson
      * @return the list of Reservations after the update */
-//    @Transactional
+    @Transactional
     public List<Reservations> editCourseClassTime(String courseId, DayOfWeek oldDay, LocalTime oldStartTime,
                                        DayOfWeek newDay, LocalTime newStartTime, LocalTime newEndTime) {
 
         try {
-            if (oldDay.equals(LocalDate.now().getDayOfWeek()) &&
-                    ((oldStartTime.isAfter(LocalTime.now()) &&
-                            oldStartTime.isBefore(LocalTime.now().plusHours(1))) ||
-                            newStartTime.isBefore(LocalTime.now().plusHours(1)))) {
+            if ((oldDay.equals(LocalDate.now().getDayOfWeek()) &&
+                    (oldStartTime.isAfter(LocalTime.now()) &&
+                            oldStartTime.isBefore(LocalTime.now().plusHours(1)))
+            ) || (newDay.equals(LocalDate.now().getDayOfWeek()) &&
+                    (newStartTime.isAfter(LocalTime.now()) &&
+                    newStartTime.isBefore(LocalTime.now().plusHours(1)))
+                )
+            ) {
                 System.out.println("Error: too late to modify this class, try later for the next week schedule");
                 return null;
             }
