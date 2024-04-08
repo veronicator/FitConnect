@@ -27,6 +27,7 @@ public class WSController {
                                              @RequestBody final WSMessage message) {
         service.notifyUser(id, message.getMessageContent());
 //        return ResponseEntity.ok().build();
-        return ResponseEntity.ok("post mapping wsController ok");
+        System.out.println("DEBUG: WSController - sendPrivateMessage function");
+        return ResponseEntity.ok("post mapping WSController ok");
     }
 }

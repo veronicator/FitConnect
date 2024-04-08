@@ -29,7 +29,7 @@ public class ErlangNodeListener extends Thread {
                     switch (response[0]) {
                         case "expired", "edited" -> {
                             CourseNotification courseNotification = new CourseNotification(response[0], response[1], response[2]);
-                            //System.out.println(nodeMessageService.postCourseNotification(courseNotification, clientNode.getNodeName()));
+                            System.out.println(nodeMessageService.postCourseNotification(courseNotification, clientNode.getNodeName()));
                             System.out.println(courseNotification);
                         }
                         case "userJoined", "userExited" -> {

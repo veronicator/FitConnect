@@ -468,6 +468,44 @@ public class PagesController {
         return "redirect:/?isLogout=true";
     }
 
+    @GetMapping("/chat")
+    public String chat(HttpServletRequest request, Model model){
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            System.out.println("No session");
+            return "login";
+        }
+
+        String username = getSessionUsername(session);
+
+        List<Course> chatCourses = dbService.getUser(username).getCourses();
+
+        return "redirect:/chat/" + chatCourses.get(0).getId();
+    }
+
+    @GetMapping("/chat/{room}")
+    public String chat(@PathVariable String room, HttpServletRequest request, Model model){
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            System.out.println("No session");
+            return "login";
+        }
+
+        String username = getSessionUsername(session);
+
+        List<Course> chatCourses = dbService.getChatCourses(username);
+        model.addAttribute("chatCourses", chatCourses);
+
+        List<Message> chatMessages = dbService.getCourseMessages(username, room);
+        model.addAttribute("chatMessages", chatMessages);
+        model.addAttribute("courseName", dbService.getCourse(room).getCourseName());
+        model.addAttribute("room", room);
+
+        return "chat";
+    }
+
 
 }
 

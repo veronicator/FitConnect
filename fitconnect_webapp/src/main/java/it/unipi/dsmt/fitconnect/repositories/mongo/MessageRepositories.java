@@ -23,5 +23,8 @@ public interface MessageRepositories extends MongoRepository<Message, String> {
     List<Message> findByCourse(ObjectId course);
 
     @Query(value="{'course': ?0 }", sort = "{'sendTime': 1}")
+    List<Message> findByCourse(String course);
+
+    @Query(value="{'course': ?0 }", sort = "{'sendTime': 1}")
     Page<Message> findByCourse(ObjectId course, Pageable pageable);
 }

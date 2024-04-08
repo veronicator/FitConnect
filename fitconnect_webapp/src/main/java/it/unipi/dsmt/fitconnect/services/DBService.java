@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -571,5 +572,28 @@ public class DBService {
     public List<Reservations> getReservationsByCourseAndUser(String courseId, String username) {
         return reservationsRepository.findByCourseAndUser(new ObjectId(courseId), username);
     }
+
+    public List<Course> getChatCourses(String username){
+        return getUser(username).getCourses();
+    }
+
+    public List<Message> getCourseMessages(String username, String room){
+        List<Course> courses = getUser(username).getCourses();
+        Course targetCourse = getCourse(room);
+
+        if(!courses.contains(targetCourse)) {
+            System.out.println("user is not in this course");
+            return null;
+        }
+
+        return messageRepositories.findByCourse(room);
+    }
+
+    public void saveMessage(Message message){
+        messageRepositories.save(message);
+    }
+
+
+
 
 }
