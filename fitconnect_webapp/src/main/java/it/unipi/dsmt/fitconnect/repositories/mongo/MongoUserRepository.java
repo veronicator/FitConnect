@@ -1,10 +1,11 @@
 package it.unipi.dsmt.fitconnect.repositories.mongo;
 
-import it.unipi.dsmt.fitconnect.entities.Course;
 import it.unipi.dsmt.fitconnect.entities.MongoUser;
 import it.unipi.dsmt.fitconnect.enums.UserRole;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -23,6 +24,7 @@ public interface MongoUserRepository extends MongoRepository<MongoUser, String> 
     @Query("{'email' : { $regex: ?0, $options: 'i'} }")
     Optional<MongoUser> findByEmail(String email);
     List<MongoUser> findByRole(UserRole role);
+    Page<MongoUser> findByRole(UserRole role, Pageable pageable);
 
     List<MongoUser> findByCourses(ObjectId courseId);
 
