@@ -29,7 +29,7 @@ function connect() {
     });
 }
 
-function setConnection(){
+function setConnection() {
     loadNotifications();
     updateNotificationDisplay();
 
@@ -47,20 +47,20 @@ function setConnection(){
         saveMessage(message);
     });
 
-    stompClient.subscribe('/topic/global-notifications', function (message) {
-        notificationCount = notificationCount + 1;
-        updateNotificationDisplay();
-    });
-
-    stompClient.subscribe('/user/topic/private-notifications', function (message) {
-        notificationCount = notificationCount + 1;
-        updateNotificationDisplay();
-    });
+    // stompClient.subscribe('/topic/global-notifications', function (message) {
+    //     notificationCount = notificationCount + 1;
+    //     updateNotificationDisplay();
+    // });
+    //
+    // stompClient.subscribe('/user/topic/private-notifications', function (message) {
+    //     notificationCount = notificationCount + 1;
+    //     updateNotificationDisplay();
+    // });
 
     //setup chat groups for the user
     chatCoursesIds.forEach(course => {
         const address = '/topic/' + course.toString() + '/chat';
-        stompClient.subscribe(address, function(newMessageReceived) {
+        stompClient.subscribe(address, function (newMessageReceived) {
             addMessageReceived(JSON.parse(newMessageReceived.body));
         });
     });
@@ -84,7 +84,7 @@ function disconnect() {
 
     isConnected = false;
 
-    if(stompClient != null) {
+    if (stompClient != null) {
         stompClient.disconnect();
     }
 }
@@ -102,6 +102,7 @@ function saveMessage(message) {
     localStorage.setItem('notifications', JSON.stringify(notifications));
 
 }
+
 //TODO posso toglierle?
 
 // function sendMessage() {
@@ -134,7 +135,7 @@ function resetNotificationCount() {
     updateNotificationDisplay();
 }
 
-function loadNotifications(){
+function loadNotifications() {
     $("#messages_notify").empty();
     notificationCount = 0;
     const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
@@ -182,8 +183,8 @@ function sendMessage() {
     stompClient.send(
         destination, {},
         JSON.stringify({
-            'sender':sender,
-            'text':text
+            'sender': sender,
+            'text': text
         })
     );
 
@@ -207,3 +208,43 @@ function formatDate(inputDate) {
 
     return formattedDate;
 }
+
+
+$(document).ready(function () {
+    var pageNumber = 0; // Inizializza il numero di pagina
+    var room = $('.messages-container').data('room'); // Ottieni il valore di room dall'attributo personalizzato
+
+
+    function loadMessages(pageNumber) {
+        $.ajax({
+            url: '/chat/' + room + '/' + pageNumber,
+            method: 'GET',
+            success: function (data) {
+                // Aggiungi i messaggi al contenitore dei messaggi
+                var messagesContainer = $('#messages-container');
+                data.forEach(function (message) {
+                    var messageHtml = `
+                        <div class="new-message ${message.sender == 'gio' ? 'right' : 'left'}">
+                            <div class="new-message-box">
+                                <div class="text">${message.text}</div>
+                                <div class="details-container">${message.sender} - ${formatDate(message.sendTime)}</div>
+                            </div>
+                        </div>`;
+                    messagesContainer.prepend(messageHtml);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error fetching messages:', error);
+            }
+        });
+    }
+
+    // Carica i messaggi iniziali quando la pagina si carica
+    loadMessages(pageNumber);
+
+    // Carica ulteriori messaggi quando si fa clic sul pulsante "Show more"
+    $('#load-more').click(function () {
+        pageNumber++; // Incrementa il numero di pagina per la prossima richiesta
+        loadMessages(pageNumber);
+    });
+});

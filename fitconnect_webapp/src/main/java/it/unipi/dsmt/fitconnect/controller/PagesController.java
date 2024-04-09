@@ -485,7 +485,8 @@ public class PagesController {
     }
 
     @GetMapping("/chat/{room}")
-    public String chat(@PathVariable String room, HttpServletRequest request, Model model){
+    public String chat(@PathVariable String room, @RequestParam(name = "pageNumber", defaultValue = "0") int pageNumber,
+                       HttpServletRequest request, Model model){
 
         HttpSession session = request.getSession(false);
         if (session == null) {
@@ -498,13 +499,27 @@ public class PagesController {
         List<Course> chatCourses = dbService.getChatCourses(username);
         model.addAttribute("chatCourses", chatCourses);
 
-        List<Message> chatMessages = dbService.getCourseMessages(username, room);
+        List<Message> chatMessages = dbService.getCourseMessages(username, room, pageNumber);
+
         model.addAttribute("chatMessages", chatMessages);
-        model.addAttribute("courseName", dbService.getCourse(room).getCourseName());
+        model.addAttribute("course", dbService.getCourse(room));
         model.addAttribute("room", room);
+        model.addAttribute("pageNumber", pageNumber);
 
         return "chat";
     }
+
+    @GetMapping("/chat/{room}/{page}")
+    @ResponseBody
+    public List<Message> chatPagable(@PathVariable String room,
+                                      @PathVariable int page){
+
+        String username = "gio";
+
+        List<Message> chatMessages = dbService.getCourseMessages(username, room, page);
+        return chatMessages;
+    }
+
 
 
 }

@@ -17,9 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class DBService {
@@ -39,7 +37,7 @@ public class DBService {
     @Scheduled(cron = "0 */1 * * * *")  // for testing: scheduled every minute
     public void updateReservationsCollection() {
         try {
-            for (Reservations r: reservationsRepository.findPastReservations(LocalDateTime.now())){
+            for (Reservations r : reservationsRepository.findPastReservations(LocalDateTime.now())) {
                 reservationsRepository.insert(
                         new Reservations(r.getCourse(), r.getActualClassTime().plusDays(14),
                                 r.getDayOfWeek(), r.getStartTime(), r.getEndTime(), r.getMaxPlaces()));
@@ -96,11 +94,13 @@ public class DBService {
         }
     }
 
-    /** add new classTime for a course schedule
+    /**
+     * add new classTime for a course schedule
      * moreover, also Reservations documents in the db are created for the next 2 weeks
      * e.g. if the specified dayOfWeek is Monday, the document for the next Monday and
      * the following Monday are added
-     * In this way, class reservations are allowed for the next 2 weeks */
+     * In this way, class reservations are allowed for the next 2 weeks
+     */
     public Course addClassTime(String courseId, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
 
         try {
@@ -346,7 +346,7 @@ public class DBService {
             //List<Reservations> clientReservations = client.getReservations();
             List<Reservations> clientReservations = reservationsRepository.findByCourseAndUser(
                     course.getId(), username);
-            for (Reservations r: clientReservations) {
+            for (Reservations r : clientReservations) {
                 r.removeBooking(client);
                 reservationsRepository.save(r);
 //                String unbookCommand = String.format("unbookClass-%s", r.getId().toString());
@@ -379,7 +379,7 @@ public class DBService {
             Course course = optCourse.get();
             List<MongoUser> users = course.getEnrolledClients();
             // removing DocumentReferences in MongoUser
-            for (MongoUser u: users) {
+            for (MongoUser u : users) {
                 u.removeCourse(course);
                 userRepository.save(u);
 
@@ -446,10 +446,11 @@ public class DBService {
         return null;
     }
 
-    /** a classTime modification is possible only if the class (old or new) does not start for an hour from now
-     * */
+    /**
+     * a classTime modification is possible only if the class (old or new) does not start for an hour from now
+     */
     public List<Reservations> editCourseClassTime(String courseId, DayOfWeek oldDay, LocalTime oldStartTime,
-                                       DayOfWeek newDay, LocalTime newStartTime, LocalTime newEndTime) {
+                                                  DayOfWeek newDay, LocalTime newStartTime, LocalTime newEndTime) {
 
         try {
             if (oldDay.equals(LocalDate.now().getDayOfWeek()) &&
@@ -490,7 +491,7 @@ public class DBService {
                     course.getId(), oldDay, oldStartTime.toString());
 
             LocalDateTime newActualTime = getDatetimeFromDayAndTime(newDay, newStartTime);
-            for (Reservations r: reservations) {
+            for (Reservations r : reservations) {
                 r.setDayOfWeek(newDay);
                 r.setStartTime(newStartTime.toString());
                 r.setEndTime(newEndTime.toString());
@@ -536,6 +537,7 @@ public class DBService {
 
     /**
      * Function for creating user object to store into mongo database
+     *
      * @param user: user data
      * @return true|false
      */
@@ -573,27 +575,38 @@ public class DBService {
         return reservationsRepository.findByCourseAndUser(new ObjectId(courseId), username);
     }
 
-    public List<Course> getChatCourses(String username){
+    public List<Course> getChatCourses(String username) {
         return getUser(username).getCourses();
     }
 
-    public List<Message> getCourseMessages(String username, String room){
+    public List<Message> getCourseMessages(String username, String room, int pageNumber) {
         List<Course> courses = getUser(username).getCourses();
         Course targetCourse = getCourse(room);
 
-        if(!courses.contains(targetCourse)) {
+        if (targetCourse == null) {
+            return null;
+        }
+
+        if (!courses.contains(targetCourse)) {
             System.out.println("user is not in this course");
             return null;
         }
 
-        return messageRepositories.findByCourse(room);
+        int pageSize = 3; // dimensione della pagina
+
+        List<Message> messages = messageRepositories
+                .findByCourse(room, PageRequest.of(pageNumber, pageSize))
+                .getContent();
+
+        List<Message> mutableMessages = new ArrayList<>(messages);
+        //Collections.reverse(mutableMessages);
+
+        return mutableMessages;
     }
 
-    public void saveMessage(Message message){
+    public void saveMessage(Message message) {
         messageRepositories.save(message);
     }
-
-
 
 
 }

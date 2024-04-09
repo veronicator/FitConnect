@@ -22,9 +22,9 @@ public interface MessageRepositories extends MongoRepository<Message, String> {
     @Query(value="{'course': ?0 }", sort = "{'sendTime': 1}")
     List<Message> findByCourse(ObjectId course);
 
-    @Query(value="{'course': ?0 }", sort = "{'sendTime': 1}")
+    @Query(value="{'course': ?0 }", sort = "{'sendTime': -1}")
     List<Message> findByCourse(String course);
 
-    @Query(value="{'course': ?0 }", sort = "{'sendTime': 1}")
-    Page<Message> findByCourse(ObjectId course, Pageable pageable);
+    @Query(value="{'course': ?0 }", sort = "{'sendTime': -1}")
+    Page<Message> findByCourse(String course, Pageable pageable);
 }

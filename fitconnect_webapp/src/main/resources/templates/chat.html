@@ -22,7 +22,7 @@
             <li class="list-group-item" th:each="chat : ${chatCourses}">
                 <a th:href="@{/chat/{room}(room=${chat.getId()})}" class="text-decoration-none text-dark">
                     <div class="chat-item mt-2">
-                        <span th:text="${chat.getCourseName()}"></span>
+                        <span th:text="${chat.getCourseName() + ' - ' + chat.getTrainer()}"></span>
                     </div>
                 </a>
             </li>
@@ -30,23 +30,33 @@
     </div>
 
     <div id="chat-container">
-        <h3 th:text="${courseName}" class="text-center"></h3>
+        <h3 th:text="${course.getCourseName() + ' - ' + course.getTrainer()}" class="text-center"></h3>
         <div>
-            <div id="messages-container" class="messages-container">
-                <th:block th:each="msg : ${chatMessages}">
-                    <div th:if="${msg.getSender() == session.username}" class="new-message right">
-                        <div class="new-message-box">
-                            <div class="text" th:text="${msg.getText()}"></div>
-                            <div class="details-container" th:text="${msg.getSender() + ' - ' + msg.getSendTime()}"></div>
-                        </div>
-                    </div>
-                    <div th:unless="${msg.getSender() == session.username}" class="new-message left">
-                        <div class="new-message-box">
-                            <div class="text" th:text="${msg.getText()}"></div>
-                            <div class="details-container" th:text="${msg.getSender() + ' - ' + msg.getSendTime()}"></div>
-                        </div>
-                    </div>
-                </th:block>
+            <div class="d-flex justify-content-center">
+            <button id="load-more" class="border-black border-1 ms-4" style="width: fit-content;">Show more</button>
+        </div>
+            <div id="messages-container" class="messages-container" th:attr="data-room=${room}">
+<!--                <div class="d-flex justify-content-center">-->
+<!--                    <a th:href="@{/chat/{room}(room=${room}, pageNumber=${pageNumber + 1})}">-->
+<!--                    <div class="border-black border-1 ms-4" style="width: fit-content;">Show more</div>-->
+<!--                    </a>-->
+<!--                </div>-->
+                <!-- Pulsante per caricare più messaggi -->
+
+<!--                <th:block th:each="msg : ${chatMessages}">-->
+<!--                    <div th:if="${msg.getSender() == session.username}" class="new-message right">-->
+<!--                        <div class="new-message-box">-->
+<!--                            <div class="text" th:text="${msg.getText()}"></div>-->
+<!--                            <div class="details-container" th:text="${msg.getSender() + ' - ' + msg.getSendTime()}"></div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div th:unless="${msg.getSender() == session.username}" class="new-message left">-->
+<!--                        <div class="new-message-box">-->
+<!--                            <div class="text" th:text="${msg.getText()}"></div>-->
+<!--                            <div class="details-container" th:text="${msg.getSender() + ' - ' + msg.getSendTime()}"></div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </th:block>-->
             </div>
         </div>
 
@@ -64,6 +74,8 @@
 </div>
 
 </body>
+
+
 
 
 </html>
