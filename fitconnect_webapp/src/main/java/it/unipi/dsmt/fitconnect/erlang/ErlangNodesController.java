@@ -50,7 +50,7 @@ public class ErlangNodesController {
     }
 
     /**
-     * Checks if the erlang server is up and prints a message accordingly
+     * Checks if the erlang server is up and clears its state if it is
      */
     private void pingErlangServer() {
         try {
@@ -114,13 +114,17 @@ public class ErlangNodesController {
         try {
             erlangNodes.get(findNode(nodeName)).processCommand(nodeCommand);
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             System.err.println("ERLANG CONTROLLER -> Failed to find node");
         }     
     }
 
     public void disconnectNode(String nodeName){
         int index = findNode(nodeName); // Find index to reference
-        erlangNodes.get(index).decrementConnected();
+        try {
+            erlangNodes.get(index).decrementConnected();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

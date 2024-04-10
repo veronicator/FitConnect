@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -35,7 +34,7 @@ public class Reservations {
     private String startTime;      // es. 17:00
     private String endTime;      // es. 18:00
     private LocalDateTime actualClassTime;  // actual timestamp of starting time
-    private Integer reservablePlaces;  // max places or to update at every reservation/deletion ?
+    private Integer reservablePlaces;  // to update at every reservation/deletion
 
     @DocumentReference(collection = "users", lookup = "{ 'username': ?#{#target} }")
     private List<MongoUser> bookedUsers;
@@ -72,9 +71,9 @@ public class Reservations {
 
     private void setActualClassTime() {
         LocalDate nextWeekClass = LocalDate.now().with(TemporalAdjusters.next(dayOfWeek));
-//        actualClassTime = nextWeekClass.atTime(startTime);
-        int[] split = Arrays.stream(startTime.split("[:.]")).mapToInt(Integer::parseInt).toArray();
-        actualClassTime = nextWeekClass.atTime(split[0], split[1]);
+        actualClassTime = nextWeekClass.atTime(LocalTime.parse(startTime));
+//        int[] split = Arrays.stream(startTime.split("[:.]")).mapToInt(Integer::parseInt).toArray();
+//        actualClassTime = nextWeekClass.atTime(split[0], split[1]);
     }
 
     public boolean addBooking(MongoUser user) {

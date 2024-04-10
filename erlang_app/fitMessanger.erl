@@ -51,12 +51,12 @@ handle_call({schedule, Mode, Username, ScheduleId, Timestamp}, _From, Clients) -
     Result = find_client(Clients, Username), % We need to handle if client is not present
     if
         Result == false ->
-            io:format("Client not available~n"),
-            Response = notok;
+            %io:format("Client not available~n"), % DEBUG
+            Response = notsent;
         true ->
             {_Courses, _User, Pid} = Result,
             Pid ! Msg, % Send message to Pid
-            Response = ok
+            Response = sent
     end,
     {reply, {Response}, Clients};
 
@@ -82,14 +82,14 @@ handle_call({disconnect, Username}, _From, Clients) ->
 
 
 handle_call(Request, _From, Clients) ->
-    io:format("Received unhandled request: ~p;~n", [Request]),
+    io:format("Received unhandled request: ~p;~n", [Request]), % DEBUG
     {reply, {unhandled_request, Request}, Clients}.
 
 handle_cast(_Request, State) ->
     {noreply, State}.
 
 handle_info(_Info, State) ->
-    io:format("Received message: ~p;~n", [_Info]),
+    %io:format("Received message: ~p;~n", [_Info]), % DEBUG
     {noreply, State}.
 
 terminate(_Reason, _State) ->
@@ -131,7 +131,7 @@ iterate_over_connected_clients(Mode, Data, Clients) ->
                         exitCourse ->
                             NCourses = lists:delete(Course, Courses),
                             NUser = {NCourses, User, Pid}, % New user without the course selected
-                            io:format("NUser: ~p~n", [NUser]), %DEBUG
+                            %io:format("NUser: ~p~n", [NUser]), %DEBUG
                             {Acc, Client, NUser} % Old user is the client, New user has the updated courses
                     end;
                 % Check if is in the course 
@@ -145,7 +145,6 @@ iterate_over_connected_clients(Mode, Data, Clients) ->
                     end
             end
         end, {[], [], []}, Clients),
-    % NEED TO HANDLE sendToCourse & exitCourse, because they need to be updated differently !!
     %io:format("Receivers: ~p;~nNew: ~p;~nOld: ~p;~n", [Receivers, NewUser, OldUser]), % DEBUG 
     broadcast(Msg, Receivers),
     if
@@ -153,9 +152,9 @@ iterate_over_connected_clients(Mode, Data, Clients) ->
             ok; % We don't need to update the state of the server
         true ->
             ProvClients = lists:delete(OldUser, Clients),
-            io:format("Client: ~p;~n", [ProvClients]),
+            %io:format("Client: ~p;~n", [ProvClients]), % DEBUG
             AddedUser = [NewUser | ProvClients],
-            io:format("Client: ~p;~n", [AddedUser]),
+            %io:format("Client: ~p;~n", [AddedUser]), % DEBUG
             AddedUser % We update the state of the server removing the old structure and adding a new one
         end.
 
@@ -165,7 +164,7 @@ element_is_present(List, Element) ->
 find_client(Clients, Username) ->
     case lists:filtermap(
                 fun(Client) ->
-                    io:format("Client: ~p;~n", [Client]),
+                    %io:format("Client: ~p;~n", [Client]), % DEBUG
                     {_Courses, User, _Pid} = Client,
                     User == Username
                 end, Clients) of

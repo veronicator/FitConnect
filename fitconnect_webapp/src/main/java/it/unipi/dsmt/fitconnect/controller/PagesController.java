@@ -129,7 +129,8 @@ public class PagesController {
     }
 
     @PostMapping("/courses/{course}/{trainer}/{courseId}/joinCourse")
-    public String joinCourse(@PathVariable String course, @PathVariable String trainer, @PathVariable String courseId, HttpServletRequest request, Model model) {
+    public String joinCourse(@PathVariable String course, @PathVariable String trainer, @PathVariable String courseId,
+                             HttpServletRequest request, Model model) {
 
         HttpSession session = request.getSession(false);
 
@@ -416,7 +417,8 @@ public class PagesController {
         LocalTime newStartTimeLocal = LocalTime.parse(newStartTime);
         LocalTime newEndTimeLocal = newStartTimeLocal.plus(Duration.ofHours(1));
 
-        List<Reservations> reservationsUpdated = dbService.editCourseClassTime(courseId, DayOfWeek.valueOf(oldDay), oldStartTimeLocal, DayOfWeek.valueOf(newDay), newStartTimeLocal, newEndTimeLocal);
+        List<Reservations> reservationsUpdated = dbService.editCourseClassTime(courseId, DayOfWeek.valueOf(oldDay),
+                oldStartTimeLocal, DayOfWeek.valueOf(newDay), newStartTimeLocal, newEndTimeLocal);
         if (reservationsUpdated != null) {
             for (Reservations r: reservationsUpdated) {
                 for (MongoUser u: r.getBookedUsers()) {

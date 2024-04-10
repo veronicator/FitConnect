@@ -20,6 +20,8 @@ public class NotificationService {
 //        messagingTemplate.convertAndSend("/topic/global-notifications", message);
 //    }
 
+    /** method to send a message exploiting websocket
+     * @param userId username (used as id) of the user to which send the message */
     public void sendPrivateNotification(final String userId) {
         ResponseMessage message = new ResponseMessage("Private Notification");
 

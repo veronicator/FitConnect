@@ -23,8 +23,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-//import java.security.Principal;
-
 @Controller
 public class MessageController {
     @Autowired

@@ -25,6 +25,7 @@ public class WSService {
 //        messagingTemplate.convertAndSend("/topic/messages", response);
 //    }
 
+    /** method to send notification to a specific user through the websocket established with that user */
     public void notifyUser(final String id, final String message) {
         ResponseMessage response = new ResponseMessage(message);
 

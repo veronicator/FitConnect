@@ -29,20 +29,22 @@ public class ErlangNodeListener extends Thread {
                     switch (response[0]) {
                         case "expired", "edited" -> {
                             CourseNotification courseNotification = new CourseNotification(response[0], response[1], response[2]);
-                            System.out.println(nodeMessageService.postCourseNotification(courseNotification, clientNode.getNodeName()));
-                            System.out.println(courseNotification);
+                            nodeMessageService.postCourseNotification(courseNotification, clientNode.getNodeName());
+                            //System.out.println(nodeMessageService.postCourseNotification(courseNotification, clientNode.getNodeName()));
+                            //System.out.println(courseNotification);
                         }
                         case "userJoined", "userExited" -> {
                             UserNotification userNotification = new UserNotification(response[0], response[1], response[2]);
-                            String res = nodeMessageService.postUserNotification(userNotification, clientNode.getNodeName());
-                            System.out.println(userNotification);
-                            System.out.println(res);
+                            nodeMessageService.postUserNotification(userNotification, clientNode.getNodeName());
+                            //System.out.println(nodeMessageService.postUserNotification(userNotification, clientNode.getNodeName()));
+                            //System.out.println(userNotification);
                         }
                         case "message" -> {
+                            // This was not implemented in java since it would have required too much time
                             Message message = new Message(response[1], response[2], response[3], LocalDateTime.now());
                             System.out.println(message);
                         }
-                        default -> {
+                        default -> { // It is any operation that receives a confirmation
                             System.out.println("Operation: " + response[0]);
                             StringBuilder result = new StringBuilder();
                             for (int i = 1; i < response.length; i++) {
