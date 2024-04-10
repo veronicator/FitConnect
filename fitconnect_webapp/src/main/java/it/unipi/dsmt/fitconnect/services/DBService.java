@@ -640,7 +640,7 @@ public class DBService {
             return null;
         }
 
-        int pageSize = 3; // dimensione della pagina
+        int pageSize = 5; // dimensione della pagina
 
         List<Message> messages = messageRepositories
                 .findByCourse(room, PageRequest.of(pageNumber, pageSize))
