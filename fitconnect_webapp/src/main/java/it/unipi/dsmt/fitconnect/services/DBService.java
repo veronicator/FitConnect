@@ -620,10 +620,13 @@ public class DBService {
         return reservationsRepository.findByCourseAndUser(new ObjectId(courseId), username);
     }
 
-    public List<Course> getChatCourses(String username) {
-        return getUser(username).getCourses();
-    }
-
+    /**
+     * method to retrieve message with a pageable structure
+     * @param username
+     * @param room course ID
+     * @param pageNumber
+     * @return
+     */
     public List<Message> getCourseMessages(String username, String room, int pageNumber) {
         List<Course> courses = getUser(username).getCourses();
         Course targetCourse = getCourse(room);
@@ -644,7 +647,6 @@ public class DBService {
                 .getContent();
 
         List<Message> mutableMessages = new ArrayList<>(messages);
-        //Collections.reverse(mutableMessages);
 
         return mutableMessages;
     }

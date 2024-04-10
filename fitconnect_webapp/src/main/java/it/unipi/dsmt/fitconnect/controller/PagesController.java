@@ -35,7 +35,6 @@ public class PagesController {
         return (UserRole) session.getAttribute("role");
     }
 
-    // gestire il contesto per l'autenticazione, in modo da sapere sempre qual è l'utente connesso
     private void loadCourses() {
         courses.clear();
         courses.addAll(dbService.browseAllCourses());
@@ -104,7 +103,7 @@ public class PagesController {
             String username = getSessionUsername(session);
             model.addAttribute("username", getSessionUsername(session));
             List<MongoUser> enrolledClients = trainerCourse.getEnrolledClients();
-            // Controllare se c'è un MongoUser con lo stesso username nella lista degli utenti iscritti
+            // Check if there is a MongoUser with the same username in the list of subscribed users
             isJoined = enrolledClients.stream().anyMatch(user -> user.getUsername().equals(username));
             System.out.println("isJoind = " + isJoined);
         }
@@ -313,10 +312,9 @@ public class PagesController {
     @PostMapping("/addClass/{courseId}")
     public String doAddClass(@PathVariable String courseId, @RequestParam String day, @RequestParam String startTime) {
 
-        // Converti il startTime da stringa a LocalTime
         LocalTime startTimeLocal = LocalTime.parse(startTime);
 
-        // Calcola l'endTime aggiungendo un'ora allo startTime
+        // Compute endTime adding one hour to startTime
         LocalTime endTimeLocal = startTimeLocal.plus(Duration.ofHours(1));
 
         Course course = dbService.addClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal, endTimeLocal);
@@ -498,7 +496,7 @@ public class PagesController {
 
         String username = getSessionUsername(session);
 
-        List<Course> chatCourses = dbService.getChatCourses(username);
+        List<Course> chatCourses = dbService.getUser(username).getCourses();
         model.addAttribute("chatCourses", chatCourses);
 
         List<Message> chatMessages = dbService.getCourseMessages(username, room, pageNumber);
@@ -513,7 +511,7 @@ public class PagesController {
 
     @GetMapping("/chat/{room}/{page}")
     @ResponseBody
-    public List<Message> chatPagable(@PathVariable String room, @PathVariable int page,
+    public List<Message> chatPageable(@PathVariable String room, @PathVariable int page,
                                      HttpServletRequest request){
 
         HttpSession session = request.getSession(false);
