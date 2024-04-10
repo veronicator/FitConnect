@@ -511,10 +511,11 @@ public class PagesController {
 
     @GetMapping("/chat/{room}/{page}")
     @ResponseBody
-    public List<Message> chatPagable(@PathVariable String room,
-                                      @PathVariable int page){
+    public List<Message> chatPagable(@PathVariable String room, @PathVariable int page,
+                                     HttpServletRequest request){
 
-        String username = "gio";
+        HttpSession session = request.getSession(false);
+        String username = getSessionUsername(session);
 
         List<Message> chatMessages = dbService.getCourseMessages(username, room, page);
         return chatMessages;

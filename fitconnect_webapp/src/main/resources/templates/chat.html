@@ -4,20 +4,16 @@
     <title>Chat</title>
     <link rel="stylesheet" th:href="@{/bootstrap/css/chat.css}">
     <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"/>
-</head>
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    const chatCoursesIds = /*[[${chatCourses.![id.toString()]}]]*/ [];
-    /*]]>*/
 
-</script>
+</head>
+
 
 <body>
 <div th:replace="~{header.html}"></div>
 
 <div class="container d-flex flex-row mt-4">
 
-    <div>
+    <div class="mt-5">
         <ul class="list-group list-group-flush mt-2">
             <li class="list-group-item" th:each="chat : ${chatCourses}">
                 <a th:href="@{/chat/{room}(room=${chat.getId()})}" class="text-decoration-none text-dark">
@@ -32,10 +28,10 @@
     <div id="chat-container">
         <h3 th:text="${course.getCourseName() + ' - ' + course.getTrainer()}" class="text-center"></h3>
         <div>
-            <div class="d-flex justify-content-center">
-            <button id="load-more" class="border-black border-1 ms-4" style="width: fit-content;">Show more</button>
-        </div>
-            <div id="messages-container" class="messages-container" th:attr="data-room=${room}">
+            <div class="d-flex justify-content-center mt-2 mb-2">
+                <button id="load-more" class="border-black border-1"  style="width: fit-content;">Show more</button>
+            </div>
+            <div id="messages-container" class="messages-container" th:attr="data-room=${room}, data-username=${session.username}">
 <!--                <div class="d-flex justify-content-center">-->
 <!--                    <a th:href="@{/chat/{room}(room=${room}, pageNumber=${pageNumber + 1})}">-->
 <!--                    <div class="border-black border-1 ms-4" style="width: fit-content;">Show more</div>-->
@@ -75,7 +71,13 @@
 
 </body>
 
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const chatCoursesIds = /*[[${chatCourses.![id.toString()]}]]*/ [];
+    /*]]>*/
+</script>
 
+<script src="/scripts/chat.js"></script>
 
 
 </html>
