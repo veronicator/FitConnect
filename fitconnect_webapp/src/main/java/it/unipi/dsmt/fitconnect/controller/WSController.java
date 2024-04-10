@@ -16,18 +16,15 @@ public class WSController {
     @Autowired
     private WSService service;
 
-//    @PostMapping("/send-message")
-//    public void sendMessage(@RequestBody final WSMessage message) {
-//        service.notifyFrontend(message.getMessageContent());
-//    }
-
-    /** l'id è l'username dell'utente della sessione */
+    /**
+     * @param id session username
+     * @param message
+     * @return
+     */
     @PostMapping("/send-private-message/{id}")
     public ResponseEntity<String> sendPrivateMessage(@PathVariable final String id,
                                              @RequestBody final WSMessage message) {
         service.notifyUser(id, message.getMessageContent());
-//        return ResponseEntity.ok().build();
-        System.out.println("DEBUG: WSController - sendPrivateMessage function");
         return ResponseEntity.ok("post mapping WSController ok");
     }
 }

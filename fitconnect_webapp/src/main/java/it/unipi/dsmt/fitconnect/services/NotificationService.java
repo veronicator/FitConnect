@@ -14,12 +14,6 @@ public class NotificationService {
         this.messagingTemplate = messagingTemplate;
     }
 
-//    public void sendGlobalNotification() {
-//        ResponseMessage message = new ResponseMessage("Global Notification");
-//
-//        messagingTemplate.convertAndSend("/topic/global-notifications", message);
-//    }
-
     /** method to send a message exploiting websocket
      * @param userId username (used as id) of the user to which send the message */
     public void sendPrivateNotification(final String userId) {

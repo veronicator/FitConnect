@@ -52,7 +52,6 @@ public class LoginController {
                 courseNames.add(String.valueOf(c.getId()));
 
             HttpSession session = request.getSession(true);
-            //session.setAttribute("loggedUser", loggedUser);
             session.setAttribute("uid", loggedUser.getId());
             session.setAttribute("username", loggedUser.getUsername());
             session.setAttribute("role", loggedUser.getRole());
@@ -69,6 +68,7 @@ public class LoginController {
     public String doSignup(@RequestParam String firstname, @RequestParam String lastname,
                            @RequestParam String email, @RequestParam String username,
                            @RequestParam String password, @RequestParam String repeat_password) {
+
         if (!password.equals(repeat_password)) {
             System.out.println("Password mismatch. Retry");
             return "signup";
