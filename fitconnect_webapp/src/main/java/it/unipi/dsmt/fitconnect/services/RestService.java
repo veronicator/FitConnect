@@ -22,7 +22,7 @@ public class RestService {
      * @param messageToSend text of the notification to send
      * @return a string containing the response body of the message sent */
     public String postNotification(String username, String messageToSend) {
-        String url = "http://localhost:8080/send-private-message/{username}";
+        String url = "http://10.2.1.83:8080/send-private-message/{username}";
         // create headers
         HttpHeaders headers = new HttpHeaders();
         // set `content-type` header
