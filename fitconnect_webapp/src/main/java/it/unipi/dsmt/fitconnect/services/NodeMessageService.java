@@ -41,6 +41,8 @@ public class NodeMessageService {
             System.out.println("postUser failed: course not found");
             return "errorPost";
         }
+
+        System.out.println("DEBUG: NodeMessageService - postUserNotification");
         // es. "alice joined the yoga course"
         String msgToSend = String.format("%s %s the %s course",
                 userNotification.getUsername(),

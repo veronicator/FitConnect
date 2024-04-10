@@ -17,8 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class DBService {
@@ -40,7 +39,7 @@ public class DBService {
     @Scheduled(cron = "0 */1 * * * *")  // scheduled every minute
     public void updateReservationsCollection() {
         try {
-            for (Reservations r: reservationsRepository.findPastReservations(LocalDateTime.now())){
+            for (Reservations r : reservationsRepository.findPastReservations(LocalDateTime.now())) {
                 reservationsRepository.insert(
                         new Reservations(r.getCourse(), r.getActualClassTime().plusDays(14),
                                 r.getDayOfWeek(), r.getStartTime(), r.getEndTime(), r.getMaxPlaces()));
@@ -376,7 +375,7 @@ public class DBService {
 
             List<Reservations> clientReservations = reservationsRepository.findByCourseAndUser(
                     course.getId(), username);
-            for (Reservations r: clientReservations) {
+            for (Reservations r : clientReservations) {
                 r.removeBooking(client);
                 reservationsRepository.save(r);
             }
@@ -409,7 +408,7 @@ public class DBService {
             Course course = optCourse.get();
             List<MongoUser> users = course.getEnrolledClients();
             // removing DocumentReferences in MongoUser
-            for (MongoUser u: users) {
+            for (MongoUser u : users) {
                 u.removeCourse(course);
                 userRepository.save(u);
             }
@@ -476,7 +475,7 @@ public class DBService {
      * @return the list of Reservations after the update */
     @Transactional
     public List<Reservations> editCourseClassTime(String courseId, DayOfWeek oldDay, LocalTime oldStartTime,
-                                       DayOfWeek newDay, LocalTime newStartTime, LocalTime newEndTime) {
+                                                  DayOfWeek newDay, LocalTime newStartTime, LocalTime newEndTime) {
 
         try {
             if ((oldDay.equals(LocalDate.now().getDayOfWeek()) &&
@@ -521,7 +520,7 @@ public class DBService {
                     course.getId(), oldDay, oldStartTime.toString());
 
             LocalDateTime newActualTime = getDatetimeFromDayAndTime(newDay, newStartTime);
-            for (Reservations r: reservations) {
+            for (Reservations r : reservations) {
                 r.setDayOfWeek(newDay);
                 r.setStartTime(newStartTime.toString());
                 r.setEndTime(newEndTime.toString());
@@ -620,5 +619,39 @@ public class DBService {
     public List<Reservations> getReservationsByCourseAndUser(String courseId, String username) {
         return reservationsRepository.findByCourseAndUser(new ObjectId(courseId), username);
     }
+
+    public List<Course> getChatCourses(String username) {
+        return getUser(username).getCourses();
+    }
+
+    public List<Message> getCourseMessages(String username, String room, int pageNumber) {
+        List<Course> courses = getUser(username).getCourses();
+        Course targetCourse = getCourse(room);
+
+        if (targetCourse == null) {
+            return null;
+        }
+
+        if (!courses.contains(targetCourse)) {
+            System.out.println("user is not in this course");
+            return null;
+        }
+
+        int pageSize = 3; // dimensione della pagina
+
+        List<Message> messages = messageRepositories
+                .findByCourse(room, PageRequest.of(pageNumber, pageSize))
+                .getContent();
+
+        List<Message> mutableMessages = new ArrayList<>(messages);
+        //Collections.reverse(mutableMessages);
+
+        return mutableMessages;
+    }
+
+    public void saveMessage(Message message) {
+        messageRepositories.save(message);
+    }
+
 
 }

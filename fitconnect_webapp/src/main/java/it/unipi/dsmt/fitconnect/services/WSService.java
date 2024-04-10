@@ -15,6 +15,7 @@ public class WSService {
     public WSService(SimpMessagingTemplate messagingTemplate, NotificationService notificationService) {
         this.messagingTemplate = messagingTemplate;
         this.notificationService = notificationService;
+        System.out.println("DEBUG: WSService - Constructor function");
     }
 
 //    public void notifyFrontend(final String message) {
@@ -30,5 +31,7 @@ public class WSService {
 
         notificationService.sendPrivateNotification(id);
         messagingTemplate.convertAndSendToUser(id, "/topic/private-messages", response);
+
+        System.out.println("DEBUG: WSService - notifyUser function");
     }
 }

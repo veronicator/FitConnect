@@ -1,17 +1,17 @@
-var stompClient = null;
-var notificationCount = 0;
+let stompClient = null;
+let isConnected = false;
+let notificationCount = 0;
 
 $(document).ready(function () {
-    console.log("Index page is ready");
-    connect();
 
-    $("#send").click(function () {
-        sendMessage();
-    });
-
-    $("#send-private").click(function () {
-        sendPrivateMessage();
-    });
+    // Check if websocket connection already exists
+    if (!stompClient) {
+        connect();
+    } else {
+        if (!isConnected) {
+            reconnect();
+        }
+    }
 
     $("#notifications").click(function () {
         resetNotificationCount();
@@ -19,41 +19,80 @@ $(document).ready(function () {
 });
 
 function connect() {
-    var socket = new SockJS('/our-websocket');
+    const socket = new SockJS('/chat-websocket');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
         console.log('Connected: ' + frame);
+        isConnected = true;     // set connection state
 
-        loadNotifications();
-        updateNotificationDisplay();
-
-        stompClient.subscribe('/topic/messages', function (message) {
-            message = JSON.parse(message.body).content;
-            showMessage(message);
-            saveMessage(message);
-        });
-
-        stompClient.subscribe('/user/topic/private-messages', function (message) {
-            message = JSON.parse(message.body).content;
-            showMessage(message);
-            saveMessage(message);
-        });
-
-        stompClient.subscribe('/topic/global-notifications', function (message) {
-            notificationCount = notificationCount + 1;
-            updateNotificationDisplay();
-        });
-
-        stompClient.subscribe('/user/topic/private-notifications', function (message) {
-            notificationCount = notificationCount + 1;
-            updateNotificationDisplay();
-        });
+        setConnection();
     });
 }
 
+function setConnection() {
+    loadNotifications();
+    updateNotificationDisplay();
+
+    //TODO da sistemare
+
+    stompClient.subscribe('/topic/messages', function (message) {
+        message = JSON.parse(message.body).content;
+        showMessage(message);
+        saveMessage(message);
+    });
+
+    stompClient.subscribe('/user/topic/private-messages', function (message) {
+        message = JSON.parse(message.body).content;
+        showMessage(message);
+        saveMessage(message);
+    });
+
+    // stompClient.subscribe('/topic/global-notifications', function (message) {
+    //     notificationCount = notificationCount + 1;
+    //     updateNotificationDisplay();
+    // });
+    //
+    // stompClient.subscribe('/user/topic/private-notifications', function (message) {
+    //     notificationCount = notificationCount + 1;
+    //     updateNotificationDisplay();
+    // });
+
+    //setup chat groups for the user
+    chatCoursesIds.forEach(course => {
+        const address = '/topic/' + course.toString() + '/chat';
+        stompClient.subscribe(address, function (newMessageReceived) {
+            addMessageReceived(JSON.parse(newMessageReceived.body));
+        });
+    });
+
+
+}
+
+function reconnect() {
+    if (stompClient && !isConnected) {
+        // Se il client Stomp è stato creato e la connessione non è attiva, prova a ricollegarti
+        stompClient.connect({}, function (frame) {
+            console.log('Reconnected: ' + frame);
+            isConnected = true; // Imposta lo stato della connessione a "attivo"
+
+            setConnection();
+        });
+    }
+}
+
+function disconnect() {
+
+    isConnected = false;
+
+    if (stompClient != null) {
+        stompClient.disconnect();
+    }
+}
+
+//-------------------------------------------- Notifications --------------------------------------------------------
 function showMessage(message) {
     console.log("msg {} " + message)
-    $("#messages_notify").append("<p class=\"dropdown-item\">" + message + "</p>");
+    $("#messages_notify").append("<p class=\"dropdown-item\" style=\"width: 200px; overflow-wrap: break-word;\">" + message + "</p>");
 }
 
 function saveMessage(message) {
@@ -64,15 +103,17 @@ function saveMessage(message) {
 
 }
 
-function sendMessage() {
-    console.log("sending message");
-    stompClient.send("/ws/message", {}, JSON.stringify({'messageContent': $("#message").val()}));
-}
+//TODO posso toglierle?
 
-function sendPrivateMessage() {
-    console.log("sending private message");
-    stompClient.send("/ws/private-message", {}, JSON.stringify({'messageContent': $("#private-message").val()}));
-}
+// function sendMessage() {
+//     console.log("sending message");
+//     stompClient.send("/ws/message", {}, JSON.stringify({'messageContent': $("#message").val()}));
+// }
+//
+// function sendPrivateMessage() {
+//     console.log("sending private message");
+//     stompClient.send("/ws/private-message", {}, JSON.stringify({'messageContent': $("#private-message").val()}));
+// }
 
 function updateNotificationDisplay() {
     if (notificationCount == 0) {
@@ -94,7 +135,7 @@ function resetNotificationCount() {
     updateNotificationDisplay();
 }
 
-function loadNotifications(){
+function loadNotifications() {
     $("#messages_notify").empty();
     notificationCount = 0;
     const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
@@ -103,3 +144,5 @@ function loadNotifications(){
         notificationCount = notificationCount + 1;
     });
 }
+
+

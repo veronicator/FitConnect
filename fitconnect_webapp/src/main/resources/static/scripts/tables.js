@@ -48,7 +48,7 @@ function populateTable(weekSchedule) {
 
 }
 
-function loadTable(weekSchedule){
+function loadTable(weekSchedule) {
     const table = document.getElementById('classSchedule');
     //const weekSchedule = table.getAttribute('data-weekSchedule');
     const cleanedWeekSchedule = weekSchedule.map(timeSlot => ({

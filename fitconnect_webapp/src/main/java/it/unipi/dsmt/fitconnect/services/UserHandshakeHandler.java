@@ -30,6 +30,8 @@ public class UserHandshakeHandler extends DefaultHandshakeHandler {
 
         LOG.info("User with ID '{}' opened the page", username);
 
+        System.out.println("DEBUG: UserHandshakeHandler - determineUser function");
+
         return new UserPrincipal(username);
     }
 }

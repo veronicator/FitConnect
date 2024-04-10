@@ -10,14 +10,30 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
 
+                <li class="nav-item dropdown d-flex flex-row">
+                    <span class="badge badge-danger m-auto text-center" id="notifications"></span>
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-bell"></i>
+                    </a>
+                    <div class="dropdown-menu d-flex flex-wrap" aria-labelledby="navbarDropdown" id="messages_notify"  style="max-height: 200px; overflow-y: auto;">
+                        <span class="dropdown-item"> Notifica1</span>
+                        <span class="dropdown-item"> Notifica2</span>
+                    </div>
+                </li>
+
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/profile}" th:if="${!session.isEmpty()}">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/chat}" th:if="${!session.isEmpty()}">Chat</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/courses}">Courses</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/addCourse}" th:if="${!session.isEmpty() and session.role.toString().equals('trainer') == true}"
+                    <a class="nav-link" th:href="@{/addCourse}"
+                       th:if="${!session.isEmpty() and session.role.toString().equals('trainer') == true}"
                     >Add Course</a>
                 </li>
                 <li class="nav-item">
@@ -26,14 +42,7 @@
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/logout}" th:if="${!session.isEmpty()}">Logout</a>
                 </li>
-                <li class="nav-item dropdown d-flex flex-row">
-                    <span class="badge badge-danger m-auto text-center" id="notifications"></span>
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-bell"></i>
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="messages_notify">
-                    </div>
-                </li>
+
 
             </ul>
         </div>

@@ -470,6 +470,60 @@ public class PagesController {
         return "redirect:/?isLogout=true";
     }
 
+    @GetMapping("/chat")
+    public String chat(HttpServletRequest request, Model model){
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            System.out.println("No session");
+            return "login";
+        }
+
+        String username = getSessionUsername(session);
+
+        List<Course> chatCourses = dbService.getUser(username).getCourses();
+
+        return "redirect:/chat/" + chatCourses.get(0).getId();
+    }
+
+    @GetMapping("/chat/{room}")
+    public String chat(@PathVariable String room, @RequestParam(name = "pageNumber", defaultValue = "0") int pageNumber,
+                       HttpServletRequest request, Model model){
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            System.out.println("No session");
+            return "login";
+        }
+
+        String username = getSessionUsername(session);
+
+        List<Course> chatCourses = dbService.getChatCourses(username);
+        model.addAttribute("chatCourses", chatCourses);
+
+        List<Message> chatMessages = dbService.getCourseMessages(username, room, pageNumber);
+
+        model.addAttribute("chatMessages", chatMessages);
+        model.addAttribute("course", dbService.getCourse(room));
+        model.addAttribute("room", room);
+        model.addAttribute("pageNumber", pageNumber);
+
+        return "chat";
+    }
+
+    @GetMapping("/chat/{room}/{page}")
+    @ResponseBody
+    public List<Message> chatPagable(@PathVariable String room, @PathVariable int page,
+                                     HttpServletRequest request){
+
+        HttpSession session = request.getSession(false);
+        String username = getSessionUsername(session);
+
+        List<Message> chatMessages = dbService.getCourseMessages(username, room, page);
+        return chatMessages;
+    }
+
+
 
 }
 
