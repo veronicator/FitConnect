@@ -26,7 +26,7 @@ check_for_schedules_ts(Time) ->
   F = fun() ->
     Query = qlc:q([
         X || X <- mnesia:table(schedules),
-              element(#schedules.timestamp, X) =< Time % MODIFY TO CHECK FOR 30 BEFORE
+              element(#schedules.timestamp, X) =< (Time - 1800000) % MODIFY TO CHECK FOR 30 BEFORE
     ]),
     qlc:eval(Query)
   end,
@@ -64,12 +64,12 @@ insert_schedule(Key, Timestamp) ->
 
 % Deletes a tuple (schedule) from the db
 delete_schedule(Key) ->
-  io:format("delete: ~p;~n", [Key]),
+  %io:format("delete: ~p;~n", [Key]), % DEBUG
   F = fun() -> mnesia:delete({schedules, Key}) end,
   mnesia:activity(transaction, F).
 
 % Edits the state of a tuple just removing it and adding it modified
 edit_schedule(Key, Timestamp) ->
-  io:format("edit: ~p, ~p;~n", [Key, Timestamp]),
+  %io:format("edit: ~p, ~p;~n", [Key, Timestamp]), % DEBUG
   delete_schedule(Key),
   insert_schedule(Key, Timestamp).

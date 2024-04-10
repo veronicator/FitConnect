@@ -1,10 +1,6 @@
 package it.unipi.dsmt.fitconnect.entities;
 
-import it.unipi.dsmt.fitconnect.enums.CourseType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -17,6 +13,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "courses")
@@ -27,7 +24,7 @@ public class Course {
     @Version
     private Long version;
 
-    private CourseType courseName;
+    private String courseName;
     private String trainer; // firstname lastname
     private String trainerUsername; // it's unique, so it can be used as an identifier
     private Integer maxReservablePlaces;
@@ -38,7 +35,7 @@ public class Course {
     @DocumentReference(collection = "users", lookup = "{ 'courses': ?#{#self._id} }")
     private List<MongoUser> enrolledClients; // id clients enrolled at this course (it will also contain the trainerId)
 
-    public Course (CourseType courseName, String trainerCompleteName, String trainerUsername, Integer maxReservablePlaces) {
+    public Course (String courseName, String trainerCompleteName, String trainerUsername, Integer maxReservablePlaces) {
         this.courseName = courseName;
         this.trainer = trainerCompleteName;
         this.trainerUsername = trainerUsername;
@@ -63,11 +60,13 @@ public class Course {
         return weekSchedule.contains(classTime);
     }
 
+    /** method used in the front-end to obtain the actual number of client joined the course
+     * */
     public Integer getNumberOfEnrolledUsers() {
         if (enrolledClients == null)
             return 0;
         if (enrolledClients.size() > 0) {
-            // also the trainer is considered during the lookup
+            // also the trainer is considered during the lookup, so it has to be discarded from the total
             return enrolledClients.size() - 1;
         }
         return 0;
@@ -88,12 +87,12 @@ public class Course {
 //    }
 
 
-    @Override
-    public String toString() {
-        return "Course{" +
-                "courseName='" + courseName + '\'' +
-                ", trainer='" + trainer + '\'' +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "Course{" +
+//                "courseName='" + courseName + '\'' +
+//                ", trainer='" + trainer + '\'' +
+//                '}';
+//    }
 }
 

@@ -3,8 +3,8 @@ package it.unipi.dsmt.fitconnect.services;
 import it.unipi.dsmt.fitconnect.entities.LdapUser;
 import it.unipi.dsmt.fitconnect.entities.MongoUser;
 import it.unipi.dsmt.fitconnect.repositories.ldap.LdapUserRepository;
-import it.unipi.dsmt.fitconnect.repositories.mongo.MongoUserRepository;
 import it.unipi.dsmt.fitconnect.util.SecurityManager;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.naming.Name;
-import java.util.Optional;
 
+@NoArgsConstructor
 @Service
 public class AuthService {
 
@@ -27,13 +27,10 @@ public class AuthService {
     private LdapUserRepository ldapUserRepository;
 
     @Autowired
-    @Qualifier("mongoUserRepository")
-    private MongoUserRepository mongoUserRepository;
+    private DBService dbService;
 
     @Autowired
     private SecurityManager securityManager;
-
-    public AuthService(){}
 
     /**
      * Function for the login phase. User get authentication in ldap database. Then it returns user data from mongodb
@@ -61,17 +58,17 @@ public class AuthService {
                 return null;
             }
 
-            // Retrieve user from MongoDB repository
-            Optional<MongoUser> loggedUser = mongoUserRepository.findByUsername(username);
+            // Retrieve user from MongoDB
+            MongoUser loggedUser = dbService.getUser(username);
 
             // Return authenticated user
-            if (loggedUser.isPresent()) {
+            if (loggedUser != null) {
 //                logger.info("Authentication succeeded!");
 //                logger.info("User logged: " + loggedUser.get());
                 System.out.println("Authentication succeeded!");
-                System.out.println("User logged: " + loggedUser.get());
+                System.out.println("User logged: " + loggedUser);
 
-                return loggedUser.get();
+                return loggedUser;
             } else {
                 System.out.println("User not found in mongodb");
                 return null;
@@ -140,36 +137,18 @@ public class AuthService {
 
         // check if username is already used
         if(search(ldapNewUser.getUsername()) != null
-                || mongoUserRepository.existsByUsername(mongoNewUser.getUsername())) {
+                || dbService.existsByUsername(mongoNewUser.getUsername())) {
             throw new Exception("Username already used. Retry");
         } else
             System.out.println("username ok");
 
-        boolean ldapSuccess = createLdapUser(ldapNewUser);
-        boolean mongoSuccess = createMongoUser(mongoNewUser);
-
-        if (!ldapSuccess || !mongoSuccess) {
-            throw new Exception("Error in registration phase");
-        }
-        /* todo: gestire la doppia registrazione utente in altro modo
-        -> se fallisce la registrazione su ldap, non va eseguita nemmeno quella su mongo,
-        -> se fallisce solo su mongo => va rifatto un tentativo (?), altrimenti va cancellato tutto e restituito errore
-        */
-/*        ad es.
-        if (!createLdapUser(ldapNewUser)) {
-            throw new Exception("Error in registration phase");
-        }
-        */
-/*
         if (createLdapUser(ldapNewUser)) {
-            if (createMongoUser(mongoNewUser)) {
+            if (dbService.createMongoUser(mongoNewUser)) {
                 return;
             }
             ldapUserRepository.delete(ldapNewUser);
         }
         throw new Exception("Error in registration phase");
-
- */
 
     }
 
@@ -202,28 +181,6 @@ public class AuthService {
             System.out.println("error in ldap registration: " + e.getMessage());
             return false;
         }
-
     }
-
-    /**
-     * Function for creating user object to store into mongo database
-     * @param user: user data
-     * @return true|false
-     */
-    public boolean createMongoUser(final MongoUser user){
-        // insert user into mongo db
-        try {
-            mongoUserRepository.save(user);
-            System.out.println("User: " + user.getUsername() + " registered in mongodb");
-            return true;
-        } catch (Exception e) {
-            System.out.println("error in mongodb registration: " + e.getMessage());
-            return false;
-        }
-
-    }
-
-
-
 
 }

@@ -1,0 +1,60 @@
+<div th:if="${view == 'courses'}">
+    <h1 class="text-white">My Courses</h1>
+    <table class="table table-light table-striped mt-4 text-center">
+        <thead>
+        <tr>
+            <th>Course</th>
+            <th>Trainer</th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="course : ${courses}">
+            <td th:text="${course.getCourseName()}"></td>
+            <td th:text="${course.getTrainer()}"></td>
+            <td>
+                <a th:href="@{'/courses/' + ${course.getCourseName()} + '/' + ${course.getTrainerUsername()}}">
+                    <button class="btn btn-primary" type="button">View</button>
+                </a>
+            </td>
+            <td>
+                <form th:action="@{unsubscribeCourse}" method="post">
+                    <input type="text" hidden="hidden" name="courseId" th:value="${course.getId()}">
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div th:if="${view == 'reservations'}">
+    <h1 class="text-white">My Reservations</h1>
+    <table class="table table-light table-striped mt-4 text-center">
+        <thead>
+        <tr>
+            <th>Course</th>
+            <th>Trainer</th>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Time</th>
+            <th>Edit</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="reservation : ${reservations}">
+            <td th:text="${reservation.getCourse().getCourseName()}"></td>
+            <td th:text="${reservation.getCourse().getTrainer()}"></td>
+            <td th:text="${reservation.getClassDate()}"></td>
+            <td th:text="${reservation.getDayOfWeek()}"></td>
+            <td th:text="${reservation.getStartTime() + ' - ' + reservation.getEndTime()}"></td>
+            <td>
+                <form th:action="@{unbookClass}" method="post">
+                    <input type="text" name="classId" hidden="hidden" th:value="${reservation.getId()}">
+                    <button class="btn btn-danger" type="submit">Remove</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

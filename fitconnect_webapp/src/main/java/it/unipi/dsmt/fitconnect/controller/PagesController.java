@@ -2,6 +2,7 @@ package it.unipi.dsmt.fitconnect.controller;
 
 import it.unipi.dsmt.fitconnect.enums.CourseType;
 import it.unipi.dsmt.fitconnect.enums.UserRole;
+import it.unipi.dsmt.fitconnect.erlang.ErlangNodesController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import it.unipi.dsmt.fitconnect.entities.*;
@@ -12,365 +13,516 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.*;
-import java.time.format.*;
 import java.util.*;
-import java.util.stream.*;
 
 @Controller
 public class PagesController {
     @Autowired
     private DBService dbService;
     @Autowired
-    private ActiveCourses courses;  // all gym courses in the db or only those of a user?
-//    private ErlangNodeController;
+    private ErlangNodesController erlangNodesController;
+    @Autowired
+    private ActiveCourses courses;  // all gym courses in the db or only those of a user, update everytime
+
+    private String getSessionUsername(HttpSession session) {
+        if (session == null) {
+            return null;
+        }
+        return (String) session.getAttribute("username");
+    }
+
+    private UserRole getSessionRole(HttpSession session) {
+        return (UserRole) session.getAttribute("role");
+    }
+
+    private void loadCourses() {
+        courses.clear();
+        courses.addAll(dbService.browseAllCourses());
+    }
+
+    private void loadCourses(String course) {
+        courses.clear();
+        courses.addAll(dbService.browseCourses(course));
+    }
 
     @GetMapping({"/", "/index"})
-    public String index() {     // todo: cambiare nome metodo?
+    public String index(@RequestParam(required = false) String isLogout, Model model) {
+        model.addAttribute("isLogout", isLogout != null && isLogout.equals("true"));
         return "index";
     }
 
-    // gestire il contesto per l'autenticazione, in modo da sapere sempre qual è l'utente connesso
-    private void browseCourses() {
-        courses.clear();
-        courses.addAll(dbService.getCourseRepository().findAll());
+    @GetMapping("/error")
+    public String error() {
+        return "error";
     }
-
-    private void loadClientCourses(String username) {
-        courses.clear();
-        // todo: da modificare in base alla nuova struttura del document
-        // va cambiata con userRepository.findCourses() -> va dichiarato il metodo corretto
-//        courses.addAll(dbService.getCourseRepository().findByUser(username));
-    }
-
-    private void loadTrainerCourses(String trainer) {
-        courses.clear();
-        courses.addAll(dbService.browseUserCourses(trainer));
-    }
-    /* todo: aggiungere i vari metodi */
-
-    /**
-     * called when a client clicks on the bookedButton in the UI
-     */
-    private boolean bookClass(String scheduleId, String username) {
-        /* try {
-         *   find the user
-         *   find the schedule
-         *   if available places is <= 0
-         *       => return false
-         *   else
-         *       => book the class adding the user in the bookedUsers list
-         *       => decrement availablePlaces field
-         *       => add the reservation to the user object
-         *       => save the Schedule doc on the db
-        * [join, coursename]
-        * [deleteC
-        * String command = "join-Yoga"
-        * erlangNodeController.sendCommandToNode(username, command)
-        * } catch(ObjectOptimisticLockingFailureException e) {
-        *   return false
-        * }
-        * return true
-        * */
-        return false;
-    }
-
-    @GetMapping("/home")
-    public String home(HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession(false); // non creare una nuova sessione se non esiste già
-
-        if (session != null) {
-            String username = (String) session.getAttribute("username");
-            UserRole role = (UserRole) session.getAttribute("role");
-
-
-            if (role != null && role == UserRole.client) {
-                model.addAttribute("username", username);
-                return "home";
-            }
-        }
-
-        return "redirect:/login"; // Reindirizza alla pagina di login se l'utente non è autenticato o non ha il ruolo appropriato
-    }
-
-
-//    @GetMapping("/courses/{courseName}")
-//    public String browseCourses(Model model, @PathVariable String courseName) {
-//        /* -> to show all courses of the same type (e.g. all yoga courses, having different trainers)
-//        * findAllCoursesByName(courseName)
-//        * -> show the list */
-//        return "home";
-//    }
-
 
     @GetMapping("/courses")
     public String courses(Model model) {
-        List<Course> courses = dbService.getCourseRepository().findAll();
-        /*Collections.sort(courses, Comparator.comparing(Course::getCourseName));
+        loadCourses();
 
-        Set<String> uniqueCourseNames = courses.stream()
-                .map(Course::getCourseName)
-                .collect(Collectors.toSet());
-
-//        model.addAttribute("courseName", uniqueCourseNames);
-
-         */
-        // todo: check
-        model.addAttribute("courseName", CourseType.values());
-        model.addAttribute("courseList", courses);
+        model.addAttribute("courseNames", CourseType.values());
 
         return "courses";
+    }
+
+    @GetMapping("/courses/{course}")
+    public String viewCourse(@PathVariable String course, Model model) {
+
+        courses.clear();
+        courses.addAll(dbService.browseCourses(course));
+
+        String trainerUsername = courses.get(0).getTrainerUsername();
+
+        model.addAttribute("courseName", course);
+        model.addAttribute("courseList", courses);
+
+        return "redirect:/courses/" + course + "/" + trainerUsername;
+
     }
 
     @GetMapping("/courses/{course}/{trainer}")
     public String viewCourseSchedule(@PathVariable String course, @PathVariable String trainer,
                                      HttpServletRequest request, Model model) {
 
-        Course trainerCourse = dbService.getCourseRepository().findByTrainerUsername(trainer).get(0);
-        List<ClassTime> weekSchedule = trainerCourse.getWeekSchedule();
+        loadCourses(course);
 
-        List<Course> courses = dbService.getCourseRepository().findAll();
-        /*Collections.sort(courses, Comparator.comparing(Course::getCourseName));
+        Course trainerCourse = dbService.getByCourseAndTrainer(course, trainer);
 
-        Set<String> uniqueCourseNames = courses.stream()
-                .map(Course::getCourseName)
-                .collect(Collectors.toSet());
-
-         */
-        boolean isJoined = false;
-        // check if logged user is subscribed to this course
-        HttpSession session = request.getSession(false);
-        if(session != null) {
-            MongoUser loggedUser = (MongoUser) session.getAttribute("loggedUser");
-            System.out.println(trainerCourse.getEnrolledClients());
-            isJoined = trainerCourse.getEnrolledClients().contains(loggedUser.getId());
-
+        if (trainerCourse == null) {
+            String errorMessage = "There is no trainer " + trainer + " with course " + course;
+            System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
+            return "error";
         }
 
+        // check if logged user is subscribed to this course
+        boolean isJoined = false;
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String username = getSessionUsername(session);
+            model.addAttribute("username", getSessionUsername(session));
+            List<MongoUser> enrolledClients = trainerCourse.getEnrolledClients();
+            // Check if there is a MongoUser with the same username in the list of subscribed users
+            isJoined = enrolledClients.stream().anyMatch(user -> user.getUsername().equals(username));
+            System.out.println("isJoind = " + isJoined);
+        }
+
+        List<ClassTime> weekSchedule = trainerCourse.getWeekSchedule();
+
+        List<DayOfWeek> days = new ArrayList<>(Arrays.stream(DayOfWeek.values()).toList());
+        days.remove(DayOfWeek.SUNDAY);
+
         model.addAttribute("isJoined", isJoined);
-//        model.addAttribute("courseName", uniqueCourseNames);
-        model.addAttribute("courseName", CourseType.values());
-        model.addAttribute("courseList", courses);
+
+        model.addAttribute("trainerCourse", trainerCourse);
         model.addAttribute("weekSchedule", weekSchedule);
         model.addAttribute("trainer", trainer);
 
-        return "courses";
-    }
-
-    @GetMapping("/courses/{course}")
-    public String viewCourse(Model model,
-                             @PathVariable String course) {
-
-
-        List<Course> courses = dbService.getCourseRepository().findByCourseName(CourseType.valueOf(course));
-
-
-        List<ClassTime> weekSchedule = courses.get(0).getWeekSchedule();
-
-
         model.addAttribute("courseName", course);
         model.addAttribute("courseList", courses);
-        model.addAttribute("weekSchedule", weekSchedule);
 
+        model.addAttribute("daysOfWeek", days);
 
-        return "courses";
-
-        /* getCourse(courseId)
-         * show course details:
-         *   tab with list of scheduled classes
-         * es. yoga
-         *   Date       |    class time      |   available places    | book button
-         *   monday 05-02-2024 17:00 -> 18:00        16      book
-         *
-         * the book button can be disabled if available places is <= 0
-         *
-         * if the logged user is a trainer => the book button is substituted with
-         * an "edit" or "remove class" button
-         * and another button to add new class times has to be shown
-         * */
-
+        return "courseType";
     }
 
-    @PostMapping("/joinCourse")
-    public String joinCourse(){
+    @PostMapping("/courses/{course}/{trainer}/{courseId}/joinCourse")
+    public String joinCourse(@PathVariable String course, @PathVariable String trainer, @PathVariable String courseId,
+                             HttpServletRequest request, Model model) {
 
-        // aggiungere servizio per joinare al corso
+        HttpSession session = request.getSession(false);
 
-        return "courses";
-    }
-
-    @GetMapping("/add-class-time")
-    public String addCourse(HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession(false); // non creare una nuova sessione se non esiste già
-
-        if (session != null) {
-            String username = (String) session.getAttribute("username");
-            UserRole role = (UserRole) session.getAttribute("role");
-
-
-            if (role != null && role == UserRole.trainer) {
-                model.addAttribute("classTime", new ClassTime());
-                return "addClassTime";
-            }
+        if (session == null) {
+            String errorMessage = "Session error, please login";
+            System.out.println(errorMessage);
+            return "login";
         }
 
-        return "redirect:/";
+        String username = getSessionUsername(session);
+
+        if (dbService.joinCourse(courseId, username)) {
+            String joinCommand = String.format("join-%s", courseId);
+            erlangNodesController.sendCommandToNode(username, joinCommand);
+            System.out.println(username + " subscribed correctly!");
+            return "redirect:/courses/" + course + "/" + trainer;
+        } else {
+            String errorMessage = "subscription failed: retry";
+            System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
+            return "error";
+        }
     }
 
-    @PostMapping("/add-class-time")
-    public String doAddCourse(@ModelAttribute ClassTime classTime) {
+    @PostMapping("/courses/{course}/{trainer}/{courseId}/bookClass")
+    public String bookClass(@PathVariable String course, @PathVariable String trainer, @PathVariable String courseId,
+                            @RequestParam String day, @RequestParam String startTime,
+                            Model model, HttpServletRequest request) {
 
-        String courseId = "65bead220356226c852ba311";
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "Session error";
+            System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
+            return "error";
+        }
 
-        dbService.addClassTime(courseId, classTime.getDayOfWeek(), classTime.getStartTime(), classTime.getEndTime());
+        String username = getSessionUsername(session);
 
-        return "courses";
+        Reservations reservations = dbService.bookClass(username, courseId, DayOfWeek.valueOf(day), startTime);
+
+        if (reservations != null) {
+            String bookingCommand = String.format("bookClass-%s-%d",
+                    reservations.getId().toString(),
+                    reservations.getActualClassTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+            erlangNodesController.sendCommandToNode(username, bookingCommand);
+
+            return "redirect:/profile?view=reservations";
+
+        } else {
+            String errorMessage = "Book class failed: retry";
+            System.out.println(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
+            return "error";
+        }
+
     }
 
-    @PostMapping("/bookClass")
-    public String bookClass(@RequestParam String trainer,
-                            @RequestParam String day,
-                            @RequestParam String startTime, Model model) {
-        String courseId = "boh";
+    @GetMapping("/profile")
+    public String profile(HttpServletRequest request, Model model,
+                          @RequestParam(name = "view", defaultValue = "courses") String view,
+                          @RequestParam(name = "course", required = false) String course) {
 
-        // Converti la stringa di startTime in un oggetto LocalTime
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        LocalTime start = LocalTime.parse(startTime, formatter);
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "No session found";
+            System.out.println(errorMessage);
+            return "login";
+        }
 
-        // Aggiungi un'ora all'orario di inizio per ottenere l'orario di fine
-        LocalTime end = start.plusHours(1);
+        String username = getSessionUsername(session);
 
-        boolean ret = dbService.addClassTime(courseId, DayOfWeek.valueOf(day), start, end);
-
-        if (ret)
-            return "courses";
-        else
-            return "index";
-    }
-
-//    @GetMapping("/courses/{courseId}")
-//    public String viewCoursebyId(Model model,
-//                             @PathVariable String courseId) {
-//        /* getCourse(courseId)
-//        * show course details:
-//        *   tab with list of scheduled classes
-//        * es. yoga
-//        *   Date       |    class time      |   available places    | book button
-//        *   monday 05-02-2024 17:00 -> 18:00        16      book
-//        *
-//        * the book button can be disabled if available places is <= 0
-//        *
-//        * if the logged user is a trainer => the book button is substituted with
-//        * an "edit" or "remove class" button
-//        * and another button to add new class times has to be shown
-//        * */
-//        return "home";
-//    }
-
-    /**
-     * raggiungibile solo da un trainer per aggiungere un nuovo corso
-     */
-    @PostMapping("/courses/create")
-    public String addCourse(Model model,
-                            @ModelAttribute(value = "course") Course course) {
-        /* check that the logged user is a trainer (or even the admin ?)
-         * -> retrieve the user logged through the authentication context
-         * if a course with the same trainer and same name already exists (check in the db service)
-         *   => error (an error message to show in the UI ?)
-         * else
-         *   => dbService.addCourse (use try-catch in the db method)
-         *   => if course added correct
-         *       => show success message/ load course page "/course/courseId"
-         * */
-
-        return "home";
-    }
-
-    // todo: metodo per aggiungere/modificare gli orari delle lezioni
-    @PostMapping("/course/schedule")
-    public String addSchedule(Model model, @ModelAttribute(value = "schedule") Reservations reservations) {
-        /* inserire parametri di funzione corretti
-         * controllare che non ci sia sovrapposizione di orari (riferito solo ad uno stesso corso)
-         * schedule.save
-         * gestire eventuali errori*/
-        return "home";
-    }
-
-    @GetMapping("/profile/{username}")
-    public String viewUserProfile(Model model,
-                                  @PathVariable String username) {
-//        todo: create getUser method in DBService
-//        MongoUser user = dbService.getUser(username);
-        Optional<MongoUser> optUser = dbService.getUserRepository().findByUsername(username);
-        if (optUser.isPresent()) {
-            MongoUser user = optUser.get();
+        MongoUser user = dbService.getUser(username);
+        if (user != null) {
             switch (user.getRole()) {
                 case trainer -> {
-                    // todo: load trainer page, showing taught courses
-                    System.out.println("trainer");
+                    model.addAttribute("courses", user.getCourses());
+                    if (course != null) {
+                        Course courseObj = dbService.getByCourseAndTrainer(course, username);
+                        if (courseObj != null) {
+
+                            model.addAttribute("courseName", courseObj.getCourseName());
+                            model.addAttribute("classes", courseObj.getWeekSchedule());
+                            model.addAttribute("courseId", courseObj.getId());
+                        }
+                    }
                 }
                 case client -> {
-                    // todo: load client page, showing subscribed courses
-                    // also show booked classes in a tab, with a button to can remove the reservation
-                    System.out.println("client");
+                    model.addAttribute("courses", user.getCourses());
+                    model.addAttribute("reservations", user.getReservations());
                 }
                 default -> {
-                    // todo: manage error
                     System.out.println("Invalid user role");
+                    return "error";
                 }
             }
-            return "home";  // todo: che ritorno usare?
+            model.addAttribute("view", view);
+            return "profile";
+        } else
+            return "error";
+    }
+
+    @GetMapping("/addCourse")
+    public String addCourse(HttpServletRequest request, Model model) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "Session error";
+            System.out.println(errorMessage);
+            return "redirect:/login";
         }
-        return "home";  // or return "error" ?
+        // only trainer can access to this page
+        if (!getSessionRole(session).toString().equals("trainer")) {
+            String errorMessage = "Content not accessible";
+            System.out.println(errorMessage);
+            return "error";
+        }
+
+        model.addAttribute("courses", CourseType.values());
+
+        return "addCourse";
     }
 
-    private void populate_courses() {
-        // Ripopolamento della collection "courses"
-        /*
-        dbService.addCourse("yoga", "Mario Rossi");
-        dbService.addCourse("yoga", "Giulia Bianchi");
-        dbService.addCourse("yoga", "Luca Verdi");
-        dbService.addCourse("yoga", "Anna Esposito");
-        dbService.addCourse("yoga", "Matteo Russo");
-        dbService.addCourse("yoga", "Sara Ferrari");
-        dbService.addCourse("yoga", "Giovanni Romano");
-        dbService.addCourse("yoga", "Chiara Gialli");
-        dbService.addCourse("yoga", "Andrea Neri");
-        dbService.addCourse("yoga", "Elena Marroni");
+    @PostMapping("/addCourse")
+    public String doAddCourse(@RequestParam String course,
+                              @RequestParam Integer maxReservablePlaces, HttpServletRequest request) {
 
-        dbService.addCourse("crossfit", "Alessandro Moretti");
-        dbService.addCourse("crossfit", "Valentina Rosso");
-        dbService.addCourse("crossfit", "Davide Rossi");
-        dbService.addCourse("crossfit", "Martina Verdi");
-        dbService.addCourse("crossfit", "Roberto Bianchi");
-        dbService.addCourse("crossfit", "Francesca Neri");
-        dbService.addCourse("crossfit", "Paolo Esposito");
-        dbService.addCourse("crossfit", "Giorgio Gialli");
-        dbService.addCourse("crossfit", "Eleonora Marroni");
-        dbService.addCourse("crossfit", "Simone Ferrari");
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "Session error";
+            System.out.println(errorMessage);
+            return "redirect:/login";
+        }
+        // only trainer can access to this page
+        if (!getSessionRole(session).toString().equals("trainer")) {
+            String errorMessage = "Content not accessible";
+            System.out.println(errorMessage);
+            return "error";
+        }
 
-        dbService.addCourse("swim", "Federico Bianchi");
-        dbService.addCourse("swim", "Laura Verdi");
-        dbService.addCourse("swim", "Marco Rossi");
-        dbService.addCourse("swim", "Alessia Esposito");
-        dbService.addCourse("swim", "Nicola Neri");
-        dbService.addCourse("swim", "Cristina Gialli");
-        dbService.addCourse("swim", "Lorenzo Marroni");
-        dbService.addCourse("swim", "Erika Ferrari");
-        dbService.addCourse("swim", "Daniele Romano");
-        dbService.addCourse("swim", "Valeria Rosso");
+        String username = getSessionUsername(session);
 
-        dbService.addCourse("gym", "Gabriele Verdi");
-        dbService.addCourse("gym", "Elisa Rossi");
-        dbService.addCourse("gym", "Massimo Bianchi");
-        dbService.addCourse("gym", "Serena Esposito");
-        dbService.addCourse("gym", "Riccardo Neri");
-        dbService.addCourse("gym", "Alessandra Gialli");
-        dbService.addCourse("gym", "Giacomo Marroni");
-        dbService.addCourse("gym", "Chiara Ferrari");
-        dbService.addCourse("gym", "Luigi Romano");
-        dbService.addCourse("gym", "Martina Rosso");
+        String newCourseId = dbService.addNewCourse(CourseType.valueOf(course), username, maxReservablePlaces);
+        if (newCourseId != null) {
+            String joinCommand = String.format("join-%s", newCourseId);
+            erlangNodesController.sendCommandToNode(username, joinCommand);
 
-         */
+            return "redirect:/profile";
+        }
+        else
+            return "error";
     }
+
+
+    @GetMapping("/addClass")
+    public String addClass(HttpServletRequest request, Model model) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "Session error";
+            System.out.println(errorMessage);
+            return "redirect:/login";
+        }
+        // only trainer can access to this page
+        if (!getSessionRole(session).toString().equals("trainer")) {
+            String errorMessage = "Content not accessible";
+            System.out.println(errorMessage);
+            return "error";
+        }
+
+        List<DayOfWeek> days = new ArrayList<>(Arrays.stream(DayOfWeek.values()).toList());
+        days.remove(DayOfWeek.SUNDAY);
+
+        model.addAttribute("classTime", new ClassTime());
+        model.addAttribute("daysOfWeek", days);
+        return "addClassTime";
+
+    }
+
+    @PostMapping("/addClass/{courseId}")
+    public String doAddClass(@PathVariable String courseId, @RequestParam String day, @RequestParam String startTime) {
+
+        LocalTime startTimeLocal = LocalTime.parse(startTime);
+
+        // Compute endTime adding one hour to startTime
+        LocalTime endTimeLocal = startTimeLocal.plus(Duration.ofHours(1));
+
+        Course course = dbService.addClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal, endTimeLocal);
+        if (course != null) {
+            System.out.println("class added");
+
+            return "redirect:/courses/" + course.getCourseName() + '/' + course.getTrainerUsername();
+        } else
+            return "error";
+    }
+
+    @PostMapping("/deleteCourse")
+    public String deleteCourse(@RequestParam String courseId) {
+
+        Course course = dbService.getCourse(courseId);
+        if (course == null)
+            return "error";
+
+        List<MongoUser> users = course.getEnrolledClients();
+        for (MongoUser u: users) {
+            String leaveCommand = String.format("leave-%s", course.getId().toString());
+            erlangNodesController.sendCommandToNode(u.getUsername(), leaveCommand);
+        }
+
+        List<Reservations> reservations = dbService.getReservationsByCourse(courseId);
+        for (Reservations r: reservations) {
+            for (MongoUser u: r.getBookedUsers()) {
+                String unbookCommand = String.format("unbookClass-%s",
+                        r.getId().toString());
+                erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
+            }
+        }
+        String leaveCommand = String.format("leave-%s", course.getId().toString());
+        erlangNodesController.sendCommandToNode(course.getTrainerUsername(), leaveCommand);
+
+        if (dbService.deleteCourse(courseId)) {
+
+            System.out.println("/deleteCourse ok");
+            return "redirect:/profile";
+        } else
+            return "error";
+    }
+
+    @PostMapping("/unsubscribeCourse")
+    public String unsubscribeCourse(@RequestParam String courseId, HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            String errorMessage = "Session error";
+            System.out.println(errorMessage);
+            return "error";
+        }
+
+        String username = getSessionUsername(session);
+
+        List<Reservations> clientReservations = dbService.getReservationsByCourseAndUser(courseId, username);
+        
+        for (Reservations r: clientReservations) {
+            String unbookCommand = String.format("unbookClass-%s", r.getId().toString());
+            erlangNodesController.sendCommandToNode(username, unbookCommand);
+        }
+        
+        String leaveCommand = String.format("leave-%s", courseId);
+        erlangNodesController.sendCommandToNode(username, leaveCommand);
+
+        if (dbService.leaveCourse(courseId, username)) {
+            System.out.println("course left");
+            return "redirect:/profile";
+        }
+
+        return "error";
+    }
+
+    @PostMapping("/deleteClass")
+    public String deleteClass(@RequestParam String courseId, @RequestParam String day, @RequestParam String startTime) {
+
+        LocalTime startTimeLocal = LocalTime.parse(startTime);
+
+        List<Reservations> reservations = dbService.removeClassTime(courseId, DayOfWeek.valueOf(day), startTimeLocal);
+        if (reservations != null) {
+            for (Reservations r: reservations) {
+                for (MongoUser u: r.getBookedUsers()) {
+                    String unbookCommand = String.format("unbookClass-%s",
+                            r.getId().toString());
+                    erlangNodesController.sendCommandToNode(u.getUsername(), unbookCommand);
+                }
+            }
+            return "redirect:/profile";
+        } else
+            return "error";
+    }
+
+    @PostMapping("/editClass")
+    public String editClass(@RequestParam String courseId, @RequestParam String oldDay, @RequestParam String newDay,
+                            @RequestParam String oldStartTime, @RequestParam String newStartTime) {
+
+        LocalTime oldStartTimeLocal = LocalTime.parse(oldStartTime);
+        LocalTime newStartTimeLocal = LocalTime.parse(newStartTime);
+        LocalTime newEndTimeLocal = newStartTimeLocal.plus(Duration.ofHours(1));
+
+        List<Reservations> reservationsUpdated = dbService.editCourseClassTime(courseId, DayOfWeek.valueOf(oldDay),
+                oldStartTimeLocal, DayOfWeek.valueOf(newDay), newStartTimeLocal, newEndTimeLocal);
+        if (reservationsUpdated != null) {
+            for (Reservations r: reservationsUpdated) {
+                for (MongoUser u: r.getBookedUsers()) {
+                    String editCommand = String.format("editClass-%s-%d",
+                            r.getId().toString(),
+                            r.getActualClassTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+                    erlangNodesController.sendCommandToNode(u.getUsername(), editCommand);
+                }
+            }
+            System.out.println("class time edited");
+            return "redirect:/profile";
+        } else
+            return "error";
+    }
+
+    @PostMapping("/unbookClass")
+    public String unbookClass(HttpServletRequest request, @RequestParam String classId) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            System.out.println("No session");
+            return "login";
+        }
+        System.out.println("class id: " + classId);
+        String username = getSessionUsername(session);
+
+        String reservationId = dbService.unbookClass(classId, username);
+
+        if (reservationId != null) {
+            String unbookCommand = String.format("unbookClass-%s",
+                    reservationId);
+            erlangNodesController.sendCommandToNode(username, unbookCommand);
+            return "redirect:/profile?view=reservations";
+        }
+
+        return "error";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String username = getSessionUsername(session);
+
+            session.invalidate(); // Terminate the current session
+
+            erlangNodesController.disconnectNode(username);
+        }
+        return "redirect:/?isLogout=true";
+    }
+
+    @GetMapping("/chat")
+    public String chat(HttpServletRequest request, Model model){
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            System.out.println("No session");
+            return "login";
+        }
+
+        String username = getSessionUsername(session);
+
+        List<Course> chatCourses = dbService.getUser(username).getCourses();
+
+        return "redirect:/chat/" + chatCourses.get(0).getId();
+    }
+
+    @GetMapping("/chat/{room}")
+    public String chat(@PathVariable String room, @RequestParam(name = "pageNumber", defaultValue = "0") int pageNumber,
+                       HttpServletRequest request, Model model){
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            System.out.println("No session");
+            return "login";
+        }
+
+        String username = getSessionUsername(session);
+
+        List<Course> chatCourses = dbService.getUser(username).getCourses();
+        model.addAttribute("chatCourses", chatCourses);
+
+        List<Message> chatMessages = dbService.getCourseMessages(username, room, pageNumber);
+
+        model.addAttribute("chatMessages", chatMessages);
+        model.addAttribute("course", dbService.getCourse(room));
+        model.addAttribute("room", room);
+        model.addAttribute("pageNumber", pageNumber);
+
+        return "chat";
+    }
+
+    @GetMapping("/chat/{room}/{page}")
+    @ResponseBody
+    public List<Message> chatPageable(@PathVariable String room, @PathVariable int page,
+                                     HttpServletRequest request){
+
+        HttpSession session = request.getSession(false);
+        String username = getSessionUsername(session);
+
+        List<Message> chatMessages = dbService.getCourseMessages(username, room, page);
+        return chatMessages;
+    }
+
+
 
 }
+
+

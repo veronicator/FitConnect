@@ -14,7 +14,6 @@ start_link() ->
     gen_server:start_link({local, fitNotifier}, ?MODULE, [], []).
 
 % If it crashed then when need to resync it
-% ROUND TO 5 OR 10 MIN
 init([]) ->
     restart(),
     control_schedules(expired, erlang:system_time(millisecond)),
@@ -25,10 +24,10 @@ init([]) ->
         D ->
             Rest = 4 - D
     end,
-    io:format("Rest: ~p, Seconds: ~p~n", [Rest, Seconds]),
-    %RemainingMilliseconds = ((Rest * 60) + (60 - Seconds)) * 1000,
-    %io:format("Milli remaining: ~p~n", [RemainingMilliseconds]),
-    RemainingMilliseconds = 10000, % DEBUG
+    %io:format("Rest: ~p, Seconds: ~p~n", [Rest, Seconds]), % DEBUG
+    RemainingMilliseconds = ((Rest * 60) + (60 - Seconds)) * 1000,
+    %io:format("Milli remaining: ~p~n", [RemainingMilliseconds]), % DEBUG
+    %RemainingMilliseconds = 10000, % DEBUG
     timer:apply_after(RemainingMilliseconds, ?MODULE, notify, []),
     {ok, []}.
 
@@ -61,13 +60,14 @@ handle_call({delete, Username, ScheduleId, _Timestamp}, _From, Timers) ->
     {reply, {deleted, ok}, Timers};
 
 handle_call(Request, _From, Timers) ->
-    {ok, {error, "Unhandled Request", Request}, Timers}.
+    io:format("Received unhandled request: ~p;~n", [Request]), % DEBUG
+    {reply, {unhandled_request, Request}, Timers}.
 
 % Used to notify the users that the course is going to start sending a message to the fitMessanger
 notify() ->
-    io:format("Checking for schedules~n").%,
-    %control_schedules(expired, erlang:system_time(millisecond)),
-    %timer:apply_after(30000, ?MODULE, notify, []). % every 5 minutes a control is performed
+    io:format("Checking for schedules~n"),
+    control_schedules(expired, erlang:system_time(millisecond)),
+    timer:apply_after(30000, ?MODULE, notify, []). % every 5 minutes a control is performed
 
 handle_cast(_Request, Timers) ->
     {noreply, Timers}.
@@ -105,9 +105,9 @@ control_schedules(Mode, Element) ->
 
 process_expired_schedule(Mode, {schedules, {Username, ScheduleId}, Timestamp}) ->
     Message = {schedule, Mode, Username, ScheduleId, Timestamp},
-    io:format("Message to send: ~p~n", [Message]),
+    %io:format("Message to send: ~p~n", [Message]), % DEBUG
     Result = broadcast(Message),
-    io:format("Result: ~p~n", [Result]),
+    %io:format("Result: ~p~n", [Result]), % DEBUG
     if
         Result == {ok} ->
             delete_schedule({Username, ScheduleId});
@@ -119,7 +119,7 @@ process_expired_schedule(Mode, {schedules, {Username, ScheduleId}, Timestamp}) -
 process_edited_schedule(Mode, NewTimestamp, {schedules, {Username, ScheduleId}, _Timestamp}) ->
     Message = {schedule, Mode, Username, ScheduleId, NewTimestamp},
     edit_schedule({Username, ScheduleId}, NewTimestamp),
-    io:format("Message to send: ~p~n", [Message]),
+    %io:format("Message to send: ~p~n", [Message]), % DEBUG
     broadcast(Message).
 
 broadcast(Msg) -> 

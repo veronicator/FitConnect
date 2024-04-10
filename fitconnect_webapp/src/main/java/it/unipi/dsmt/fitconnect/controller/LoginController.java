@@ -2,10 +2,16 @@ package it.unipi.dsmt.fitconnect.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import it.unipi.dsmt.fitconnect.entities.Course;
 import it.unipi.dsmt.fitconnect.entities.LdapUser;
 import it.unipi.dsmt.fitconnect.entities.MongoUser;
 import it.unipi.dsmt.fitconnect.enums.UserRole;
+import it.unipi.dsmt.fitconnect.erlang.ErlangNodesController;
 import it.unipi.dsmt.fitconnect.services.AuthService;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
     @Autowired
     private AuthService authService;
-
+    @Autowired
+    private ErlangNodesController erlangNodesController;
 
     @GetMapping("/login")
     public String index() {
@@ -39,14 +46,21 @@ public class LoginController {
         if (loggedUser == null)
             return "login";
         else {
+            List<String> courseNames = new ArrayList<>();
+
+            for (Course c : loggedUser.getCourses())
+                courseNames.add(String.valueOf(c.getId()));
+
             HttpSession session = request.getSession(true);
-            session.setAttribute("loggedUser", loggedUser);
             session.setAttribute("uid", loggedUser.getId());
             session.setAttribute("username", loggedUser.getUsername());
             session.setAttribute("role", loggedUser.getRole());
+
             model.addAttribute("username", loggedUser.getUsername());
 
-            return "home";
+            erlangNodesController.startErlangNode(loggedUser.getUsername(), courseNames);
+
+            return "redirect:/profile";
         }
     }
 
@@ -54,6 +68,7 @@ public class LoginController {
     public String doSignup(@RequestParam String firstname, @RequestParam String lastname,
                            @RequestParam String email, @RequestParam String username,
                            @RequestParam String password, @RequestParam String repeat_password) {
+
         if (!password.equals(repeat_password)) {
             System.out.println("Password mismatch. Retry");
             return "signup";
@@ -73,18 +88,5 @@ public class LoginController {
         }
     }
 
-//    @GetMapping("/login-error")
-//    public String loginError(Model model) {
-//        model.addAttribute("loginError", "Login Error");
-//        return "login";
-//    }
 
-    @GetMapping("/logout")
-    public String logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate(); // Terminate the current session
-        }
-        return "redirect:/";
-    }
 }

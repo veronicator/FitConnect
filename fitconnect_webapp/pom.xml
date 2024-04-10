@@ -75,34 +75,59 @@
             <artifactId>spring-data-mongodb</artifactId>
             <version>4.2.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>6.2.1</version>
-        </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>com.ericsson.otp.erlang</groupId>-->
-        <!--            <artifactId>otperlang</artifactId>-->
-        <!--&lt;!&ndash;            <version>1.5.3</version>&ndash;&gt;-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>org.erlang.otp</groupId>-->
-        <!--            <artifactId>jinterface</artifactId>-->
-        <!--&lt;!&ndash;            <version>1.6</version>&ndash;&gt;-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.ericsson.otp</groupId>-->
-        <!--            <artifactId>erlang</artifactId>-->
-        <!--&lt;!&ndash;            <version>26</version>&ndash;&gt;-->
-        <!--        </dependency>-->
-
+      <!--
         <dependency>
             <groupId>clojang</groupId>
             <artifactId>erlang-jinterface</artifactId>
             <version>1.10-1</version>
+        </dependency> 
+-->
+
+        <dependency>
+            <groupId>com.ericsson.otp</groupId>
+            <artifactId>erlang</artifactId>
+            <version>1.12.1</version>
+        </dependency>
+        <!-- Spring Boot Starter WebSocket -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <!-- WebJars Locator Core -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>webjars-locator-core</artifactId>
+        </dependency>
+        <!-- SockJS Client -->
+        <!-- https://mvnrepository.com/artifact/org.webjars/sockjs-client -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>sockjs-client</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+        <!-- Stomp WebSocket -->
+        <!-- https://mvnrepository.com/artifact/org.webjars/stomp-websocket -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>stomp-websocket</artifactId>
+            <version>2.3.4</version>
+        </dependency>
+
+        <!-- Bootstrap -->
+        <!-- https://mvnrepository.com/artifact/org.webjars/bootstrap -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>5.3.2</version>
+        </dependency>
+
+        <!-- jQuery -->
+        <!-- https://mvnrepository.com/artifact/org.webjars/jquery -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>3.7.1</version>
         </dependency>
     </dependencies>
 

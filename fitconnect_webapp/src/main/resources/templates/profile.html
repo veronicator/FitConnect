@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Profile</title>
+    <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+</head>
+<body>
+<div th:replace="~{header.html}" class="mb-lg-5"></div>
+
+<div class="container d-flex mt-lg-5">
+
+    <aside class="d-flex flex-column flex-shrink-0 p-3 bg-light justify-content-center align-items-center" style="width: 20rem;">
+        <img th:src="@{/images/account-sample.jpg}" class="object-fit-contain w-75" alt="Image Sample">
+        <h4 th:text="${session.username}" class="text-center"></h4>
+        <hr>
+        <a th:href="@{/profile?view=courses}">
+            <button class="btn btn-primary mb-4">My Courses</button>
+        </a>
+        <a th:href="@{/profile?view=reservations}" th:if="${session.role.toString().equals('client')}">
+            <button class="btn btn-primary mb-4">My Reservations</button>
+        </a>
+        <a th:href="@{/addCourse}" th:if="${session.role.toString().equals('trainer')}">
+            <button class="btn btn-primary mb-4">Add Course</button>
+        </a>
+        <hr>
+        <th:block th:if="${classes != null}">
+            <form th:action="@{'/editClass'}" method="post">
+
+                <input type="text" class="form-control" name="courseId" id="courseId" th:value="${courseId}" hidden="hidden"/>
+
+                <div class="form-group mb-4 mt-4">
+                    <label for="oldDay">Old Day:</label>
+                    <select class="form-control" name="oldDay" id="oldDay">
+                        <option>MONDAY</option>
+                        <option>TUESDAY</option>
+                        <option>WEDNESDAY</option>
+                        <option>THURSDAY</option>
+                        <option>FRIDAY</option>
+                        <option>SATURDAY</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="newDay">New Day:</label>
+                    <select class="form-control" name="newDay" id="newDay">
+                        <option>MONDAY</option>
+                        <option>TUESDAY</option>
+                        <option>WEDNESDAY</option>
+                        <option>THURSDAY</option>
+                        <option>FRIDAY</option>
+                        <option>SATURDAY</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="oldStartTime">Old Start Time:</label>
+                    <input type="time" class="form-control" name="oldStartTime" id="oldStartTime"/>
+                </div>
+                <div class="form-group mb-4">
+                    <label for="newStartTime">New Start Time:</label>
+                    <input type="time" class="form-control" name="newStartTime" id="newStartTime"/>
+                </div>
+                <button type="submit" class="btn btn-primary">Edit Class</button>
+            </form>
+        </th:block>
+    </aside>
+
+    <main class="container bg-secondary m-auto p-4" style="max-width: 1440px">
+        <th:block th:if="${session.role.toString().equals('client')}" >
+            <div th:replace="~{fragments/clientProfile.html}"></div>
+        </th:block>
+        <th:block th:if="${session.role.toString().equals('trainer')}">
+            <div th:replace="~{fragments/trainerProfile.html}"></div>
+        </th:block>
+    </main>
+
+
+
+</div>
+</body>
+</html>
