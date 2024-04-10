@@ -32,8 +32,6 @@ public class RestService {
         HttpEntity<WSMessage> entity = new HttpEntity<>(message, headers);
         ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class, username);
-        //System.out.println("Risposta dal server: " + response.getBody());
-        System.out.println("DEBUG: RestService - postNotification function");
       
         return response.getBody();
     }

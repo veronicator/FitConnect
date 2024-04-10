@@ -37,21 +37,19 @@ public class MessageController {
         Thread.sleep(1000);
         notificationService.sendPrivateNotification(username);
 
-        System.out.println("DEBUG: MessageController - getPrivateNotification function");
-
         return new ResponseMessage(HtmlUtils.htmlEscape(
                 "Sending private message to user " + username + ": "
                         + message.getMessageContent())
         );
     }
 
-    @MessageMapping("/{room}/chat")  //end point a cui i client devono mandare il messaggio
-    @SendTo("/topic/{room}/chat")   //tutti i client iscritti a questo canale riceveranno il messaggio di questo metodo
+    @MessageMapping("/{room}/chat")
+    @SendTo("/topic/{room}/chat")   //all user enrolled with this course will receive messages in this channel
     public Message sendMessage(@DestinationVariable String room, ChatMessage message) throws Exception {
         Message outMessage = new Message();
         outMessage.setSender(message.getSender());
         outMessage.setText(message.getText());
-        outMessage.setSendTime(LocalDateTime.now());    //todo va bene?
+        outMessage.setSendTime(LocalDateTime.now());
         outMessage.setCourse(room);
 
         dbService.saveMessage(outMessage);

@@ -18,12 +18,6 @@ public class WSService {
         System.out.println("DEBUG: WSService - Constructor function");
     }
 
-//    public void notifyFrontend(final String message) {
-//        ResponseMessage response = new ResponseMessage(message);
-//        notificationService.sendGlobalNotification();
-//
-//        messagingTemplate.convertAndSend("/topic/messages", response);
-//    }
 
     /** method to send notification to a specific user through the websocket established with that user */
     public void notifyUser(final String id, final String message) {
@@ -32,6 +26,5 @@ public class WSService {
         notificationService.sendPrivateNotification(id);
         messagingTemplate.convertAndSendToUser(id, "/topic/private-messages", response);
 
-        System.out.println("DEBUG: WSService - notifyUser function");
     }
 }

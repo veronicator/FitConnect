@@ -21,6 +21,5 @@ public class NotificationService {
 
         messagingTemplate.convertAndSendToUser(userId,"/topic/private-notifications", message);
 
-        System.out.println("DEBUG: NotificationService - sendPrivateNotification");
     }
 }

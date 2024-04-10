@@ -96,12 +96,12 @@ $(document).ready(function () {
         });
     }
 
-    // Carica i messaggi iniziali quando la pagina si carica
+    //load first page of messages
     loadMessages(pageNumber);
 
-    // Carica ulteriori messaggi quando si fa clic sul pulsante "Show more"
+    // load other messages if required by the user with 'show more' button
     $('#load-more').click(function () {
-        pageNumber++; // Incrementa il numero di pagina per la prossima richiesta
+        pageNumber++;
         loadMessages(pageNumber);
     });
 });

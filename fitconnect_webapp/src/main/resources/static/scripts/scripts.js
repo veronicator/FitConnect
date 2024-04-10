@@ -33,8 +33,6 @@ function setConnection() {
     loadNotifications();
     updateNotificationDisplay();
 
-    //TODO da sistemare
-
     stompClient.subscribe('/topic/messages', function (message) {
         message = JSON.parse(message.body).content;
         showMessage(message);
@@ -46,16 +44,6 @@ function setConnection() {
         showMessage(message);
         saveMessage(message);
     });
-
-    // stompClient.subscribe('/topic/global-notifications', function (message) {
-    //     notificationCount = notificationCount + 1;
-    //     updateNotificationDisplay();
-    // });
-    //
-    // stompClient.subscribe('/user/topic/private-notifications', function (message) {
-    //     notificationCount = notificationCount + 1;
-    //     updateNotificationDisplay();
-    // });
 
     //setup chat groups for the user
     chatCoursesIds.forEach(course => {
@@ -70,10 +58,10 @@ function setConnection() {
 
 function reconnect() {
     if (stompClient && !isConnected) {
-        // Se il client Stomp è stato creato e la connessione non è attiva, prova a ricollegarti
+        // If the Stomp client has been created and the connection is not active, try reconnecting
         stompClient.connect({}, function (frame) {
             console.log('Reconnected: ' + frame);
-            isConnected = true; // Imposta lo stato della connessione a "attivo"
+            isConnected = true; // set connection 'active'
 
             setConnection();
         });
@@ -96,24 +84,12 @@ function showMessage(message) {
 }
 
 function saveMessage(message) {
-    // Salva la notifica nella localStorage
+    // save notify into localstorage
     const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
     notifications.push(message);
     localStorage.setItem('notifications', JSON.stringify(notifications));
 
 }
-
-//TODO posso toglierle?
-
-// function sendMessage() {
-//     console.log("sending message");
-//     stompClient.send("/ws/message", {}, JSON.stringify({'messageContent': $("#message").val()}));
-// }
-//
-// function sendPrivateMessage() {
-//     console.log("sending private message");
-//     stompClient.send("/ws/private-message", {}, JSON.stringify({'messageContent': $("#private-message").val()}));
-// }
 
 function updateNotificationDisplay() {
     if (notificationCount == 0) {
